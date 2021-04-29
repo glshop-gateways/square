@@ -23,8 +23,8 @@ class TerminalApi extends BaseApi
     }
 
     /**
-     * Creates a new Terminal checkout request and sends it to the specified device to take a payment for
-     * the requested amount.
+     * Creates a Terminal checkout request and sends it to the specified device to take a payment
+     * for the requested amount.
      *
      * @param \Square\Models\CreateTerminalCheckoutRequest $body An object containing the fields
      *                                                           to POST for the request.
@@ -158,9 +158,9 @@ class TerminalApi extends BaseApi
     }
 
     /**
-     * Retrieves a Terminal checkout request by checkout_id.
+     * Retrieves a Terminal checkout request by `checkout_id`.
      *
-     * @param string $checkoutId Unique ID for the desired `TerminalCheckout`
+     * @param string $checkoutId The unique ID for the desired `TerminalCheckout`.
      *
      * @return ApiResponse Response from the API call
      *
@@ -174,7 +174,7 @@ class TerminalApi extends BaseApi
         //process optional query parameters
         $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
             'checkout_id' => $checkoutId,
-            ]);
+        ]);
 
         //validate and preprocess url
         $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
@@ -224,7 +224,7 @@ class TerminalApi extends BaseApi
     /**
      * Cancels a Terminal checkout request if the status of the request permits it.
      *
-     * @param string $checkoutId Unique ID for the desired `TerminalCheckout`
+     * @param string $checkoutId The unique ID for the desired `TerminalCheckout`.
      *
      * @return ApiResponse Response from the API call
      *
@@ -238,7 +238,7 @@ class TerminalApi extends BaseApi
         //process optional query parameters
         $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
             'checkout_id' => $checkoutId,
-            ]);
+        ]);
 
         //validate and preprocess url
         $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
@@ -353,7 +353,7 @@ class TerminalApi extends BaseApi
     }
 
     /**
-     * Retrieves a filtered list of Terminal Interac refund requests created by the seller making the
+     * Retrieves a filtered list of Interac Terminal refund requests created by the seller making the
      * request.
      *
      * @param \Square\Models\SearchTerminalRefundsRequest $body An object containing the fields to
@@ -421,9 +421,9 @@ class TerminalApi extends BaseApi
     }
 
     /**
-     * Retrieves an Interac terminal refund object by ID.
+     * Retrieves an Interac Terminal refund object by ID.
      *
-     * @param string $terminalRefundId Unique ID for the desired `TerminalRefund`
+     * @param string $terminalRefundId The unique ID for the desired `TerminalRefund`.
      *
      * @return ApiResponse Response from the API call
      *
@@ -437,7 +437,7 @@ class TerminalApi extends BaseApi
         //process optional query parameters
         $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
             'terminal_refund_id' => $terminalRefundId,
-            ]);
+        ]);
 
         //validate and preprocess url
         $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
@@ -485,10 +485,10 @@ class TerminalApi extends BaseApi
     }
 
     /**
-     * Cancels an Interac terminal refund request by refund request ID if the status of the request
+     * Cancels an Interac Terminal refund request by refund request ID if the status of the request
      * permits it.
      *
-     * @param string $terminalRefundId Unique ID for the desired `TerminalRefund`
+     * @param string $terminalRefundId The unique ID for the desired `TerminalRefund`.
      *
      * @return ApiResponse Response from the API call
      *
@@ -502,7 +502,7 @@ class TerminalApi extends BaseApi
         //process optional query parameters
         $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
             'terminal_refund_id' => $terminalRefundId,
-            ]);
+        ]);
 
         //validate and preprocess url
         $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Square\Models;
 
 /**
- * Specifies the idempotency key of a payment to cancel.
+ * Describes a request to cancel a payment using
+ * [CancelPaymentByIdempotencyKey]($e/Payments/CancelPaymentByIdempotencyKey).
  */
 class CancelPaymentByIdempotencyKeyRequest implements \JsonSerializable
 {

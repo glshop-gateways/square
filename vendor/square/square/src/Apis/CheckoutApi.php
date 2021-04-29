@@ -23,8 +23,8 @@ class CheckoutApi extends BaseApi
     }
 
     /**
-     * Links a `checkoutId` to a `checkout_page_url` that customers will
-     * be directed to in order to provide their payment information using a
+     * Links a `checkoutId` to a `checkout_page_url` that customers are
+     * directed to in order to provide their payment information using a
      * payment processing workflow hosted on connect.squareup.com.
      *
      * @param string $locationId The ID of the business location to associate the checkout with.
@@ -46,7 +46,7 @@ class CheckoutApi extends BaseApi
         //process optional query parameters
         $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
             'location_id' => $locationId,
-            ]);
+        ]);
 
         //validate and preprocess url
         $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);

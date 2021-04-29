@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Square\Models;
 
 /**
- * Retrieves a list of refunds for the account making the request.
+ * Describes a request to list refunds using
+ * [ListPaymentRefunds]($e/Refunds/ListPaymentRefunds).
  *
  * The maximum results per page is 100.
  */
@@ -185,7 +186,7 @@ class ListPaymentRefundsRequest implements \JsonSerializable
      * Returns Status.
      *
      * If provided, only refunds with the given status are returned.
-     * For a list of refund status values, see [PaymentRefund](#type-paymentrefund).
+     * For a list of refund status values, see [PaymentRefund]($m/PaymentRefund).
      *
      * Default: If omitted, refunds are returned regardless of their status.
      */
@@ -198,7 +199,7 @@ class ListPaymentRefundsRequest implements \JsonSerializable
      * Sets Status.
      *
      * If provided, only refunds with the given status are returned.
-     * For a list of refund status values, see [PaymentRefund](#type-paymentrefund).
+     * For a list of refund status values, see [PaymentRefund]($m/PaymentRefund).
      *
      * Default: If omitted, refunds are returned regardless of their status.
      *

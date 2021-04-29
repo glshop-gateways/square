@@ -11,11 +11,13 @@ class ConfigurationDefaults
 {
     public const TIMEOUT = 60;
 
-    public const SQUARE_VERSION = '2020-12-16';
+    public const SQUARE_VERSION = '2021-04-21';
 
     public const ACCESS_TOKEN = 'TODO: Replace';
 
     public const ADDITIONAL_HEADERS = [];
 
     public const ENVIRONMENT = Environment::PRODUCTION;
+
+    public const CUSTOM_URL = 'https://connect.squareup.com';
 }

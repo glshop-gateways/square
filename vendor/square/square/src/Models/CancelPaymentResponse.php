@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Square\Models;
 
 /**
- * The return value from the [CancelPayment](#endpoint-payments-cancelpayment) endpoint.
+ * Defines the response returned by [CancelPayment]($e/Payments/CancelPayment).
  */
 class CancelPaymentResponse implements \JsonSerializable
 {

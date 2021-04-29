@@ -9,8 +9,6 @@ namespace Square\Models;
  */
 class SubscriptionStatus
 {
-    public const DEFAULT_SUBSCRIPTION_STATUS_DO_NOT_USE = 'DEFAULT_SUBSCRIPTION_STATUS_DO_NOT_USE';
-
     /**
      * The subscription starts in the future.
      */
@@ -25,4 +23,9 @@ class SubscriptionStatus
      * The subscription is canceled.
      */
     public const CANCELED = 'CANCELED';
+
+    /**
+     * The subscription is deactivated.
+     */
+    public const DEACTIVATED = 'DEACTIVATED';
 }
