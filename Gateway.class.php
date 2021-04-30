@@ -511,8 +511,9 @@ class Gateway extends \Shop\Gateway
      */
     protected function returnUrl($cart_id, $token)
     {
-        return $this->ipn_url . '&o=' . $cart_id .
-            '&t=' . $token;
+        return Config::get('url') . '?thanks=' . $this->gw_name;
+        /*return $this->ipn_url . '&o=' . $cart_id .
+            '&t=' . $token;*/
     }
 
 
