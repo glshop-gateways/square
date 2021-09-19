@@ -22,6 +22,8 @@ use Square\SquareClient;
 use Square\Environment;
 use Square\Models\Money;
 use Square\Models\OrderLineItem;
+use Square\Models\OrderLineItemDiscount;
+use Square\Models\OrderLineItemDiscountType;
 use Square\Models\CreateOrderRequest;
 use Square\Models\Order as sqOrder;
 use LGLib\NameParser;
@@ -190,6 +192,7 @@ class Gateway extends \Shop\Gateway
         $tax = 0;
         $lineItems = array();
         $orderTaxes = array();
+        $discounts = array();
         $by_gc = $Ord->getGC();
         if ($by_gc > 0) {
             $total_amount = $Ord->getTotal() - $by_gc;
@@ -223,6 +226,21 @@ class Gateway extends \Shop\Gateway
                 $shipping += $Item->getShipping();
             }
 
+            $discount = $Ord->getDiscountAmount();
+            if ($discount > 0) {
+                $PriceMoney = new Money;
+                $PriceMoney->setAmount($Cur->toInt($discount));
+                $PriceMoney->setCurrency($this->currency_code);
+                $Discount = new \Square\Models\OrderLineItemDiscount('1');
+                $Discount->setName($LANG_SHOP['disc_code'] .
+                    ' (' . $Ord->getDiscountCode(). ' ' . $Ord->getDiscountPct() . '%)');
+                $Discount->setUid('_discount');
+                $Discount->setType(OrderLineItemDiscountType::FIXED_AMOUNT);
+                $Discount->setAmountMoney($PriceMoney);
+                $Discount->setScope('ORDER');
+                $discounts[] = $Discount;
+            }
+
             if ($Ord->getTax() > 0) {
                 $TaxMoney = new Money;
                 $TaxMoney->setCurrency($this->currency_code);
@@ -246,7 +264,7 @@ class Gateway extends \Shop\Gateway
             $itm->setName($LANG_SHOP['shipping']);
             $itm->setUid('__shipping');
             $itm->setBasePriceMoney($ShipMoney);
-            array_push($lineItems, $itm);
+            $lineItems[] = $itm;
         }
 
         $sqOrder->setReferenceId($Ord->getOrderID());
@@ -254,6 +272,10 @@ class Gateway extends \Shop\Gateway
             'order_ref' => $Ord->getOrderId(),
         ) );
         $sqOrder->setLineItems($lineItems);
+        if (!empty($discounts)) {
+            $sqOrder->setDiscounts($discounts);
+        }
+
         $req = new CreateOrderRequest;
         $req->setIdempotencyKey(uniqid());
         $req->setOrder($sqOrder);
