@@ -13,6 +13,7 @@
  */
 namespace Shop\Gateways\square;
 use Shop\Config;
+use Shop\Log;
 use Shop\Currency;
 use Shop\Order;
 use Shop\Cart;
@@ -638,8 +639,7 @@ class Gateway extends \Shop\Gateway
             $createOrderResponse = $apiResponse->getResult();
         } else {
             $this->_errors = $apiResponse->getErrors();
-            SHOP_log(
-                __FUNCTION__ . ':' . __LINE__ . ': ' .
+            Log::write('shop_system', Log::ERROR,
                 print_r($this->_errors,true)
             );
             return false;
