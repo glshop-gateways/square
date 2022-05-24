@@ -17,6 +17,7 @@ use Shop\Order;
 use Shop\Gateway;
 use Shop\Currency;
 use Shop\Models\OrderState;
+use Shop\Log;
 
 
 /**
@@ -41,8 +42,8 @@ class Webhook extends \Shop\Webhook
             $this->blob = file_get_contents('php://input');
             $this->setHeaders(NULL);
         }
-        SHOP_log('Got Square Webhook: ' . $this->blob, SHOP_LOG_DEBUG);
-        SHOP_log('Got Square Headers: ' . var_export($_SERVER,true), SHOP_LOG_DEBUG);
+        Log::write('shop_system', Log::DEBUG, 'Got Square Webhook: ' . $this->blob);
+        Log::write('shop_system', Log::DEBUG, 'Got Square Headers: ' . var_export($_SERVER,true));
         $this->setTimestamp();
         $this->setData(json_decode($this->blob));
     }
@@ -161,17 +162,20 @@ class Webhook extends \Shop\Webhook
                     $payment->status == 'CAPTURED'
                 ) {
                     $Pmt = Payment::getByReference($ref_id);
-                    $Cur = Currency::getInstance($payment->total_money->currency);
-                    if ($Pmt->getPmtID() == 0) {
-                        SHOP_log("Payment not found: " . var_export($data,true));
-                    } elseif (
-                        $payment->total_money->amount == $Cur->toInt($Pmt->getAmount())
-                    ) {
-                        $Pmt->setComplete(1)->setStatus($payment->status)->Save();
-                        $this->Order = Order::getInstance($Pmt->getOrderID());
-                        $this->handlePurchase();    // process if fully paid
-                        $this->setVerified(true);
-                        $this->setOrderID($Pmt->getOrderID());
+                    if (!$Pmt->isComplete()) {
+                        // Process if not already complete
+                        $Cur = Currency::getInstance($payment->total_money->currency);
+                        if ($Pmt->getPmtID() == 0) {
+                            Log::write('shop_system', Log::DEBUG, "Payment not found: " . var_export($data,true));
+                        } elseif (
+                            $payment->total_money->amount == $Cur->toInt($Pmt->getAmount())
+                        ) {
+                            $Pmt->setComplete(1)->setStatus($payment->status)->Save();
+                            $this->Order = Order::getInstance($Pmt->getOrderID());
+                            $this->handlePurchase();    // process if fully paid
+                            $this->setVerified(true);
+                            $this->setOrderID($Pmt->getOrderID());
+                        }
                     }
                     $retval = true;
                 }
@@ -187,14 +191,14 @@ class Webhook extends \Shop\Webhook
                     $Order = Order::getInstance($inv_num);
                     if (!$Order->isNew()) {
                         $this->setOrderID($inv_num);
-                        SHOP_log("Invoice created for {$this->getOrderID()}", SHOP_LOG_DEBUG);
+                        Log::write('shop_system', Log::DEBUG, "Invoice created for {$this->getOrderID()}");
                         // Always OK to process for a Net-30 invoice
                         $this->handlePurchase();
                         //$terms_gw = \Shop\Gateway::create($Order->getPmtMethod());
                         //$Order->updateStatus($terms_gw->getConfig('after_inv_status'));
                         $retval = true;
                     } else {
-                        SHOP_log("Order number '$inv_num' not found for Square invoice");
+                        Log::write('shop_system', Log::DEBUG, "Order number '$inv_num' not found for Square invoice");
                     }
                 }
             }
@@ -225,7 +229,9 @@ class Webhook extends \Shop\Webhook
         if (!$this->GW) {
             return false;
         }
-        return true;      // used during testing to bypass verification
+//        if (isset($_GET['testhook']) && $_GET['testhook']) {
+            return true;      // used during testing to bypass verification
+//        }
 
         $gw = \Shop\Gateway::create($this->getSource());
         $notificationSignature = $this->getHeader('X-Square-Signature');
@@ -237,8 +243,8 @@ class Webhook extends \Shop\Webhook
         // signed with your webhook signature key
         $hash = hash_hmac('sha1', $stringToSign, $webhookSignatureKey, true);
         $generatedSignature = base64_encode($hash);
-        SHOP_log("Generated Signature: " . $generatedSignature, SHOP_LOG_DEBUG);
-        SHOP_log("Received Signature: " . $notificationSignature, SHOP_LOG_DEBUG);
+        Log::write('shop_system', Log::DEBUG, "Generated Signature: " . $generatedSignature);
+        Log::write('shop_system', Log::DEBUG, "Received Signature: " . $notificationSignature);
         // Compare HMAC-SHA1 signatures.
         return hash_equals($generatedSignature, $notificationSignature);
     }
