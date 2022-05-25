@@ -12,10 +12,10 @@ An account is required at https://squareup.com. Once you have an account created
   - Note that there are separate configurations for Sandbox and Production.
   - Click “Create Endpoint”
   - URL: `https://yoursite.com/shop/hooks/webhook.php?_gw=square`
-  - You must use TLS (SSL) for your webhook.
+    - You must use TLS (SSL) for your webhook.
   - Select all “payment” and “refund” events. Not all events are currently used, but may be in the future.
   - Select all “invoice” events if you're using the terms gateway.
-  - Copy the Webhook Signatue string to be added to the Shop configuration.
+  - Copy the Webhook Signature string to be added to the Shop configuration.
   - Save the endpoint.
 
 ## Gateway Configuration
