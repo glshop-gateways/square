@@ -457,8 +457,8 @@ class Gateway extends \Shop\Gateway
             ) );
             $result = curl_exec($ch);
             $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            var_dump($code);die;
-            var_dump($result);die;
+            Log::write('shop_system', Log::DEBUG, $code);
+            Log::write('shop_system', Log::DEBUG, $result);
         }
     }
 
