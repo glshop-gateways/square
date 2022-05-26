@@ -27,7 +27,6 @@ use Square\Models\OrderLineItemDiscount;
 use Square\Models\OrderLineItemDiscountType;
 use Square\Models\CreateOrderRequest;
 use Square\Models\Order as sqOrder;
-use LGLib\NameParser;
 
 
 /**
@@ -595,9 +594,10 @@ class Gateway extends \Shop\Gateway
             $Order->setBuyerEmail($email);
         }
         $customersApi = $this->_getApiClient()->getCustomersApi();
+        $name_parts = $Customer::parseName($Customer->getName());
         $body = new \Square\Models\CreateCustomerRequest;
-        $body->setGivenName(NameParser::F($Customer->getName()));
-        $body->setFamilyName(NameParser::L($Customer->getName()));
+        $body->setGivenName($name_parts['fname']);
+        $body->setFamilyName($name_parts['lname']);
         $body->setEmailAddress($Order->getBuyerEmail());
         $body->setAddress(new \Square\Models\Address);
         $body->getAddress()->setAddressLine1($Customer->getAddress1());

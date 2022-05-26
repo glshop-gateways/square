@@ -132,6 +132,7 @@ class Webhook extends \Shop\Webhook
                         $Pmt = Payment::getByReference($ref_id);
                         if ($Pmt->getPmtID() == 0) {
                             $Pmt->setRefID($ref_id)
+                                ->setTxnId($this->getID())
                                 ->setAmount($this_pmt)
                                 ->setGateway($this->getSource())
                                 ->setMethod($this->GW->getDscp())
