@@ -115,8 +115,10 @@ class Webhook extends \Shop\Webhook
         case 'payment':
         case 'payment.created':
             $payment = $object->payment;
-            $ref_id = $payment->id;
             if ($payment) {
+                $this->setRefID($payment->id);
+                $this->setTxnDate($payment->updated_at);
+                $LogID = $this->logIPN();
                 $amount_money = $payment->amount_money->amount;
                 if (
                     $amount_money > 0 &&
@@ -129,10 +131,10 @@ class Webhook extends \Shop\Webhook
                     $this->setOrderID($sqOrder->getResult()->getOrder()->getReferenceId());
                     $Order = Order::getInstance($this->getOrderID());
                     if (!$Order->isNew()) {
-                        $Pmt = Payment::getByReference($ref_id);
+                        $Pmt = Payment::getByReference($this->refID);
                         if ($Pmt->getPmtID() == 0) {
-                            $Pmt->setRefID($ref_id)
-                                ->setTxnId($this->getID())
+                            $Pmt->setRefID($this->refID)
+                                ->setTxnId($LogID)
                                 ->setAmount($this_pmt)
                                 ->setGateway($this->getSource())
                                 ->setMethod($this->GW->getDscp())
@@ -150,19 +152,19 @@ class Webhook extends \Shop\Webhook
                         }
                     }
                 }
-                $this->logIPN();
             }
             break;
 
         case 'payment.updated':
             $payment = $object->payment;
             if ($payment->id) {
-                $ref_id = $payment->id;
+                $this->setRefID($payment->id);
+                $this->setTxnDate($payment->updated_at);
                 if (
                     $payment->status == 'COMPLETED' ||
                     $payment->status == 'CAPTURED'
                 ) {
-                    $Pmt = Payment::getByReference($ref_id);
+                    $Pmt = Payment::getByReference($this->refID);
                     if (!$Pmt->isComplete()) {
                         // Process if not already complete
                         $Cur = Currency::getInstance($payment->total_money->currency);
@@ -230,9 +232,9 @@ class Webhook extends \Shop\Webhook
         if (!$this->GW) {
             return false;
         }
-//        if (isset($_GET['testhook']) && $_GET['testhook']) {
+        if (isset($_SHOP_CONF['sys_test_ipn']) && $_SHOP_CONF['sys_test_ipn']) {
             return true;      // used during testing to bypass verification
-//        }
+        }
 
         $gw = \Shop\Gateway::create($this->getSource());
         $notificationSignature = $this->getHeader('X-Square-Signature');
