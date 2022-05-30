@@ -1,3 +1,7 @@
 {
-    "name": "square"
+    "name": "square",
+	"repo": {
+		"type": "github",
+		"project_id": "square"
+	}
 }
