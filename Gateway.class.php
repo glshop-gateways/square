@@ -37,7 +37,7 @@ class Gateway extends \Shop\Gateway
 {
     /** Gateway version.
      * @var string */
-    protected $VERSION = '1.3.1.1';
+    protected $VERSION = '1.4.0';
 
     /** Gateway ID.
      * @var string */
