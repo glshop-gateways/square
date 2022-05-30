@@ -36,8 +36,8 @@ use Square\Models\Order as sqOrder;
 class Gateway extends \Shop\Gateway
 {
     /** Gateway version.
-     * @const string */
-    public const VERSION = '1.3.1.1';
+     * @var string */
+    protected $VERSION = '1.3.1.1';
 
     /** Gateway ID.
      * @var string */
@@ -50,10 +50,6 @@ class Gateway extends \Shop\Gateway
     /** Gateway service description.
      * @var string */
     protected $gw_desc = 'SquareUp Payments';
-
-    /** Flag this gateway as bundled with the Shop plugin.
-     * @var integer */
-    protected $bundled = 1;
 
     /** Square location value.
      * @var string */
