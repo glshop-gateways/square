@@ -3,17 +3,18 @@
  * Gateway implementation for Square (squareup.com).
  *
  * @author      Lee Garner <lee@leegarner.com>
- * @copyright   Copyright (c) 2018-2020 Lee Garner <lee@leegarner.com>
+ * @copyright   Copyright (c) 2018-2022 Lee Garner <lee@leegarner.com>
  * @package     shop
- * @version     v1.3.0
+ * @version     v1.4.0
  * @since       v0.7.0
  * @license     http://opensource.org/licenses/gpl-2.0.php
  *              GNU Public License v2 or later
  * @filesource
  */
 namespace Shop\Gateways\square;
+use glFusion\Database\Database;
+use glFusion\Log\Log;
 use Shop\Config;
-use Shop\Log;
 use Shop\Currency;
 use Shop\Order;
 use Shop\Cart;
@@ -288,7 +289,7 @@ class Gateway extends \Shop\Gateway
      * @param   object  $cart   Shopping cart object
      * @return  string      HTML for purchase button
      */
-    public function gatewayVars($cart)
+    public function gatewayVars($cart) : ?string
     {
         if (!$this->Supports('checkout')) {
             return '';
@@ -319,7 +320,7 @@ class Gateway extends \Shop\Gateway
             $url = $createCheckoutResponse->getCheckout()->getCheckoutPageUrl();
         } else {
             $this->_errors = $apiResponse->getErrors();
-            return false;
+            return NULL;
         }
         $url_parts = parse_url($url);
         parse_str($url_parts['query'], $q_parts);
@@ -453,8 +454,8 @@ class Gateway extends \Shop\Gateway
             ) );
             $result = curl_exec($ch);
             $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            Log::write('shop_system', Log::DEBUG, $code);
-            Log::write('shop_system', Log::DEBUG, $result);
+            Log::write('shop_system', Log::DEBUG, __METHOD__ . ': ' . $code);
+            Log::write('shop_system', Log::DEBUG, __METHOD__ . ': ' . $result);
         }
     }
 
@@ -519,23 +520,6 @@ class Gateway extends \Shop\Gateway
 
 
     /**
-     * Set the return URL after payment is made.
-     * Square adds transaction information and returns directly to the IPN
-     * url for processing.
-     *
-     * @param   string  $cart_id    Cart order ID
-     * @param   string  $token      Order token, to verify accessa
-     * @return  string      URL to pass to the gateway as the return URL
-     */
-    protected function returnUrl($cart_id, $token)
-    {
-        return Config::get('url') . '?thanks=' . $this->gw_name;
-        /*return $this->ipn_url . '&o=' . $cart_id .
-            '&t=' . $token;*/
-    }
-
-
-    /**
      * Retrieve an existing customer record from Square by reference ID.
      * Calls createCustomer() to create a new customer record if not found.
      *
@@ -586,8 +570,13 @@ class Gateway extends \Shop\Gateway
         $Customer = $Order->getBillto();
 
         if (empty($Order->getBuyerEmail())) {
-            $email = DB_getItem($_TABLES['users'], 'email', "uid = {$Order->getUid()}");
-            $Order->setBuyerEmail($email);
+            $db = Database::getInstance();
+            try {
+                $email = $db->getItem($_TABLES['users'], 'email', array('uid' => $Order->getUid()));
+                $Order->setBuyerEmail($email);
+            } catch (\Exception $e) {
+                Log::write('system', Log::ERROR, __METHOD__ . ': ' . $e->getMessage());
+            }
         }
         $customersApi = $this->_getApiClient()->getCustomersApi();
         $name_parts = $Customer::parseName($Customer->getName());
@@ -635,8 +624,10 @@ class Gateway extends \Shop\Gateway
             $createOrderResponse = $apiResponse->getResult();
         } else {
             $this->_errors = $apiResponse->getErrors();
-            Log::write('shop_system', Log::ERROR,
-                print_r($this->_errors,true)
+            Log::write(
+                'shop_system',
+                Log::ERROR,
+                __METHOD__ . ': ' . print_r($this->_errors,true)
             );
             return false;
         }
