@@ -18,6 +18,7 @@ use Shop\Gateway;
 use Shop\Currency;
 use Shop\Models\OrderState;
 use Shop\Log;
+use Shop\Config;
 
 
 /**
@@ -56,6 +57,8 @@ class Webhook extends \Shop\Webhook
      */
     public function Dispatch()
     {
+        global $LANG_SHOP;
+
         // Be optimistic. Also causes a synthetic 200 return for unhandled events.
         $retval = true;
         $object = $this->getData()->data->object;
@@ -205,6 +208,52 @@ class Webhook extends \Shop\Webhook
                 }
             }
             break;
+
+        case 'refund.created':
+            $this->setRefId($Refund->payment_id);
+            $this->logID = $this->logIPN();
+            break;
+
+        case 'refund.updated':
+            $Refund = $object->refund;
+            $refund_amt = $Refund->amount_money->amount / 100;
+            $this->setPayment($refund_amt * -1);
+            $this->setRefId($Refund->payment_id);
+            $this->setPmtMethod('refund');
+            $origPayment = Payment::getByReference($Refund->payment_id);
+            if ($Refund->status == 'COMPLETED' && $origPayment->getPmtId() > 0) {
+                $this->setComplete();
+                $Order = Order::getInstance($origPayment->getOrderId());
+                if (!$Order->isNew()) {
+                    // Found a valid order
+                    $this->setOrderId($Order->getOrderId());
+                    $item_total = 0;
+                    foreach ($Order->getItems() as $key=>$Item) {
+                        $item_total += $Item->getQuantity() * $Item->getPrice();
+                    }
+                    $item_total += $Order->miscCharges();
+
+                    if ($item_total <= $refund_amt) {
+                        $this->handleFullRefund($Order);
+                        /*
+                        // Completely refunded, let the items handle any refund actions.
+                        // None for catalog items since there's no inventory,
+                        // but plugin items may need to do something.
+                        foreach ($Order->getItems() as $key=>$OI) {
+                            $OI->getProduct()->handleRefund($OI, $this->IPN);
+                            // Don't care about the status, really.  May not even be
+                            // a plugin function to handle refunds
+                        }
+                        // Update the order status to Refunded
+                        $Order->updateStatus('refunded');
+                         */
+                    }
+                    $this->recordPayment();
+                    $msg = sprintf($LANG_SHOP['refunded_x'], $this->getCurrency()->Format($refund_amt));
+                    $Order->Log($msg);
+                }
+            }
+            break;
         }
         return $retval;
     }
@@ -231,7 +280,7 @@ class Webhook extends \Shop\Webhook
         if (!$this->GW) {
             return false;
         }
-        if (isset($_SHOP_CONF['sys_test_ipn']) && $_SHOP_CONF['sys_test_ipn']) {
+        if (Config::get('sys_test_ipn')) {
             return true;      // used during testing to bypass verification
         }
 
