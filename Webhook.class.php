@@ -16,7 +16,6 @@ use Shop\Payment;
 use Shop\Order;
 use Shop\Gateway;
 use Shop\Currency;
-use Shop\Models\OrderState;
 use Shop\Log;
 use Shop\Config;
 

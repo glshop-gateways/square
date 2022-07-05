@@ -19,7 +19,6 @@ use Shop\Currency;
 use Shop\Order;
 use Shop\Cart;
 use Shop\Company;
-use Shop\Models\OrderState;
 use Square\SquareClient;
 use Square\Environment;
 use Square\Models\Money;
