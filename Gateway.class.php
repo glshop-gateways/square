@@ -35,10 +35,6 @@ use Square\Models\Order as sqOrder;
  */
 class Gateway extends \Shop\Gateway
 {
-    /** Gateway version.
-     * @var string */
-    protected $VERSION = '1.4.1';
-
     /** Gateway ID.
      * @var string */
     protected $gw_name = 'square';
