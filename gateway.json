@@ -1,7 +1,8 @@
 {
-	"name": "square",
-	"repo": {
-		"type": "github",
-		"project_id": "square"
-	}
+  "name": "square",
+  "version": "1.6.1",
+  "repo": {
+    "type": "github",
+    "project_id": "square"
+  }
 }
