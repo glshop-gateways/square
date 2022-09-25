@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Represents a set of SearchSubscriptionsQuery filters used to limit the set of Subscriptions
- * returned by SearchSubscriptions.
+ * Represents a set of query expressions (filters) to narrow the scope of targeted subscriptions
+ * returned by
+ * the [SearchSubscriptions]($e/Subscriptions/SearchSubscriptions) endpoint.
  */
 class SearchSubscriptionsFilter implements \JsonSerializable
 {
@@ -21,9 +24,13 @@ class SearchSubscriptionsFilter implements \JsonSerializable
     private $locationIds;
 
     /**
+     * @var string[]|null
+     */
+    private $sourceNames;
+
+    /**
      * Returns Customer Ids.
-     *
-     * A filter to select subscriptions based on the customer.
+     * A filter to select subscriptions based on the subscribing customer IDs.
      *
      * @return string[]|null
      */
@@ -34,8 +41,7 @@ class SearchSubscriptionsFilter implements \JsonSerializable
 
     /**
      * Sets Customer Ids.
-     *
-     * A filter to select subscriptions based on the customer.
+     * A filter to select subscriptions based on the subscribing customer IDs.
      *
      * @maps customer_ids
      *
@@ -48,8 +54,7 @@ class SearchSubscriptionsFilter implements \JsonSerializable
 
     /**
      * Returns Location Ids.
-     *
-     * A filter to select subscriptions based the location.
+     * A filter to select subscriptions based on the location.
      *
      * @return string[]|null
      */
@@ -60,8 +65,7 @@ class SearchSubscriptionsFilter implements \JsonSerializable
 
     /**
      * Sets Location Ids.
-     *
-     * A filter to select subscriptions based the location.
+     * A filter to select subscriptions based on the location.
      *
      * @maps location_ids
      *
@@ -73,18 +77,54 @@ class SearchSubscriptionsFilter implements \JsonSerializable
     }
 
     /**
+     * Returns Source Names.
+     * A filter to select subscriptions based on the source application.
+     *
+     * @return string[]|null
+     */
+    public function getSourceNames(): ?array
+    {
+        return $this->sourceNames;
+    }
+
+    /**
+     * Sets Source Names.
+     * A filter to select subscriptions based on the source application.
+     *
+     * @maps source_names
+     *
+     * @param string[]|null $sourceNames
+     */
+    public function setSourceNames(?array $sourceNames): void
+    {
+        $this->sourceNames = $sourceNames;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['customer_ids'] = $this->customerIds;
-        $json['location_ids'] = $this->locationIds;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->customerIds)) {
+            $json['customer_ids'] = $this->customerIds;
+        }
+        if (isset($this->locationIds)) {
+            $json['location_ids'] = $this->locationIds;
+        }
+        if (isset($this->sourceNames)) {
+            $json['source_names'] = $this->sourceNames;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

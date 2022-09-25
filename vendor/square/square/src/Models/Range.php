@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * The range of a number value between the specified lower and upper bounds.
  */
@@ -21,8 +23,8 @@ class Range implements \JsonSerializable
 
     /**
      * Returns Min.
-     *
-     * The lower bound of the number range.
+     * The lower bound of the number range. At least one of `min` or `max` must be specified.
+     * If unspecified, the results will have no minimum value.
      */
     public function getMin(): ?string
     {
@@ -31,8 +33,8 @@ class Range implements \JsonSerializable
 
     /**
      * Sets Min.
-     *
-     * The lower bound of the number range.
+     * The lower bound of the number range. At least one of `min` or `max` must be specified.
+     * If unspecified, the results will have no minimum value.
      *
      * @maps min
      */
@@ -43,8 +45,8 @@ class Range implements \JsonSerializable
 
     /**
      * Returns Max.
-     *
-     * The upper bound of the number range.
+     * The upper bound of the number range. At least one of `min` or `max` must be specified.
+     * If unspecified, the results will have no maximum value.
      */
     public function getMax(): ?string
     {
@@ -53,8 +55,8 @@ class Range implements \JsonSerializable
 
     /**
      * Sets Max.
-     *
-     * The upper bound of the number range.
+     * The upper bound of the number range. At least one of `min` or `max` must be specified.
+     * If unspecified, the results will have no maximum value.
      *
      * @maps max
      */
@@ -66,16 +68,25 @@ class Range implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['min'] = $this->min;
-        $json['max'] = $this->max;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->min)) {
+            $json['min'] = $this->min;
+        }
+        if (isset($this->max)) {
+            $json['max'] = $this->max;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

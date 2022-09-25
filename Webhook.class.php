@@ -119,7 +119,7 @@ class Webhook extends \Shop\Webhook
             $payment = $object->payment;
             if ($payment) {
                 $this->setRefID($payment->id);
-                $this->setTxnDate($payment->updated_at);
+                $this->setTxnDate($payment->created_at);
                 $LogID = $this->logIPN();
                 $amount_money = $payment->amount_money->amount;
                 if (
@@ -132,6 +132,7 @@ class Webhook extends \Shop\Webhook
                     $sqOrder = $this->GW->getOrder($order_id);
                     $this->setOrderID($sqOrder->getResult()->getOrder()->getReferenceId());
                     $Order = Order::getInstance($this->getOrderID());
+                    $is_complete = $payment->status == $this->GW->getConfig('pmt_complete_status');
                     if (!$Order->isNew()) {
                         $Pmt = Payment::getByReference($this->refID);
                         if ($Pmt->getPmtID() == 0) {
@@ -140,7 +141,7 @@ class Webhook extends \Shop\Webhook
                                 ->setGateway($this->getSource())
                                 ->setMethod($this->GW->getDscp())
                                 ->setComment('Webhook ' . $this->getID())
-                                ->setComplete($payment->status == 'COMPLETED')
+                                ->setComplete($is_complete ? 1 : 0)
                                 ->setStatus($payment->status)
                                 ->setOrderID($this->getOrderID())
                                 ->Save();

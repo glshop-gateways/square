@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class V1Money implements \JsonSerializable
 {
     /**
@@ -18,7 +20,6 @@ class V1Money implements \JsonSerializable
 
     /**
      * Returns Amount.
-     *
      * Amount in the lowest denominated value of this Currency. E.g. in USD
      * these are cents, in JPY they are Yen (which do not have a 'cent' concept).
      */
@@ -29,7 +30,6 @@ class V1Money implements \JsonSerializable
 
     /**
      * Sets Amount.
-     *
      * Amount in the lowest denominated value of this Currency. E.g. in USD
      * these are cents, in JPY they are Yen (which do not have a 'cent' concept).
      *
@@ -42,7 +42,6 @@ class V1Money implements \JsonSerializable
 
     /**
      * Returns Currency Code.
-     *
      * Indicates the associated currency for an amount of money. Values correspond
      * to [ISO 4217](https://wikipedia.org/wiki/ISO_4217).
      */
@@ -53,7 +52,6 @@ class V1Money implements \JsonSerializable
 
     /**
      * Sets Currency Code.
-     *
      * Indicates the associated currency for an amount of money. Values correspond
      * to [ISO 4217](https://wikipedia.org/wiki/ISO_4217).
      *
@@ -67,16 +65,25 @@ class V1Money implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['amount']       = $this->amount;
-        $json['currency_code'] = $this->currencyCode;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->amount)) {
+            $json['amount']        = $this->amount;
+        }
+        if (isset($this->currencyCode)) {
+            $json['currency_code'] = $this->currencyCode;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

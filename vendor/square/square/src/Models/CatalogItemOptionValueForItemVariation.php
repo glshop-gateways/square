@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A `CatalogItemOptionValue` links an item variation to an item option as
  * an item option value. For example, a t-shirt item may offer a color option and
@@ -24,7 +26,6 @@ class CatalogItemOptionValueForItemVariation implements \JsonSerializable
 
     /**
      * Returns Item Option Id.
-     *
      * The unique id of an item option.
      */
     public function getItemOptionId(): ?string
@@ -34,7 +35,6 @@ class CatalogItemOptionValueForItemVariation implements \JsonSerializable
 
     /**
      * Sets Item Option Id.
-     *
      * The unique id of an item option.
      *
      * @maps item_option_id
@@ -46,7 +46,6 @@ class CatalogItemOptionValueForItemVariation implements \JsonSerializable
 
     /**
      * Returns Item Option Value Id.
-     *
      * The unique id of the selected value for the item option.
      */
     public function getItemOptionValueId(): ?string
@@ -56,7 +55,6 @@ class CatalogItemOptionValueForItemVariation implements \JsonSerializable
 
     /**
      * Sets Item Option Value Id.
-     *
      * The unique id of the selected value for the item option.
      *
      * @maps item_option_value_id
@@ -69,16 +67,25 @@ class CatalogItemOptionValueForItemVariation implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['item_option_id']    = $this->itemOptionId;
-        $json['item_option_value_id'] = $this->itemOptionValueId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->itemOptionId)) {
+            $json['item_option_id']       = $this->itemOptionId;
+        }
+        if (isset($this->itemOptionValueId)) {
+            $json['item_option_value_id'] = $this->itemOptionValueId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

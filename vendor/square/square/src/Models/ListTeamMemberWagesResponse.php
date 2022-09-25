@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * The response to a request for a set of `TeamMemberWage` objects. Contains
- * a set of `TeamMemberWage`.
+ * The response to a request for a set of `TeamMemberWage` objects. The response contains
+ * a set of `TeamMemberWage` objects.
  */
 class ListTeamMemberWagesResponse implements \JsonSerializable
 {
@@ -27,8 +29,7 @@ class ListTeamMemberWagesResponse implements \JsonSerializable
 
     /**
      * Returns Team Member Wages.
-     *
-     * A page of Team Member Wage results.
+     * A page of `TeamMemberWage` results.
      *
      * @return TeamMemberWage[]|null
      */
@@ -39,8 +40,7 @@ class ListTeamMemberWagesResponse implements \JsonSerializable
 
     /**
      * Sets Team Member Wages.
-     *
-     * A page of Team Member Wage results.
+     * A page of `TeamMemberWage` results.
      *
      * @maps team_member_wages
      *
@@ -53,9 +53,8 @@ class ListTeamMemberWagesResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
-     * Value supplied in the subsequent request to fetch the next next page
-     * of Team Member Wage results.
+     * The value supplied in the subsequent request to fetch the next page
+     * of `TeamMemberWage` results.
      */
     public function getCursor(): ?string
     {
@@ -64,9 +63,8 @@ class ListTeamMemberWagesResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
-     * Value supplied in the subsequent request to fetch the next next page
-     * of Team Member Wage results.
+     * The value supplied in the subsequent request to fetch the next page
+     * of `TeamMemberWage` results.
      *
      * @maps cursor
      */
@@ -77,7 +75,6 @@ class ListTeamMemberWagesResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -89,7 +86,6 @@ class ListTeamMemberWagesResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -104,17 +100,28 @@ class ListTeamMemberWagesResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['team_member_wages'] = $this->teamMemberWages;
-        $json['cursor']          = $this->cursor;
-        $json['errors']          = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->teamMemberWages)) {
+            $json['team_member_wages'] = $this->teamMemberWages;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']            = $this->cursor;
+        }
+        if (isset($this->errors)) {
+            $json['errors']            = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

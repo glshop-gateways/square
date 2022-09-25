@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Provides metadata when the event `type` is `DELETE_REWARD`.
  */
@@ -36,7 +38,6 @@ class LoyaltyEventDeleteReward implements \JsonSerializable
 
     /**
      * Returns Loyalty Program Id.
-     *
      * The ID of the [loyalty program]($m/LoyaltyProgram).
      */
     public function getLoyaltyProgramId(): string
@@ -46,7 +47,6 @@ class LoyaltyEventDeleteReward implements \JsonSerializable
 
     /**
      * Sets Loyalty Program Id.
-     *
      * The ID of the [loyalty program]($m/LoyaltyProgram).
      *
      * @required
@@ -59,7 +59,6 @@ class LoyaltyEventDeleteReward implements \JsonSerializable
 
     /**
      * Returns Reward Id.
-     *
      * The ID of the deleted [loyalty reward]($m/LoyaltyReward).
      * This field is returned only if the event source is `LOYALTY_API`.
      */
@@ -70,7 +69,6 @@ class LoyaltyEventDeleteReward implements \JsonSerializable
 
     /**
      * Sets Reward Id.
-     *
      * The ID of the deleted [loyalty reward]($m/LoyaltyReward).
      * This field is returned only if the event source is `LOYALTY_API`.
      *
@@ -83,7 +81,6 @@ class LoyaltyEventDeleteReward implements \JsonSerializable
 
     /**
      * Returns Points.
-     *
      * The number of points returned to the loyalty account.
      */
     public function getPoints(): int
@@ -93,7 +90,6 @@ class LoyaltyEventDeleteReward implements \JsonSerializable
 
     /**
      * Sets Points.
-     *
      * The number of points returned to the loyalty account.
      *
      * @required
@@ -107,17 +103,24 @@ class LoyaltyEventDeleteReward implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['loyalty_program_id'] = $this->loyaltyProgramId;
-        $json['reward_id']        = $this->rewardId;
-        $json['points']           = $this->points;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->rewardId)) {
+            $json['reward_id']      = $this->rewardId;
+        }
+        $json['points']             = $this->points;
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

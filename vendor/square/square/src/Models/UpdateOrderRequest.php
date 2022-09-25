@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields that are included in requests to the
  * [UpdateOrder]($e/Orders/UpdateOrder) endpoint.
@@ -27,10 +29,9 @@ class UpdateOrderRequest implements \JsonSerializable
 
     /**
      * Returns Order.
-     *
      * Contains all information related to a single order to process with Square,
-     * including line items that specify the products to purchase. Order objects also
-     * include information on any associated tenders, refunds, and returns.
+     * including line items that specify the products to purchase. `Order` objects also
+     * include information about any associated tenders, refunds, and returns.
      *
      * All Connect V2 Transactions have all been converted to Orders including all associated
      * itemization data.
@@ -42,10 +43,9 @@ class UpdateOrderRequest implements \JsonSerializable
 
     /**
      * Sets Order.
-     *
      * Contains all information related to a single order to process with Square,
-     * including line items that specify the products to purchase. Order objects also
-     * include information on any associated tenders, refunds, and returns.
+     * including line items that specify the products to purchase. `Order` objects also
+     * include information about any associated tenders, refunds, and returns.
      *
      * All Connect V2 Transactions have all been converted to Orders including all associated
      * itemization data.
@@ -59,11 +59,10 @@ class UpdateOrderRequest implements \JsonSerializable
 
     /**
      * Returns Fields to Clear.
-     *
      * The [dot notation paths](https://developer.squareup.com/docs/orders-api/manage-orders#on-dot-
      * notation)
-     * fields to clear. For example, `line_items[uid].note`
-     * [Read more about Deleting fields](https://developer.squareup.com/docs/orders-api/manage-
+     * fields to clear. For example, `line_items[uid].note`.
+     * For more information, see [Deleting fields](https://developer.squareup.com/docs/orders-api/manage-
      * orders#delete-fields).
      *
      * @return string[]|null
@@ -75,11 +74,10 @@ class UpdateOrderRequest implements \JsonSerializable
 
     /**
      * Sets Fields to Clear.
-     *
      * The [dot notation paths](https://developer.squareup.com/docs/orders-api/manage-orders#on-dot-
      * notation)
-     * fields to clear. For example, `line_items[uid].note`
-     * [Read more about Deleting fields](https://developer.squareup.com/docs/orders-api/manage-
+     * fields to clear. For example, `line_items[uid].note`.
+     * For more information, see [Deleting fields](https://developer.squareup.com/docs/orders-api/manage-
      * orders#delete-fields).
      *
      * @maps fields_to_clear
@@ -93,16 +91,15 @@ class UpdateOrderRequest implements \JsonSerializable
 
     /**
      * Returns Idempotency Key.
+     * A value you specify that uniquely identifies this update request.
      *
-     * A value you specify that uniquely identifies this update request
-     *
-     * If you're unsure whether a particular update was applied to an order successfully,
+     * If you are unsure whether a particular update was applied to an order successfully,
      * you can reattempt it with the same idempotency key without
      * worrying about creating duplicate updates to the order.
-     * The latest order version will be returned.
+     * The latest order version is returned.
      *
-     * See [Idempotency](https://developer.squareup.com/docs/basics/api101/idempotency) for more
-     * information.
+     * For more information, see [Idempotency](https://developer.squareup.
+     * com/docs/basics/api101/idempotency).
      */
     public function getIdempotencyKey(): ?string
     {
@@ -111,16 +108,15 @@ class UpdateOrderRequest implements \JsonSerializable
 
     /**
      * Sets Idempotency Key.
+     * A value you specify that uniquely identifies this update request.
      *
-     * A value you specify that uniquely identifies this update request
-     *
-     * If you're unsure whether a particular update was applied to an order successfully,
+     * If you are unsure whether a particular update was applied to an order successfully,
      * you can reattempt it with the same idempotency key without
      * worrying about creating duplicate updates to the order.
-     * The latest order version will be returned.
+     * The latest order version is returned.
      *
-     * See [Idempotency](https://developer.squareup.com/docs/basics/api101/idempotency) for more
-     * information.
+     * For more information, see [Idempotency](https://developer.squareup.
+     * com/docs/basics/api101/idempotency).
      *
      * @maps idempotency_key
      */
@@ -132,17 +128,28 @@ class UpdateOrderRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['order']          = $this->order;
-        $json['fields_to_clear'] = $this->fieldsToClear;
-        $json['idempotency_key'] = $this->idempotencyKey;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->order)) {
+            $json['order']           = $this->order;
+        }
+        if (isset($this->fieldsToClear)) {
+            $json['fields_to_clear'] = $this->fieldsToClear;
+        }
+        if (isset($this->idempotencyKey)) {
+            $json['idempotency_key'] = $this->idempotencyKey;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

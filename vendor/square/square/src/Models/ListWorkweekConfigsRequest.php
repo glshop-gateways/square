@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * A request for a set of `WorkweekConfig` objects
+ * A request for a set of `WorkweekConfig` objects.
  */
 class ListWorkweekConfigsRequest implements \JsonSerializable
 {
@@ -21,8 +23,7 @@ class ListWorkweekConfigsRequest implements \JsonSerializable
 
     /**
      * Returns Limit.
-     *
-     * Maximum number of Workweek Configs to return per page.
+     * The maximum number of `WorkweekConfigs` results to return per page.
      */
     public function getLimit(): ?int
     {
@@ -31,8 +32,7 @@ class ListWorkweekConfigsRequest implements \JsonSerializable
 
     /**
      * Sets Limit.
-     *
-     * Maximum number of Workweek Configs to return per page.
+     * The maximum number of `WorkweekConfigs` results to return per page.
      *
      * @maps limit
      */
@@ -43,8 +43,7 @@ class ListWorkweekConfigsRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
-     * Pointer to the next page of Workweek Config results to fetch.
+     * A pointer to the next page of `WorkweekConfig` results to fetch.
      */
     public function getCursor(): ?string
     {
@@ -53,8 +52,7 @@ class ListWorkweekConfigsRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
-     * Pointer to the next page of Workweek Config results to fetch.
+     * A pointer to the next page of `WorkweekConfig` results to fetch.
      *
      * @maps cursor
      */
@@ -66,16 +64,25 @@ class ListWorkweekConfigsRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['limit']  = $this->limit;
-        $json['cursor'] = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->limit)) {
+            $json['limit']  = $this->limit;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor'] = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

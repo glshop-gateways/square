@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A filter to select customers based on exact or fuzzy matching of
  * customer attributes against a specified query. Depending on the customer attributes,
@@ -23,7 +25,6 @@ class CustomerTextFilter implements \JsonSerializable
 
     /**
      * Returns Exact.
-     *
      * Use the exact filter to select customers whose attributes match exactly the specified query.
      */
     public function getExact(): ?string
@@ -33,7 +34,6 @@ class CustomerTextFilter implements \JsonSerializable
 
     /**
      * Sets Exact.
-     *
      * Use the exact filter to select customers whose attributes match exactly the specified query.
      *
      * @maps exact
@@ -45,7 +45,6 @@ class CustomerTextFilter implements \JsonSerializable
 
     /**
      * Returns Fuzzy.
-     *
      * Use the fuzzy filter to select customers whose attributes match the specified query
      * in a fuzzy manner. When the fuzzy option is used, search queries are tokenized, and then
      * each query token must be matched somewhere in the searched attribute. For single token queries,
@@ -58,7 +57,6 @@ class CustomerTextFilter implements \JsonSerializable
 
     /**
      * Sets Fuzzy.
-     *
      * Use the fuzzy filter to select customers whose attributes match the specified query
      * in a fuzzy manner. When the fuzzy option is used, search queries are tokenized, and then
      * each query token must be matched somewhere in the searched attribute. For single token queries,
@@ -74,16 +72,25 @@ class CustomerTextFilter implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['exact'] = $this->exact;
-        $json['fuzzy'] = $this->fuzzy;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->exact)) {
+            $json['exact'] = $this->exact;
+        }
+        if (isset($this->fuzzy)) {
+            $json['fuzzy'] = $this->fuzzy;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

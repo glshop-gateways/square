@@ -2,7 +2,7 @@
 # List Payments Request
 
 Describes a request to list payments using
-[ListPayments](/doc/apis/payments.md#list-payments).
+[ListPayments](../../doc/apis/payments.md#list-payments).
 
 The maximum results per page is 100.
 

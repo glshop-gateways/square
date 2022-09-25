@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Response object returned by ListBankAccounts.
  */
@@ -26,7 +28,6 @@ class ListBankAccountsResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Information on errors encountered during the request.
      *
      * @return Error[]|null
@@ -38,7 +39,6 @@ class ListBankAccountsResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Information on errors encountered during the request.
      *
      * @maps errors
@@ -52,7 +52,6 @@ class ListBankAccountsResponse implements \JsonSerializable
 
     /**
      * Returns Bank Accounts.
-     *
      * List of BankAccounts associated with this account.
      *
      * @return BankAccount[]|null
@@ -64,7 +63,6 @@ class ListBankAccountsResponse implements \JsonSerializable
 
     /**
      * Sets Bank Accounts.
-     *
      * List of BankAccounts associated with this account.
      *
      * @maps bank_accounts
@@ -78,7 +76,6 @@ class ListBankAccountsResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * When a response is truncated, it includes a cursor that you can
      * use in a subsequent request to fetch next set of bank accounts.
      * If empty, this is the final response.
@@ -93,7 +90,6 @@ class ListBankAccountsResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * When a response is truncated, it includes a cursor that you can
      * use in a subsequent request to fetch next set of bank accounts.
      * If empty, this is the final response.
@@ -111,17 +107,28 @@ class ListBankAccountsResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']       = $this->errors;
-        $json['bank_accounts'] = $this->bankAccounts;
-        $json['cursor']       = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']        = $this->errors;
+        }
+        if (isset($this->bankAccounts)) {
+            $json['bank_accounts'] = $this->bankAccounts;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']        = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

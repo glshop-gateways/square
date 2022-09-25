@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a tax being returned that applies to one or more return line items in an order.
  *
@@ -27,6 +29,11 @@ class OrderReturnTax implements \JsonSerializable
      * @var string|null
      */
     private $catalogObjectId;
+
+    /**
+     * @var int|null
+     */
+    private $catalogVersion;
 
     /**
      * @var string|null
@@ -55,8 +62,7 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Returns Uid.
-     *
-     * Unique ID that identifies the return tax only within this order.
+     * A unique ID that identifies the returned tax only within this order.
      */
     public function getUid(): ?string
     {
@@ -65,8 +71,7 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Sets Uid.
-     *
-     * Unique ID that identifies the return tax only within this order.
+     * A unique ID that identifies the returned tax only within this order.
      *
      * @maps uid
      */
@@ -77,8 +82,7 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Returns Source Tax Uid.
-     *
-     * `uid` of the Tax from the Order which contains the original charge of this tax.
+     * The tax `uid` from the order that contains the original tax charge.
      */
     public function getSourceTaxUid(): ?string
     {
@@ -87,8 +91,7 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Sets Source Tax Uid.
-     *
-     * `uid` of the Tax from the Order which contains the original charge of this tax.
+     * The tax `uid` from the order that contains the original tax charge.
      *
      * @maps source_tax_uid
      */
@@ -99,8 +102,7 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Returns Catalog Object Id.
-     *
-     * The catalog object id referencing [CatalogTax]($m/CatalogTax).
+     * The catalog object ID referencing [CatalogTax]($m/CatalogTax).
      */
     public function getCatalogObjectId(): ?string
     {
@@ -109,8 +111,7 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Sets Catalog Object Id.
-     *
-     * The catalog object id referencing [CatalogTax]($m/CatalogTax).
+     * The catalog object ID referencing [CatalogTax]($m/CatalogTax).
      *
      * @maps catalog_object_id
      */
@@ -120,8 +121,27 @@ class OrderReturnTax implements \JsonSerializable
     }
 
     /**
-     * Returns Name.
+     * Returns Catalog Version.
+     * The version of the catalog object that this tax references.
+     */
+    public function getCatalogVersion(): ?int
+    {
+        return $this->catalogVersion;
+    }
+
+    /**
+     * Sets Catalog Version.
+     * The version of the catalog object that this tax references.
      *
+     * @maps catalog_version
+     */
+    public function setCatalogVersion(?int $catalogVersion): void
+    {
+        $this->catalogVersion = $catalogVersion;
+    }
+
+    /**
+     * Returns Name.
      * The tax's name.
      */
     public function getName(): ?string
@@ -131,7 +151,6 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * The tax's name.
      *
      * @maps name
@@ -143,7 +162,6 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Returns Type.
-     *
      * Indicates how the tax is applied to the associated line item or order.
      */
     public function getType(): ?string
@@ -153,7 +171,6 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Sets Type.
-     *
      * Indicates how the tax is applied to the associated line item or order.
      *
      * @maps type
@@ -165,7 +182,6 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Returns Percentage.
-     *
      * The percentage of the tax, as a string representation of a decimal number.
      * For example, a value of `"7.25"` corresponds to a percentage of 7.25%.
      */
@@ -176,7 +192,6 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Sets Percentage.
-     *
      * The percentage of the tax, as a string representation of a decimal number.
      * For example, a value of `"7.25"` corresponds to a percentage of 7.25%.
      *
@@ -189,7 +204,6 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Returns Applied Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -205,7 +219,6 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Sets Applied Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -223,8 +236,7 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Returns Scope.
-     *
-     * Indicates whether this is a line item or order level tax.
+     * Indicates whether this is a line-item or order-level tax.
      */
     public function getScope(): ?string
     {
@@ -233,8 +245,7 @@ class OrderReturnTax implements \JsonSerializable
 
     /**
      * Sets Scope.
-     *
-     * Indicates whether this is a line item or order level tax.
+     * Indicates whether this is a line-item or order-level tax.
      *
      * @maps scope
      */
@@ -246,22 +257,46 @@ class OrderReturnTax implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['uid']             = $this->uid;
-        $json['source_tax_uid']  = $this->sourceTaxUid;
-        $json['catalog_object_id'] = $this->catalogObjectId;
-        $json['name']            = $this->name;
-        $json['type']            = $this->type;
-        $json['percentage']      = $this->percentage;
-        $json['applied_money']   = $this->appliedMoney;
-        $json['scope']           = $this->scope;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->uid)) {
+            $json['uid']               = $this->uid;
+        }
+        if (isset($this->sourceTaxUid)) {
+            $json['source_tax_uid']    = $this->sourceTaxUid;
+        }
+        if (isset($this->catalogObjectId)) {
+            $json['catalog_object_id'] = $this->catalogObjectId;
+        }
+        if (isset($this->catalogVersion)) {
+            $json['catalog_version']   = $this->catalogVersion;
+        }
+        if (isset($this->name)) {
+            $json['name']              = $this->name;
+        }
+        if (isset($this->type)) {
+            $json['type']              = $this->type;
+        }
+        if (isset($this->percentage)) {
+            $json['percentage']        = $this->percentage;
+        }
+        if (isset($this->appliedMoney)) {
+            $json['applied_money']     = $this->appliedMoney;
+        }
+        if (isset($this->scope)) {
+            $json['scope']             = $this->scope;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

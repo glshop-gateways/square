@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class CreateCatalogImageRequest implements \JsonSerializable
 {
     /**
@@ -17,21 +19,27 @@ class CreateCatalogImageRequest implements \JsonSerializable
     private $objectId;
 
     /**
-     * @var CatalogObject|null
+     * @var CatalogObject
      */
     private $image;
 
     /**
-     * @param string $idempotencyKey
+     * @var bool|null
      */
-    public function __construct(string $idempotencyKey)
+    private $isPrimary;
+
+    /**
+     * @param string $idempotencyKey
+     * @param CatalogObject $image
+     */
+    public function __construct(string $idempotencyKey, CatalogObject $image)
     {
         $this->idempotencyKey = $idempotencyKey;
+        $this->image = $image;
     }
 
     /**
      * Returns Idempotency Key.
-     *
      * A unique string that identifies this CreateCatalogImage request.
      * Keys can be any valid string but must be unique for every CreateCatalogImage request.
      *
@@ -45,7 +53,6 @@ class CreateCatalogImageRequest implements \JsonSerializable
 
     /**
      * Sets Idempotency Key.
-     *
      * A unique string that identifies this CreateCatalogImage request.
      * Keys can be any valid string but must be unique for every CreateCatalogImage request.
      *
@@ -62,10 +69,9 @@ class CreateCatalogImageRequest implements \JsonSerializable
 
     /**
      * Returns Object Id.
-     *
-     * Unique ID of the `CatalogObject` to attach to this `CatalogImage`. Leave this
+     * Unique ID of the `CatalogObject` to attach this `CatalogImage` object to. Leave this
      * field empty to create unattached images, for example if you are building an integration
-     * where these images can be attached to catalog items at a later time.
+     * where an image can be attached to catalog items at a later time.
      */
     public function getObjectId(): ?string
     {
@@ -74,10 +80,9 @@ class CreateCatalogImageRequest implements \JsonSerializable
 
     /**
      * Sets Object Id.
-     *
-     * Unique ID of the `CatalogObject` to attach to this `CatalogImage`. Leave this
+     * Unique ID of the `CatalogObject` to attach this `CatalogImage` object to. Leave this
      * field empty to create unattached images, for example if you are building an integration
-     * where these images can be attached to catalog items at a later time.
+     * where an image can be attached to catalog items at a later time.
      *
      * @maps object_id
      */
@@ -88,112 +93,111 @@ class CreateCatalogImageRequest implements \JsonSerializable
 
     /**
      * Returns Image.
+     * The wrapper object for the catalog entries of a given object type.
      *
-     * The wrapper object for the Catalog entries of a given object type.
+     * Depending on the `type` attribute value, a `CatalogObject` instance assumes a type-specific data to
+     * yield the corresponding type of catalog object.
      *
-     * The type of a particular `CatalogObject` is determined by the value of the
-     * `type` attribute and only the corresponding data attribute can be set on the `CatalogObject`
-     * instance.
-     * For example, the following list shows some instances of `CatalogObject` of a given `type` and
-     * their corresponding data attribute that can be set:
-     * - For a `CatalogObject` of the `ITEM` type, set the `item_data` attribute to yield the `CatalogItem`
-     * object.
-     * - For a `CatalogObject` of the `ITEM_VARIATION` type, set the `item_variation_data` attribute to
-     * yield the `CatalogItemVariation` object.
-     * - For a `CatalogObject` of the `MODIFIER` type, set the `modifier_data` attribute to yield the
-     * `CatalogModifier` object.
-     * - For a `CatalogObject` of the `MODIFIER_LIST` type, set the `modifier_list_data` attribute to yield
-     * the `CatalogModifierList` object.
-     * - For a `CatalogObject` of the `CATEGORY` type, set the `category_data` attribute to yield the
-     * `CatalogCategory` object.
-     * - For a `CatalogObject` of the `DISCOUNT` type, set the `discount_data` attribute to yield the
-     * `CatalogDiscount` object.
-     * - For a `CatalogObject` of the `TAX` type, set the `tax_data` attribute to yield the `CatalogTax`
-     * object.
-     * - For a `CatalogObject` of the `IMAGE` type, set the `image_data` attribute to yield the
-     * `CatalogImageData`  object.
-     * - For a `CatalogObject` of the `QUICK_AMOUNTS_SETTINGS` type, set the `quick_amounts_settings_data`
-     * attribute to yield the `CatalogQuickAmountsSettings` object.
-     * - For a `CatalogObject` of the `PRICING_RULE` type, set the `pricing_rule_data` attribute to yield
-     * the `CatalogPricingRule` object.
-     * - For a `CatalogObject` of the `TIME_PERIOD` type, set the `time_period_data` attribute to yield the
-     * `CatalogTimePeriod` object.
-     * - For a `CatalogObject` of the `PRODUCT_SET` type, set the `product_set_data` attribute to yield the
-     * `CatalogProductSet`  object.
-     * - For a `CatalogObject` of the `SUBSCRIPTION_PLAN` type, set the `subscription_plan_data` attribute
-     * to yield the `CatalogSubscriptionPlan` object.
+     * For example, if `type=ITEM`, the `CatalogObject` instance must have the ITEM-specific data set on
+     * the `item_data` attribute. The resulting `CatalogObject` instance is also a `CatalogItem` instance.
      *
+     * In general, if `type=<OBJECT_TYPE>`, the `CatalogObject` instance must have the `<OBJECT_TYPE>`-
+     * specific data set on the `<object_type>_data` attribute. The resulting `CatalogObject` instance is
+     * also a `Catalog<ObjectType>` instance.
      *
      * For a more detailed discussion of the Catalog data model, please see the
      * [Design a Catalog](https://developer.squareup.com/docs/catalog-api/design-a-catalog) guide.
      */
-    public function getImage(): ?CatalogObject
+    public function getImage(): CatalogObject
     {
         return $this->image;
     }
 
     /**
      * Sets Image.
+     * The wrapper object for the catalog entries of a given object type.
      *
-     * The wrapper object for the Catalog entries of a given object type.
+     * Depending on the `type` attribute value, a `CatalogObject` instance assumes a type-specific data to
+     * yield the corresponding type of catalog object.
      *
-     * The type of a particular `CatalogObject` is determined by the value of the
-     * `type` attribute and only the corresponding data attribute can be set on the `CatalogObject`
-     * instance.
-     * For example, the following list shows some instances of `CatalogObject` of a given `type` and
-     * their corresponding data attribute that can be set:
-     * - For a `CatalogObject` of the `ITEM` type, set the `item_data` attribute to yield the `CatalogItem`
-     * object.
-     * - For a `CatalogObject` of the `ITEM_VARIATION` type, set the `item_variation_data` attribute to
-     * yield the `CatalogItemVariation` object.
-     * - For a `CatalogObject` of the `MODIFIER` type, set the `modifier_data` attribute to yield the
-     * `CatalogModifier` object.
-     * - For a `CatalogObject` of the `MODIFIER_LIST` type, set the `modifier_list_data` attribute to yield
-     * the `CatalogModifierList` object.
-     * - For a `CatalogObject` of the `CATEGORY` type, set the `category_data` attribute to yield the
-     * `CatalogCategory` object.
-     * - For a `CatalogObject` of the `DISCOUNT` type, set the `discount_data` attribute to yield the
-     * `CatalogDiscount` object.
-     * - For a `CatalogObject` of the `TAX` type, set the `tax_data` attribute to yield the `CatalogTax`
-     * object.
-     * - For a `CatalogObject` of the `IMAGE` type, set the `image_data` attribute to yield the
-     * `CatalogImageData`  object.
-     * - For a `CatalogObject` of the `QUICK_AMOUNTS_SETTINGS` type, set the `quick_amounts_settings_data`
-     * attribute to yield the `CatalogQuickAmountsSettings` object.
-     * - For a `CatalogObject` of the `PRICING_RULE` type, set the `pricing_rule_data` attribute to yield
-     * the `CatalogPricingRule` object.
-     * - For a `CatalogObject` of the `TIME_PERIOD` type, set the `time_period_data` attribute to yield the
-     * `CatalogTimePeriod` object.
-     * - For a `CatalogObject` of the `PRODUCT_SET` type, set the `product_set_data` attribute to yield the
-     * `CatalogProductSet`  object.
-     * - For a `CatalogObject` of the `SUBSCRIPTION_PLAN` type, set the `subscription_plan_data` attribute
-     * to yield the `CatalogSubscriptionPlan` object.
+     * For example, if `type=ITEM`, the `CatalogObject` instance must have the ITEM-specific data set on
+     * the `item_data` attribute. The resulting `CatalogObject` instance is also a `CatalogItem` instance.
      *
+     * In general, if `type=<OBJECT_TYPE>`, the `CatalogObject` instance must have the `<OBJECT_TYPE>`-
+     * specific data set on the `<object_type>_data` attribute. The resulting `CatalogObject` instance is
+     * also a `Catalog<ObjectType>` instance.
      *
      * For a more detailed discussion of the Catalog data model, please see the
      * [Design a Catalog](https://developer.squareup.com/docs/catalog-api/design-a-catalog) guide.
      *
+     * @required
      * @maps image
      */
-    public function setImage(?CatalogObject $image): void
+    public function setImage(CatalogObject $image): void
     {
         $this->image = $image;
     }
 
     /**
+     * Returns Is Primary.
+     * If this is set to `true`, the image created will be the primary, or first image of the object
+     * referenced by `object_id`.
+     * If the `CatalogObject` already has a primary `CatalogImage`, setting this field to `true` will
+     * replace the primary image.
+     * If this is set to `false` and you use the Square API version 2021-12-15 or later, the image id will
+     * be appended to the list of `image_ids` on the object.
+     *
+     * With Square API version 2021-12-15 or later, the default value is `false`. Otherwise, the effective
+     * default value is `true`.
+     */
+    public function getIsPrimary(): ?bool
+    {
+        return $this->isPrimary;
+    }
+
+    /**
+     * Sets Is Primary.
+     * If this is set to `true`, the image created will be the primary, or first image of the object
+     * referenced by `object_id`.
+     * If the `CatalogObject` already has a primary `CatalogImage`, setting this field to `true` will
+     * replace the primary image.
+     * If this is set to `false` and you use the Square API version 2021-12-15 or later, the image id will
+     * be appended to the list of `image_ids` on the object.
+     *
+     * With Square API version 2021-12-15 or later, the default value is `false`. Otherwise, the effective
+     * default value is `true`.
+     *
+     * @maps is_primary
+     */
+    public function setIsPrimary(?bool $isPrimary): void
+    {
+        $this->isPrimary = $isPrimary;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['idempotency_key'] = $this->idempotencyKey;
-        $json['object_id']      = $this->objectId;
-        $json['image']          = $this->image;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->objectId)) {
+            $json['object_id']   = $this->objectId;
+        }
+        $json['image']           = $this->image;
+        if (isset($this->isPrimary)) {
+            $json['is_primary']  = $this->isPrimary;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

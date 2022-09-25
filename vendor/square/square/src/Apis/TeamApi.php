@@ -5,78 +5,75 @@ declare(strict_types=1);
 namespace Square\Apis;
 
 use Square\Exceptions\ApiException;
-use Square\ApiHelper;
 use Square\ConfigurationInterface;
+use Square\ApiHelper;
+use Square\Models;
 use Square\Http\ApiResponse;
 use Square\Http\HttpRequest;
 use Square\Http\HttpResponse;
 use Square\Http\HttpMethod;
 use Square\Http\HttpContext;
 use Square\Http\HttpCallBack;
-use Unirest\Request;
 
 class TeamApi extends BaseApi
 {
-    public function __construct(ConfigurationInterface $config, ?HttpCallBack $httpCallBack = null)
+    public function __construct(ConfigurationInterface $config, array $authManagers, ?HttpCallBack $httpCallBack)
     {
-        parent::__construct($config, $httpCallBack);
+        parent::__construct($config, $authManagers, $httpCallBack);
     }
 
     /**
-     * Creates a single `TeamMember` object. The `TeamMember` will be returned on successful creates.
+     * Creates a single `TeamMember` object. The `TeamMember` object is returned on successful creates.
      * You must provide the following values in your request to this endpoint:
      * - `given_name`
      * - `family_name`
      *
-     * Learn about [Troubleshooting the Teams API](https://developer.squareup.
+     * Learn about [Troubleshooting the Team API](https://developer.squareup.
      * com/docs/team/troubleshooting#createteammember).
      *
-     * @param \Square\Models\CreateTeamMemberRequest $body An object containing the fields to POST
-     *                                                     for the request.
+     * @param Models\CreateTeamMemberRequest $body An object containing the fields to POST for the
+     *        request.
      *
-     *                                                     See the corresponding object definition
-     *                                                     for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function createTeamMember(\Square\Models\CreateTeamMemberRequest $body): ApiResponse
+    public function createTeamMember(Models\CreateTeamMemberRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/team-members';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/team-members';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -90,69 +87,70 @@ class TeamApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\CreateTeamMemberResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'CreateTeamMemberResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
-     * Creates multiple `TeamMember` objects. The created `TeamMember` objects will be returned on
-     * successful creates.
-     * This process is non-transactional and will process as much of the request as is possible. If one of
-     * the creates in
-     * the request cannot be successfully processed, the request will NOT be marked as failed, but the body
-     * of the response
-     * will contain explicit error information for this particular create.
+     * Creates multiple `TeamMember` objects. The created `TeamMember` objects are returned on successful
+     * creates.
+     * This process is non-transactional and processes as much of the request as possible. If one of the
+     * creates in
+     * the request cannot be successfully processed, the request is not marked as failed, but the body of
+     * the response
+     * contains explicit error information for the failed create.
      *
-     * Learn about [Troubleshooting the Teams API](https://developer.squareup.
+     * Learn about [Troubleshooting the Team API](https://developer.squareup.
      * com/docs/team/troubleshooting#bulk-create-team-members).
      *
-     * @param \Square\Models\BulkCreateTeamMembersRequest $body An object containing the fields to
-     *                                                          POST for the request.
+     * @param Models\BulkCreateTeamMembersRequest $body An object containing the fields to POST for
+     *        the request.
      *
-     *                                                          See the corresponding object
-     *                                                          definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function bulkCreateTeamMembers(\Square\Models\BulkCreateTeamMembersRequest $body): ApiResponse
+    public function bulkCreateTeamMembers(Models\BulkCreateTeamMembersRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/team-members/bulk-create';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/team-members/bulk-create';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -166,68 +164,69 @@ class TeamApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\BulkCreateTeamMembersResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'BulkCreateTeamMembersResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
-     * Updates multiple `TeamMember` objects. The updated `TeamMember` objects will be returned on
-     * successful updates.
-     * This process is non-transactional and will process as much of the request as is possible. If one of
-     * the updates in
-     * the request cannot be successfully processed, the request will NOT be marked as failed, but the body
-     * of the response
-     * will contain explicit error information for this particular update.
-     * Learn about [Troubleshooting the Teams API](https://developer.squareup.
+     * Updates multiple `TeamMember` objects. The updated `TeamMember` objects are returned on successful
+     * updates.
+     * This process is non-transactional and processes as much of the request as possible. If one of the
+     * updates in
+     * the request cannot be successfully processed, the request is not marked as failed, but the body of
+     * the response
+     * contains explicit error information for the failed update.
+     * Learn about [Troubleshooting the Team API](https://developer.squareup.
      * com/docs/team/troubleshooting#bulk-update-team-members).
      *
-     * @param \Square\Models\BulkUpdateTeamMembersRequest $body An object containing the fields to
-     *                                                          POST for the request.
+     * @param Models\BulkUpdateTeamMembersRequest $body An object containing the fields to POST for
+     *        the request.
      *
-     *                                                          See the corresponding object
-     *                                                          definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function bulkUpdateTeamMembers(\Square\Models\BulkUpdateTeamMembersRequest $body): ApiResponse
+    public function bulkUpdateTeamMembers(Models\BulkUpdateTeamMembersRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/team-members/bulk-update';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/team-members/bulk-update';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -241,63 +240,64 @@ class TeamApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\BulkUpdateTeamMembersResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'BulkUpdateTeamMembersResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
      * Returns a paginated list of `TeamMember` objects for a business.
-     * The list to be returned can be filtered by:
-     * - location IDs **and**
+     * The list can be filtered by the following:
+     * - location IDs
      * - `status`
      *
-     * @param \Square\Models\SearchTeamMembersRequest $body An object containing the fields to
-     *                                                      POST for the request.
+     * @param Models\SearchTeamMembersRequest $body An object containing the fields to POST for the
+     *        request.
      *
-     *                                                      See the corresponding object
-     *                                                      definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function searchTeamMembers(\Square\Models\SearchTeamMembersRequest $body): ApiResponse
+    public function searchTeamMembers(Models\SearchTeamMembersRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/team-members/search';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/team-members/search';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -311,14 +311,18 @@ class TeamApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\SearchTeamMembersResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'SearchTeamMembersResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
-     * Retrieve a `TeamMember` object for the given `TeamMember.id`.
-     * Learn about [Troubleshooting the Teams API](https://developer.squareup.
+     * Retrieves a `TeamMember` object for the given `TeamMember.id`.
+     * Learn about [Troubleshooting the Team API](https://developer.squareup.
      * com/docs/team/troubleshooting#retrieve-a-team-member).
      *
      * @param string $teamMemberId The ID of the team member to retrieve.
@@ -330,40 +334,38 @@ class TeamApi extends BaseApi
     public function retrieveTeamMember(string $teamMemberId): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/team-members/{team_member_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/team-members/{team_member_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'team_member_id' => $teamMemberId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -377,68 +379,69 @@ class TeamApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\RetrieveTeamMemberResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'RetrieveTeamMemberResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
-     * Updates a single `TeamMember` object. The `TeamMember` will be returned on successful updates.
-     * Learn about [Troubleshooting the Teams API](https://developer.squareup.
+     * Updates a single `TeamMember` object. The `TeamMember` object is returned on successful updates.
+     * Learn about [Troubleshooting the Team API](https://developer.squareup.
      * com/docs/team/troubleshooting#update-a-team-member).
      *
      * @param string $teamMemberId The ID of the team member to update.
-     * @param \Square\Models\UpdateTeamMemberRequest $body An object containing the fields to POST
-     *                                                     for the request.
+     * @param Models\UpdateTeamMemberRequest $body An object containing the fields to POST for the
+     *        request.
      *
-     *                                                     See the corresponding object definition
-     *                                                     for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function updateTeamMember(string $teamMemberId, \Square\Models\UpdateTeamMemberRequest $body): ApiResponse
+    public function updateTeamMember(string $teamMemberId, Models\UpdateTeamMemberRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/team-members/{team_member_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/team-members/{team_member_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'team_member_id' => $teamMemberId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::PUT, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::put($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->put($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -452,18 +455,22 @@ class TeamApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\UpdateTeamMemberResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'UpdateTeamMemberResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
-     * Retrieve a `WageSetting` object for a team member specified
+     * Retrieves a `WageSetting` object for a team member specified
      * by `TeamMember.id`.
-     * Learn about [Troubleshooting the Teams API](https://developer.squareup.
+     * Learn about [Troubleshooting the Team API](https://developer.squareup.
      * com/docs/team/troubleshooting#retrievewagesetting).
      *
-     * @param string $teamMemberId The ID of the team member to retrieve wage setting for
+     * @param string $teamMemberId The ID of the team member for which to retrieve the wage setting.
      *
      * @return ApiResponse Response from the API call
      *
@@ -472,40 +479,38 @@ class TeamApi extends BaseApi
     public function retrieveWageSetting(string $teamMemberId): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/team-members/{team_member_id}/wage-setting';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/team-members/{team_member_id}/wage-setting';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'team_member_id' => $teamMemberId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -519,8 +524,12 @@ class TeamApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\RetrieveWageSettingResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'RetrieveWageSettingResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -528,63 +537,60 @@ class TeamApi extends BaseApi
      * Creates or updates a `WageSetting` object. The object is created if a
      * `WageSetting` with the specified `team_member_id` does not exist. Otherwise,
      * it fully replaces the `WageSetting` object for the team member.
-     * The `WageSetting` will be returned upon successful update.
-     * Learn about [Troubleshooting the Teams API](https://developer.squareup.
+     * The `WageSetting` is returned on a successful update.
+     * Learn about [Troubleshooting the Team API](https://developer.squareup.
      * com/docs/team/troubleshooting#create-or-update-a-wage-setting).
      *
-     * @param string $teamMemberId The ID of the team member to update the `WageSetting` object
-     *                             for.
-     * @param \Square\Models\UpdateWageSettingRequest $body An object containing the fields to
-     *                                                      POST for the request.
+     * @param string $teamMemberId The ID of the team member for which to update the `WageSetting`
+     *        object.
+     * @param Models\UpdateWageSettingRequest $body An object containing the fields to POST for the
+     *        request.
      *
-     *                                                      See the corresponding object
-     *                                                      definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function updateWageSetting(string $teamMemberId, \Square\Models\UpdateWageSettingRequest $body): ApiResponse
+    public function updateWageSetting(string $teamMemberId, Models\UpdateWageSettingRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/team-members/{team_member_id}/wage-setting';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/team-members/{team_member_id}/wage-setting';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'team_member_id' => $teamMemberId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::PUT, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::put($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->put($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -598,8 +604,12 @@ class TeamApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\UpdateWageSettingResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'UpdateWageSettingResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 }

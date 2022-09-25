@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Information about fulfillment updates.
  */
@@ -26,8 +28,7 @@ class OrderFulfillmentUpdatedUpdate implements \JsonSerializable
 
     /**
      * Returns Fulfillment Uid.
-     *
-     * Unique ID that identifies the fulfillment only within this order.
+     * A unique ID that identifies the fulfillment only within this order.
      */
     public function getFulfillmentUid(): ?string
     {
@@ -36,8 +37,7 @@ class OrderFulfillmentUpdatedUpdate implements \JsonSerializable
 
     /**
      * Sets Fulfillment Uid.
-     *
-     * Unique ID that identifies the fulfillment only within this order.
+     * A unique ID that identifies the fulfillment only within this order.
      *
      * @maps fulfillment_uid
      */
@@ -48,7 +48,6 @@ class OrderFulfillmentUpdatedUpdate implements \JsonSerializable
 
     /**
      * Returns Old State.
-     *
      * The current state of this fulfillment.
      */
     public function getOldState(): ?string
@@ -58,7 +57,6 @@ class OrderFulfillmentUpdatedUpdate implements \JsonSerializable
 
     /**
      * Sets Old State.
-     *
      * The current state of this fulfillment.
      *
      * @maps old_state
@@ -70,7 +68,6 @@ class OrderFulfillmentUpdatedUpdate implements \JsonSerializable
 
     /**
      * Returns New State.
-     *
      * The current state of this fulfillment.
      */
     public function getNewState(): ?string
@@ -80,7 +77,6 @@ class OrderFulfillmentUpdatedUpdate implements \JsonSerializable
 
     /**
      * Sets New State.
-     *
      * The current state of this fulfillment.
      *
      * @maps new_state
@@ -93,17 +89,28 @@ class OrderFulfillmentUpdatedUpdate implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['fulfillment_uid'] = $this->fulfillmentUid;
-        $json['old_state']      = $this->oldState;
-        $json['new_state']      = $this->newState;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->fulfillmentUid)) {
+            $json['fulfillment_uid'] = $this->fulfillmentUid;
+        }
+        if (isset($this->oldState)) {
+            $json['old_state']       = $this->oldState;
+        }
+        if (isset($this->newState)) {
+            $json['new_state']       = $this->newState;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * An enumerated value that can link a
  * `CatalogItemVariation` to an item option as one of
@@ -38,7 +40,6 @@ class CatalogItemOptionValue implements \JsonSerializable
 
     /**
      * Returns Item Option Id.
-     *
      * Unique ID of the associated item option.
      */
     public function getItemOptionId(): ?string
@@ -48,7 +49,6 @@ class CatalogItemOptionValue implements \JsonSerializable
 
     /**
      * Sets Item Option Id.
-     *
      * Unique ID of the associated item option.
      *
      * @maps item_option_id
@@ -60,7 +60,6 @@ class CatalogItemOptionValue implements \JsonSerializable
 
     /**
      * Returns Name.
-     *
      * Name of this item option value. This is a searchable attribute for use in applicable query filters.
      */
     public function getName(): ?string
@@ -70,7 +69,6 @@ class CatalogItemOptionValue implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * Name of this item option value. This is a searchable attribute for use in applicable query filters.
      *
      * @maps name
@@ -82,7 +80,6 @@ class CatalogItemOptionValue implements \JsonSerializable
 
     /**
      * Returns Description.
-     *
      * A human-readable description for the option value. This is a searchable attribute for use in
      * applicable query filters.
      */
@@ -93,7 +90,6 @@ class CatalogItemOptionValue implements \JsonSerializable
 
     /**
      * Sets Description.
-     *
      * A human-readable description for the option value. This is a searchable attribute for use in
      * applicable query filters.
      *
@@ -106,7 +102,6 @@ class CatalogItemOptionValue implements \JsonSerializable
 
     /**
      * Returns Color.
-     *
      * The HTML-supported hex color for the item option (e.g., "#ff8d4e85").
      * Only displayed if `show_colors` is enabled on the parent `ItemOption`. When
      * left unset, `color` defaults to white ("#ffffff") when `show_colors` is
@@ -119,7 +114,6 @@ class CatalogItemOptionValue implements \JsonSerializable
 
     /**
      * Sets Color.
-     *
      * The HTML-supported hex color for the item option (e.g., "#ff8d4e85").
      * Only displayed if `show_colors` is enabled on the parent `ItemOption`. When
      * left unset, `color` defaults to white ("#ffffff") when `show_colors` is
@@ -134,7 +128,6 @@ class CatalogItemOptionValue implements \JsonSerializable
 
     /**
      * Returns Ordinal.
-     *
      * Determines where this option value appears in a list of option values.
      */
     public function getOrdinal(): ?int
@@ -144,7 +137,6 @@ class CatalogItemOptionValue implements \JsonSerializable
 
     /**
      * Sets Ordinal.
-     *
      * Determines where this option value appears in a list of option values.
      *
      * @maps ordinal
@@ -157,19 +149,34 @@ class CatalogItemOptionValue implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['item_option_id'] = $this->itemOptionId;
-        $json['name']         = $this->name;
-        $json['description']  = $this->description;
-        $json['color']        = $this->color;
-        $json['ordinal']      = $this->ordinal;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->itemOptionId)) {
+            $json['item_option_id'] = $this->itemOptionId;
+        }
+        if (isset($this->name)) {
+            $json['name']           = $this->name;
+        }
+        if (isset($this->description)) {
+            $json['description']    = $this->description;
+        }
+        if (isset($this->color)) {
+            $json['color']          = $this->color;
+        }
+        if (isset($this->ordinal)) {
+            $json['ordinal']        = $this->ordinal;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

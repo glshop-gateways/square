@@ -11,8 +11,8 @@ Defines the fields in a `SubmitEvidence` response.
 
 | Name | Type | Tags | Description | Getter | Setter |
 |  --- | --- | --- | --- | --- | --- |
-| `errors` | [`?(Error[])`](/doc/models/error.md) | Optional | Information about errors encountered during the request. | getErrors(): ?array | setErrors(?array errors): void |
-| `dispute` | [`?Dispute`](/doc/models/dispute.md) | Optional | Represents a dispute a cardholder initiated with their bank. | getDispute(): ?Dispute | setDispute(?Dispute dispute): void |
+| `errors` | [`?(Error[])`](../../doc/models/error.md) | Optional | Information about errors encountered during the request. | getErrors(): ?array | setErrors(?array errors): void |
+| `dispute` | [`?Dispute`](../../doc/models/dispute.md) | Optional | Represents a [dispute](https://developer.squareup.com/docs/disputes-api/overview) a cardholder initiated with their bank. | getDispute(): ?Dispute | setDispute(?Dispute dispute): void |
 
 ## Example (as JSON)
 
@@ -20,25 +20,23 @@ Defines the fields in a `SubmitEvidence` response.
 {
   "dispute": {
     "amount_money": {
-      "amount": 2000,
+      "amount": 4350,
       "currency": "USD"
     },
     "brand_dispute_id": "100000399240",
     "card_brand": "VISA",
-    "created_at": "2018-10-18T16:02:15.313Z",
-    "dispute_id": "EAZoK70gX3fyvibecLwIGB",
-    "disputed_payments": [
-      {
-        "payment_id": "2yeBUWJzllJTpmnSqtMRAL19taB"
-      }
-    ],
-    "due_at": "2018-11-01T00:00:00.000Z",
-    "evidence_ids": [
-      "CKWRhnZN0eMSUbh38BKmD"
-    ],
-    "reason": "NO_KNOWLEDGE",
+    "created_at": "2022-05-18T16:02:15.313Z",
+    "disputed_payment": {
+      "payment_id": "2yeBUWJzllJTpmnSqtMRAL19taB"
+    },
+    "due_at": "2022-06-01T00:00:00.000Z",
+    "id": "EAZoK70gX3fyvibecLwIGB",
+    "location_id": "LSY8XKGSMMX94",
+    "reason": "CUSTOMER_REQUESTS_CREDIT",
+    "reported_at": "2022-05-18T00:00:00.000Z",
     "state": "PROCESSING",
-    "updated_at": "2018-10-18T16:02:15.313Z"
+    "updated_at": "2022-05-18T16:02:15.313Z",
+    "version": 4
   }
 }
 ```

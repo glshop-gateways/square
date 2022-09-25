@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Group of standard measurement units.
  */
@@ -21,7 +23,6 @@ class StandardUnitDescriptionGroup implements \JsonSerializable
 
     /**
      * Returns Standard Unit Descriptions.
-     *
      * List of standard (non-custom) measurement units in this description group.
      *
      * @return StandardUnitDescription[]|null
@@ -33,7 +34,6 @@ class StandardUnitDescriptionGroup implements \JsonSerializable
 
     /**
      * Sets Standard Unit Descriptions.
-     *
      * List of standard (non-custom) measurement units in this description group.
      *
      * @maps standard_unit_descriptions
@@ -47,7 +47,6 @@ class StandardUnitDescriptionGroup implements \JsonSerializable
 
     /**
      * Returns Language Code.
-     *
      * IETF language tag.
      */
     public function getLanguageCode(): ?string
@@ -57,7 +56,6 @@ class StandardUnitDescriptionGroup implements \JsonSerializable
 
     /**
      * Sets Language Code.
-     *
      * IETF language tag.
      *
      * @maps language_code
@@ -70,16 +68,25 @@ class StandardUnitDescriptionGroup implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['standard_unit_descriptions'] = $this->standardUnitDescriptions;
-        $json['language_code']            = $this->languageCode;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->standardUnitDescriptions)) {
+            $json['standard_unit_descriptions'] = $this->standardUnitDescriptions;
+        }
+        if (isset($this->languageCode)) {
+            $json['language_code']              = $this->languageCode;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -2,8 +2,8 @@
 # Order Pricing Options
 
 Pricing options for an order. The options affect how the order's price is calculated.
-They can be used, for example, to apply automatic price adjustments that are based on pre-configured
-[pricing rules](/doc/models/catalog-pricing-rule.md).
+They can be used, for example, to apply automatic price adjustments that are based on preconfigured
+[pricing rules](../../doc/models/catalog-pricing-rule.md).
 
 ## Structure
 
@@ -20,8 +20,8 @@ They can be used, for example, to apply automatic price adjustments that are bas
 
 ```json
 {
-  "auto_apply_discounts": false,
-  "auto_apply_taxes": false
+  "auto_apply_discounts": null,
+  "auto_apply_taxes": null
 }
 ```
 

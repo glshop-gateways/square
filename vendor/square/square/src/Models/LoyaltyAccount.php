@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Describes a loyalty account. For more information, see
- * [Loyalty Overview](https://developer.squareup.com/docs/loyalty/overview).
+ * Describes a loyalty account in a [loyalty program]($m/LoyaltyProgram). For more information, see
+ * [Create and Retrieve Loyalty Accounts](https://developer.squareup.com/docs/loyalty-api/loyalty-
+ * accounts).
  */
 class LoyaltyAccount implements \JsonSerializable
 {
@@ -14,11 +17,6 @@ class LoyaltyAccount implements \JsonSerializable
      * @var string|null
      */
     private $id;
-
-    /**
-     * @var LoyaltyAccountMapping[]|null
-     */
-    private $mappings;
 
     /**
      * @var string
@@ -61,6 +59,11 @@ class LoyaltyAccount implements \JsonSerializable
     private $mapping;
 
     /**
+     * @var LoyaltyAccountExpiringPointDeadline[]|null
+     */
+    private $expiringPointDeadlines;
+
+    /**
      * @param string $programId
      */
     public function __construct(string $programId)
@@ -70,7 +73,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The Square-assigned ID of the loyalty account.
      */
     public function getId(): ?string
@@ -80,7 +82,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The Square-assigned ID of the loyalty account.
      *
      * @maps id
@@ -91,48 +92,7 @@ class LoyaltyAccount implements \JsonSerializable
     }
 
     /**
-     * Returns Mappings.
-     *
-     * The list of mappings that the account is associated with.
-     * Currently, a buyer can only be mapped to a loyalty account using
-     * a phone number. Therefore, the list can only have one mapping.
-     *
-     * One of the following is required when creating a loyalty account:
-     * - (Preferred) The `mapping` field, with the buyer's phone number specified in the `phone_number`
-     * field.
-     * - This `mappings` field.
-     *
-     * @return LoyaltyAccountMapping[]|null
-     */
-    public function getMappings(): ?array
-    {
-        return $this->mappings;
-    }
-
-    /**
-     * Sets Mappings.
-     *
-     * The list of mappings that the account is associated with.
-     * Currently, a buyer can only be mapped to a loyalty account using
-     * a phone number. Therefore, the list can only have one mapping.
-     *
-     * One of the following is required when creating a loyalty account:
-     * - (Preferred) The `mapping` field, with the buyer's phone number specified in the `phone_number`
-     * field.
-     * - This `mappings` field.
-     *
-     * @maps mappings
-     *
-     * @param LoyaltyAccountMapping[]|null $mappings
-     */
-    public function setMappings(?array $mappings): void
-    {
-        $this->mappings = $mappings;
-    }
-
-    /**
      * Returns Program Id.
-     *
      * The Square-assigned ID of the [loyalty program]($m/LoyaltyProgram) to which the account belongs.
      */
     public function getProgramId(): string
@@ -142,7 +102,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Sets Program Id.
-     *
      * The Square-assigned ID of the [loyalty program]($m/LoyaltyProgram) to which the account belongs.
      *
      * @required
@@ -155,8 +114,8 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Returns Balance.
-     *
-     * The available point balance in the loyalty account.
+     * The available point balance in the loyalty account. If points are scheduled to expire, they are
+     * listed in the `expiring_point_deadlines` field.
      *
      * Your application should be able to handle loyalty accounts that have a negative point balance
      * (`balance` is less than 0). This might occur if a seller makes a manual adjustment or as a result of
@@ -169,8 +128,8 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Sets Balance.
-     *
-     * The available point balance in the loyalty account.
+     * The available point balance in the loyalty account. If points are scheduled to expire, they are
+     * listed in the `expiring_point_deadlines` field.
      *
      * Your application should be able to handle loyalty accounts that have a negative point balance
      * (`balance` is less than 0). This might occur if a seller makes a manual adjustment or as a result of
@@ -185,7 +144,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Returns Lifetime Points.
-     *
      * The total points accrued during the lifetime of the account.
      */
     public function getLifetimePoints(): ?int
@@ -195,7 +153,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Sets Lifetime Points.
-     *
      * The total points accrued during the lifetime of the account.
      *
      * @maps lifetime_points
@@ -207,7 +164,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Returns Customer Id.
-     *
      * The Square-assigned ID of the [customer]($m/Customer) that is associated with the account.
      */
     public function getCustomerId(): ?string
@@ -217,7 +173,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Sets Customer Id.
-     *
      * The Square-assigned ID of the [customer]($m/Customer) that is associated with the account.
      *
      * @maps customer_id
@@ -229,8 +184,19 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Returns Enrolled At.
+     * The timestamp when the buyer joined the loyalty program, in RFC 3339 format. This field is used to
+     * display the **Enrolled On** or **Member Since** date in first-party Square products.
      *
-     * The timestamp when enrollment occurred, in RFC 3339 format.
+     * If this field is not set in a `CreateLoyaltyAccount` request, Square populates it after the buyer's
+     * first action on their account
+     * (when `AccumulateLoyaltyPoints` or `CreateLoyaltyReward` is called). In first-party flows, Square
+     * populates the field when the buyer agrees to the terms of service in Square Point of Sale.
+     *
+     * This field is typically specified in a `CreateLoyaltyAccount` request when creating a loyalty
+     * account for a buyer who already interacted with their account.
+     * For example, you would set this field when migrating accounts from an external system. The timestamp
+     * in the request can represent a current or previous date and time, but it cannot be set for the
+     * future.
      */
     public function getEnrolledAt(): ?string
     {
@@ -239,8 +205,19 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Sets Enrolled At.
+     * The timestamp when the buyer joined the loyalty program, in RFC 3339 format. This field is used to
+     * display the **Enrolled On** or **Member Since** date in first-party Square products.
      *
-     * The timestamp when enrollment occurred, in RFC 3339 format.
+     * If this field is not set in a `CreateLoyaltyAccount` request, Square populates it after the buyer's
+     * first action on their account
+     * (when `AccumulateLoyaltyPoints` or `CreateLoyaltyReward` is called). In first-party flows, Square
+     * populates the field when the buyer agrees to the terms of service in Square Point of Sale.
+     *
+     * This field is typically specified in a `CreateLoyaltyAccount` request when creating a loyalty
+     * account for a buyer who already interacted with their account.
+     * For example, you would set this field when migrating accounts from an external system. The timestamp
+     * in the request can represent a current or previous date and time, but it cannot be set for the
+     * future.
      *
      * @maps enrolled_at
      */
@@ -251,7 +228,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * The timestamp when the loyalty account was created, in RFC 3339 format.
      */
     public function getCreatedAt(): ?string
@@ -261,7 +237,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * The timestamp when the loyalty account was created, in RFC 3339 format.
      *
      * @maps created_at
@@ -273,7 +248,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Returns Updated At.
-     *
      * The timestamp when the loyalty account was last updated, in RFC 3339 format.
      */
     public function getUpdatedAt(): ?string
@@ -283,7 +257,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Sets Updated At.
-     *
      * The timestamp when the loyalty account was last updated, in RFC 3339 format.
      *
      * @maps updated_at
@@ -295,7 +268,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Returns Mapping.
-     *
      * Represents the mapping that associates a loyalty account with a buyer.
      *
      * Currently, a loyalty account can only be mapped to a buyer by phone number. For more information,
@@ -309,7 +281,6 @@ class LoyaltyAccount implements \JsonSerializable
 
     /**
      * Sets Mapping.
-     *
      * Represents the mapping that associates a loyalty account with a buyer.
      *
      * Currently, a loyalty account can only be mapped to a buyer by phone number. For more information,
@@ -324,26 +295,79 @@ class LoyaltyAccount implements \JsonSerializable
     }
 
     /**
+     * Returns Expiring Point Deadlines.
+     * The schedule for when points expire in the loyalty account balance. This field is present only if
+     * the account has points that are scheduled to expire.
+     *
+     * The total number of points in this field equals the number of points in the `balance` field.
+     *
+     * @return LoyaltyAccountExpiringPointDeadline[]|null
+     */
+    public function getExpiringPointDeadlines(): ?array
+    {
+        return $this->expiringPointDeadlines;
+    }
+
+    /**
+     * Sets Expiring Point Deadlines.
+     * The schedule for when points expire in the loyalty account balance. This field is present only if
+     * the account has points that are scheduled to expire.
+     *
+     * The total number of points in this field equals the number of points in the `balance` field.
+     *
+     * @maps expiring_point_deadlines
+     *
+     * @param LoyaltyAccountExpiringPointDeadline[]|null $expiringPointDeadlines
+     */
+    public function setExpiringPointDeadlines(?array $expiringPointDeadlines): void
+    {
+        $this->expiringPointDeadlines = $expiringPointDeadlines;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']             = $this->id;
-        $json['mappings']       = $this->mappings;
-        $json['program_id']     = $this->programId;
-        $json['balance']        = $this->balance;
-        $json['lifetime_points'] = $this->lifetimePoints;
-        $json['customer_id']    = $this->customerId;
-        $json['enrolled_at']    = $this->enrolledAt;
-        $json['created_at']     = $this->createdAt;
-        $json['updated_at']     = $this->updatedAt;
-        $json['mapping']        = $this->mapping;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']                       = $this->id;
+        }
+        $json['program_id']                   = $this->programId;
+        if (isset($this->balance)) {
+            $json['balance']                  = $this->balance;
+        }
+        if (isset($this->lifetimePoints)) {
+            $json['lifetime_points']          = $this->lifetimePoints;
+        }
+        if (isset($this->customerId)) {
+            $json['customer_id']              = $this->customerId;
+        }
+        if (isset($this->enrolledAt)) {
+            $json['enrolled_at']              = $this->enrolledAt;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']               = $this->createdAt;
+        }
+        if (isset($this->updatedAt)) {
+            $json['updated_at']               = $this->updatedAt;
+        }
+        if (isset($this->mapping)) {
+            $json['mapping']                  = $this->mapping;
+        }
+        if (isset($this->expiringPointDeadlines)) {
+            $json['expiring_point_deadlines'] = $this->expiringPointDeadlines;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

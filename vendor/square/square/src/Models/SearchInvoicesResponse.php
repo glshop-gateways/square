@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Describes a `SearchInvoices` response.
  */
@@ -26,7 +28,6 @@ class SearchInvoicesResponse implements \JsonSerializable
 
     /**
      * Returns Invoices.
-     *
      * The list of invoices returned by the search.
      *
      * @return Invoice[]|null
@@ -38,7 +39,6 @@ class SearchInvoicesResponse implements \JsonSerializable
 
     /**
      * Sets Invoices.
-     *
      * The list of invoices returned by the search.
      *
      * @maps invoices
@@ -52,7 +52,6 @@ class SearchInvoicesResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * When a response is truncated, it includes a cursor that you can use in a
      * subsequent request to fetch the next set of invoices. If empty, this is the final
      * response.
@@ -66,7 +65,6 @@ class SearchInvoicesResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * When a response is truncated, it includes a cursor that you can use in a
      * subsequent request to fetch the next set of invoices. If empty, this is the final
      * response.
@@ -82,7 +80,6 @@ class SearchInvoicesResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Information about errors encountered during the request.
      *
      * @return Error[]|null
@@ -94,7 +91,6 @@ class SearchInvoicesResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Information about errors encountered during the request.
      *
      * @maps errors
@@ -109,17 +105,28 @@ class SearchInvoicesResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['invoices'] = $this->invoices;
-        $json['cursor']   = $this->cursor;
-        $json['errors']   = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->invoices)) {
+            $json['invoices'] = $this->invoices;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']   = $this->cursor;
+        }
+        if (isset($this->errors)) {
+            $json['errors']   = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

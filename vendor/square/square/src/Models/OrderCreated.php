@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class OrderCreated implements \JsonSerializable
 {
     /**
@@ -33,7 +35,6 @@ class OrderCreated implements \JsonSerializable
 
     /**
      * Returns Order Id.
-     *
      * The order's unique ID.
      */
     public function getOrderId(): ?string
@@ -43,7 +44,6 @@ class OrderCreated implements \JsonSerializable
 
     /**
      * Sets Order Id.
-     *
      * The order's unique ID.
      *
      * @maps order_id
@@ -55,12 +55,11 @@ class OrderCreated implements \JsonSerializable
 
     /**
      * Returns Version.
+     * The version number, which is incremented each time an update is committed to the order.
+     * Orders that were not created through the API do not include a version number and
+     * therefore cannot be updated.
      *
-     * Version number which is incremented each time an update is committed to the order.
-     * Orders that were not created through the API will not include a version and
-     * thus cannot be updated.
-     *
-     * [Read more about working with versions](https://developer.squareup.com/docs/orders-api/manage-
+     * [Read more about working with versions.](https://developer.squareup.com/docs/orders-api/manage-
      * orders#update-orders)
      */
     public function getVersion(): ?int
@@ -70,12 +69,11 @@ class OrderCreated implements \JsonSerializable
 
     /**
      * Sets Version.
+     * The version number, which is incremented each time an update is committed to the order.
+     * Orders that were not created through the API do not include a version number and
+     * therefore cannot be updated.
      *
-     * Version number which is incremented each time an update is committed to the order.
-     * Orders that were not created through the API will not include a version and
-     * thus cannot be updated.
-     *
-     * [Read more about working with versions](https://developer.squareup.com/docs/orders-api/manage-
+     * [Read more about working with versions.](https://developer.squareup.com/docs/orders-api/manage-
      * orders#update-orders)
      *
      * @maps version
@@ -87,8 +85,7 @@ class OrderCreated implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
-     * The ID of the merchant location this order is associated with.
+     * The ID of the seller location that this order is associated with.
      */
     public function getLocationId(): ?string
     {
@@ -97,8 +94,7 @@ class OrderCreated implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
-     * The ID of the merchant location this order is associated with.
+     * The ID of the seller location that this order is associated with.
      *
      * @maps location_id
      */
@@ -109,7 +105,6 @@ class OrderCreated implements \JsonSerializable
 
     /**
      * Returns State.
-     *
      * The state of the order.
      */
     public function getState(): ?string
@@ -119,7 +114,6 @@ class OrderCreated implements \JsonSerializable
 
     /**
      * Sets State.
-     *
      * The state of the order.
      *
      * @maps state
@@ -131,8 +125,7 @@ class OrderCreated implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
-     * Timestamp for when the order was created in RFC 3339 format.
+     * The timestamp for when the order was created, in RFC 3339 format.
      */
     public function getCreatedAt(): ?string
     {
@@ -141,8 +134,7 @@ class OrderCreated implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
-     * Timestamp for when the order was created in RFC 3339 format.
+     * The timestamp for when the order was created, in RFC 3339 format.
      *
      * @maps created_at
      */
@@ -154,19 +146,34 @@ class OrderCreated implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['order_id']   = $this->orderId;
-        $json['version']    = $this->version;
-        $json['location_id'] = $this->locationId;
-        $json['state']      = $this->state;
-        $json['created_at'] = $this->createdAt;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->orderId)) {
+            $json['order_id']    = $this->orderId;
+        }
+        if (isset($this->version)) {
+            $json['version']     = $this->version;
+        }
+        if (isset($this->locationId)) {
+            $json['location_id'] = $this->locationId;
+        }
+        if (isset($this->state)) {
+            $json['state']       = $this->state;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']  = $this->createdAt;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

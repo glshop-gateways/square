@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A filter to select resources based on an exact field value. For any given
  * value, the value can only be in one property. Depending on the field, either
@@ -30,7 +32,6 @@ class FilterValue implements \JsonSerializable
 
     /**
      * Returns All.
-     *
      * A list of terms that must be present on the field of the resource.
      *
      * @return string[]|null
@@ -42,7 +43,6 @@ class FilterValue implements \JsonSerializable
 
     /**
      * Sets All.
-     *
      * A list of terms that must be present on the field of the resource.
      *
      * @maps all
@@ -56,7 +56,6 @@ class FilterValue implements \JsonSerializable
 
     /**
      * Returns Any.
-     *
      * A list of terms where at least one of them must be present on the
      * field of the resource.
      *
@@ -69,7 +68,6 @@ class FilterValue implements \JsonSerializable
 
     /**
      * Sets Any.
-     *
      * A list of terms where at least one of them must be present on the
      * field of the resource.
      *
@@ -84,7 +82,6 @@ class FilterValue implements \JsonSerializable
 
     /**
      * Returns None.
-     *
      * A list of terms that must not be present on the field the resource
      *
      * @return string[]|null
@@ -96,7 +93,6 @@ class FilterValue implements \JsonSerializable
 
     /**
      * Sets None.
-     *
      * A list of terms that must not be present on the field the resource
      *
      * @maps none
@@ -111,17 +107,28 @@ class FilterValue implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['all']  = $this->all;
-        $json['any']  = $this->any;
-        $json['none'] = $this->none;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->all)) {
+            $json['all']  = $this->all;
+        }
+        if (isset($this->any)) {
+            $json['any']  = $this->any;
+        }
+        if (isset($this->none)) {
+            $json['none'] = $this->none;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

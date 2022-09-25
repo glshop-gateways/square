@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * An additional seller-defined and customer-facing field to include on the invoice. For more
  * information,
  * see [Custom fields](https://developer.squareup.com/docs/invoices-api/overview#custom-fields).
+ *
+ * Adding custom fields to an invoice requires an
+ * [Invoices Plus subscription](https://developer.squareup.com/docs/invoices-api/overview#invoices-plus-
+ * subscription).
  */
 class InvoiceCustomField implements \JsonSerializable
 {
@@ -28,7 +34,6 @@ class InvoiceCustomField implements \JsonSerializable
 
     /**
      * Returns Label.
-     *
      * The label or title of the custom field. This field is required for a custom field.
      */
     public function getLabel(): ?string
@@ -38,7 +43,6 @@ class InvoiceCustomField implements \JsonSerializable
 
     /**
      * Sets Label.
-     *
      * The label or title of the custom field. This field is required for a custom field.
      *
      * @maps label
@@ -50,7 +54,6 @@ class InvoiceCustomField implements \JsonSerializable
 
     /**
      * Returns Value.
-     *
      * The text of the custom field. If omitted, only the label is rendered.
      */
     public function getValue(): ?string
@@ -60,7 +63,6 @@ class InvoiceCustomField implements \JsonSerializable
 
     /**
      * Sets Value.
-     *
      * The text of the custom field. If omitted, only the label is rendered.
      *
      * @maps value
@@ -72,7 +74,6 @@ class InvoiceCustomField implements \JsonSerializable
 
     /**
      * Returns Placement.
-     *
      * Indicates where to render a custom field on the Square-hosted invoice page and in emailed or PDF
      * copies of the invoice.
      */
@@ -83,7 +84,6 @@ class InvoiceCustomField implements \JsonSerializable
 
     /**
      * Sets Placement.
-     *
      * Indicates where to render a custom field on the Square-hosted invoice page and in emailed or PDF
      * copies of the invoice.
      *
@@ -97,17 +97,28 @@ class InvoiceCustomField implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['label']     = $this->label;
-        $json['value']     = $this->value;
-        $json['placement'] = $this->placement;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->label)) {
+            $json['label']     = $this->label;
+        }
+        if (isset($this->value)) {
+            $json['value']     = $this->value;
+        }
+        if (isset($this->placement)) {
+            $json['placement'] = $this->placement;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

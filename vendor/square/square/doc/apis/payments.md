@@ -10,13 +10,13 @@ $paymentsApi = $client->getPaymentsApi();
 
 ## Methods
 
-* [List Payments](/doc/apis/payments.md#list-payments)
-* [Create Payment](/doc/apis/payments.md#create-payment)
-* [Cancel Payment by Idempotency Key](/doc/apis/payments.md#cancel-payment-by-idempotency-key)
-* [Get Payment](/doc/apis/payments.md#get-payment)
-* [Update Payment](/doc/apis/payments.md#update-payment)
-* [Cancel Payment](/doc/apis/payments.md#cancel-payment)
-* [Complete Payment](/doc/apis/payments.md#complete-payment)
+* [List Payments](../../doc/apis/payments.md#list-payments)
+* [Create Payment](../../doc/apis/payments.md#create-payment)
+* [Cancel Payment by Idempotency Key](../../doc/apis/payments.md#cancel-payment-by-idempotency-key)
+* [Get Payment](../../doc/apis/payments.md#get-payment)
+* [Update Payment](../../doc/apis/payments.md#update-payment)
+* [Cancel Payment](../../doc/apis/payments.md#cancel-payment)
+* [Complete Payment](../../doc/apis/payments.md#complete-payment)
 
 
 # List Payments
@@ -58,22 +58,12 @@ function listPayments(
 
 ## Response Type
 
-[`ListPaymentsResponse`](/doc/models/list-payments-response.md)
+[`ListPaymentsResponse`](../../doc/models/list-payments-response.md)
 
 ## Example Usage
 
 ```php
-$beginTime = 'begin_time2';
-$endTime = 'end_time2';
-$sortOrder = 'sort_order0';
-$cursor = 'cursor6';
-$locationId = 'location_id4';
-$total = 10;
-$last4 = 'last_42';
-$cardBrand = 'card_brand6';
-$limit = 172;
-
-$apiResponse = $paymentsApi->listPayments($beginTime, $endTime, $sortOrder, $cursor, $locationId, $total, $last4, $cardBrand, $limit);
+$apiResponse = $paymentsApi->listPayments();
 
 if ($apiResponse->isSuccess()) {
     $listPaymentsResponse = $apiResponse->getResult();
@@ -106,36 +96,31 @@ function createPayment(CreatePaymentRequest $body): ApiResponse
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `body` | [`CreatePaymentRequest`](/doc/models/create-payment-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
+| `body` | [`CreatePaymentRequest`](../../doc/models/create-payment-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`CreatePaymentResponse`](/doc/models/create-payment-response.md)
+[`CreatePaymentResponse`](../../doc/models/create-payment-response.md)
 
 ## Example Usage
 
 ```php
-$body_sourceId = 'ccof:uIbfJXhXETSP197M3GB';
-$body_idempotencyKey = '4935a656-a929-4792-b97c-8848be85c27c';
+$body_sourceId = 'ccof:GaJGNaZa8x4OgDJn4GB';
+$body_idempotencyKey = '7b0f3ec5-086a-4871-8f13-3c81b3875218';
 $body_amountMoney = new Models\Money;
-$body_amountMoney->setAmount(200);
+$body_amountMoney->setAmount(1000);
 $body_amountMoney->setCurrency(Models\Currency::USD);
 $body = new Models\CreatePaymentRequest(
     $body_sourceId,
     $body_idempotencyKey,
     $body_amountMoney
 );
-$body->setTipMoney(new Models\Money);
-$body->getTipMoney()->setAmount(198);
-$body->getTipMoney()->setCurrency(Models\Currency::CHF);
 $body->setAppFeeMoney(new Models\Money);
 $body->getAppFeeMoney()->setAmount(10);
 $body->getAppFeeMoney()->setCurrency(Models\Currency::USD);
-$body->setDelayDuration('delay_duration6');
 $body->setAutocomplete(true);
-$body->setOrderId('order_id0');
-$body->setCustomerId('VDKXEEKPJN48QDG3BGGFAK05P8');
-$body->setLocationId('XK3DBG77NJBFX');
+$body->setCustomerId('W92WH6P11H4Z77CTET0RNTGFW8');
+$body->setLocationId('L88917AVBK2S5');
 $body->setReferenceId('123456');
 $body->setNote('Brief description');
 
@@ -175,11 +160,11 @@ function cancelPaymentByIdempotencyKey(CancelPaymentByIdempotencyKeyRequest $bod
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `body` | [`CancelPaymentByIdempotencyKeyRequest`](/doc/models/cancel-payment-by-idempotency-key-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
+| `body` | [`CancelPaymentByIdempotencyKeyRequest`](../../doc/models/cancel-payment-by-idempotency-key-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`CancelPaymentByIdempotencyKeyResponse`](/doc/models/cancel-payment-by-idempotency-key-response.md)
+[`CancelPaymentByIdempotencyKeyResponse`](../../doc/models/cancel-payment-by-idempotency-key-response.md)
 
 ## Example Usage
 
@@ -219,7 +204,7 @@ function getPayment(string $paymentId): ApiResponse
 
 ## Response Type
 
-[`GetPaymentResponse`](/doc/models/get-payment-response.md)
+[`GetPaymentResponse`](../../doc/models/get-payment-response.md)
 
 ## Example Usage
 
@@ -254,31 +239,28 @@ function updatePayment(string $paymentId, UpdatePaymentRequest $body): ApiRespon
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `paymentId` | `string` | Template, Required | The ID of the payment to update. |
-| `body` | [`UpdatePaymentRequest`](/doc/models/update-payment-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
+| `body` | [`UpdatePaymentRequest`](../../doc/models/update-payment-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`UpdatePaymentResponse`](/doc/models/update-payment-response.md)
+[`UpdatePaymentResponse`](../../doc/models/update-payment-response.md)
 
 ## Example Usage
 
 ```php
 $paymentId = 'payment_id0';
-$body_idempotencyKey = '3d3c3b22-9572-4fc6-1111-e4d2f41b4122';
+$body_idempotencyKey = '956f8b13-e4ec-45d6-85e8-d1d95ef0c5de';
 $body = new Models\UpdatePaymentRequest(
     $body_idempotencyKey
 );
 $body->setPayment(new Models\Payment);
-$body->getPayment()->setId('id2');
-$body->getPayment()->setCreatedAt('created_at0');
-$body->getPayment()->setUpdatedAt('updated_at8');
 $body->getPayment()->setAmountMoney(new Models\Money);
 $body->getPayment()->getAmountMoney()->setAmount(1000);
 $body->getPayment()->getAmountMoney()->setCurrency(Models\Currency::USD);
 $body->getPayment()->setTipMoney(new Models\Money);
-$body->getPayment()->getTipMoney()->setAmount(300);
+$body->getPayment()->getTipMoney()->setAmount(100);
 $body->getPayment()->getTipMoney()->setCurrency(Models\Currency::USD);
-$body->getPayment()->setVersionToken('Z3okDzm2VRv5m5nE3WGx381ItTNhvjkB4VapByyz54h6o');
+$body->getPayment()->setVersionToken('ODhwVQ35xwlzRuoZEwKXucfu7583sPTzK48c5zoGd0g6o');
 
 $apiResponse = $paymentsApi->updatePayment($paymentId, $body);
 
@@ -311,7 +293,7 @@ function cancelPayment(string $paymentId): ApiResponse
 
 ## Response Type
 
-[`CancelPaymentResponse`](/doc/models/cancel-payment-response.md)
+[`CancelPaymentResponse`](../../doc/models/cancel-payment-response.md)
 
 ## Example Usage
 
@@ -340,7 +322,7 @@ By default, payments are set to complete immediately after they are created.
 You can use this endpoint to complete a payment with the APPROVED `status`.
 
 ```php
-function completePayment(string $paymentId): ApiResponse
+function completePayment(string $paymentId, CompletePaymentRequest $body): ApiResponse
 ```
 
 ## Parameters
@@ -348,17 +330,19 @@ function completePayment(string $paymentId): ApiResponse
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `paymentId` | `string` | Template, Required | The unique ID identifying the payment to be completed. |
+| `body` | [`CompletePaymentRequest`](../../doc/models/complete-payment-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`CompletePaymentResponse`](/doc/models/complete-payment-response.md)
+[`CompletePaymentResponse`](../../doc/models/complete-payment-response.md)
 
 ## Example Usage
 
 ```php
 $paymentId = 'payment_id0';
+$body = new Models\CompletePaymentRequest;
 
-$apiResponse = $paymentsApi->completePayment($paymentId);
+$apiResponse = $paymentsApi->completePayment($paymentId, $body);
 
 if ($apiResponse->isSuccess()) {
     $completePaymentResponse = $apiResponse->getResult();

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class CalculateOrderRequest implements \JsonSerializable
 {
     /**
@@ -26,10 +28,9 @@ class CalculateOrderRequest implements \JsonSerializable
 
     /**
      * Returns Order.
-     *
      * Contains all information related to a single order to process with Square,
-     * including line items that specify the products to purchase. Order objects also
-     * include information on any associated tenders, refunds, and returns.
+     * including line items that specify the products to purchase. `Order` objects also
+     * include information about any associated tenders, refunds, and returns.
      *
      * All Connect V2 Transactions have all been converted to Orders including all associated
      * itemization data.
@@ -41,10 +42,9 @@ class CalculateOrderRequest implements \JsonSerializable
 
     /**
      * Sets Order.
-     *
      * Contains all information related to a single order to process with Square,
-     * including line items that specify the products to purchase. Order objects also
-     * include information on any associated tenders, refunds, and returns.
+     * including line items that specify the products to purchase. `Order` objects also
+     * include information about any associated tenders, refunds, and returns.
      *
      * All Connect V2 Transactions have all been converted to Orders including all associated
      * itemization data.
@@ -59,11 +59,10 @@ class CalculateOrderRequest implements \JsonSerializable
 
     /**
      * Returns Proposed Rewards.
-     *
-     * Identifies one or more loyalty reward tiers to apply during order calculation.
+     * Identifies one or more loyalty reward tiers to apply during the order calculation.
      * The discounts defined by the reward tiers are added to the order only to preview the
-     * effect of applying the specified reward(s). The reward(s) do not correspond to actual
-     * redemptions, that is, no `reward`s are created. Therefore, the reward `id`s are
+     * effect of applying the specified rewards. The rewards do not correspond to actual
+     * redemptions; that is, no `reward`s are created. Therefore, the reward `id`s are
      * random strings used only to reference the reward tier.
      *
      * @return OrderReward[]|null
@@ -75,11 +74,10 @@ class CalculateOrderRequest implements \JsonSerializable
 
     /**
      * Sets Proposed Rewards.
-     *
-     * Identifies one or more loyalty reward tiers to apply during order calculation.
+     * Identifies one or more loyalty reward tiers to apply during the order calculation.
      * The discounts defined by the reward tiers are added to the order only to preview the
-     * effect of applying the specified reward(s). The reward(s) do not correspond to actual
-     * redemptions, that is, no `reward`s are created. Therefore, the reward `id`s are
+     * effect of applying the specified rewards. The rewards do not correspond to actual
+     * redemptions; that is, no `reward`s are created. Therefore, the reward `id`s are
      * random strings used only to reference the reward tier.
      *
      * @maps proposed_rewards
@@ -94,16 +92,23 @@ class CalculateOrderRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['order']           = $this->order;
-        $json['proposed_rewards'] = $this->proposedRewards;
-
-        return array_filter($json, function ($val) {
+        $json['order']                = $this->order;
+        if (isset($this->proposedRewards)) {
+            $json['proposed_rewards'] = $this->proposedRewards;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

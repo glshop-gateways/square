@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class DisputeEvidence implements \JsonSerializable
 {
     /**
      * @var string|null
      */
     private $evidenceId;
+
+    /**
+     * @var string|null
+     */
+    private $id;
 
     /**
      * @var string|null
@@ -38,7 +45,6 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Returns Evidence Id.
-     *
      * The Square-generated ID of the evidence.
      */
     public function getEvidenceId(): ?string
@@ -48,7 +54,6 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Sets Evidence Id.
-     *
      * The Square-generated ID of the evidence.
      *
      * @maps evidence_id
@@ -59,8 +64,27 @@ class DisputeEvidence implements \JsonSerializable
     }
 
     /**
-     * Returns Dispute Id.
+     * Returns Id.
+     * The Square-generated ID of the evidence.
+     */
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    /**
+     * Sets Id.
+     * The Square-generated ID of the evidence.
      *
+     * @maps id
+     */
+    public function setId(?string $id): void
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * Returns Dispute Id.
      * The ID of the dispute the evidence is associated with.
      */
     public function getDisputeId(): ?string
@@ -70,7 +94,6 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Sets Dispute Id.
-     *
      * The ID of the dispute the evidence is associated with.
      *
      * @maps dispute_id
@@ -82,7 +105,6 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Returns Evidence File.
-     *
      * A file to be uploaded as dispute evidence.
      */
     public function getEvidenceFile(): ?DisputeEvidenceFile
@@ -92,7 +114,6 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Sets Evidence File.
-     *
      * A file to be uploaded as dispute evidence.
      *
      * @maps evidence_file
@@ -104,7 +125,6 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Returns Evidence Text.
-     *
      * Raw text
      */
     public function getEvidenceText(): ?string
@@ -114,7 +134,6 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Sets Evidence Text.
-     *
      * Raw text
      *
      * @maps evidence_text
@@ -126,8 +145,7 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Returns Uploaded At.
-     *
-     * The time when the next action is due, in RFC 3339 format.
+     * The time when the evidence was uploaded, in RFC 3339 format.
      */
     public function getUploadedAt(): ?string
     {
@@ -136,8 +154,7 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Sets Uploaded At.
-     *
-     * The time when the next action is due, in RFC 3339 format.
+     * The time when the evidence was uploaded, in RFC 3339 format.
      *
      * @maps uploaded_at
      */
@@ -148,7 +165,6 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Returns Evidence Type.
-     *
      * The type of the dispute evidence.
      */
     public function getEvidenceType(): ?string
@@ -158,7 +174,6 @@ class DisputeEvidence implements \JsonSerializable
 
     /**
      * Sets Evidence Type.
-     *
      * The type of the dispute evidence.
      *
      * @maps evidence_type
@@ -171,20 +186,40 @@ class DisputeEvidence implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['evidence_id']  = $this->evidenceId;
-        $json['dispute_id']   = $this->disputeId;
-        $json['evidence_file'] = $this->evidenceFile;
-        $json['evidence_text'] = $this->evidenceText;
-        $json['uploaded_at']  = $this->uploadedAt;
-        $json['evidence_type'] = $this->evidenceType;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->evidenceId)) {
+            $json['evidence_id']   = $this->evidenceId;
+        }
+        if (isset($this->id)) {
+            $json['id']            = $this->id;
+        }
+        if (isset($this->disputeId)) {
+            $json['dispute_id']    = $this->disputeId;
+        }
+        if (isset($this->evidenceFile)) {
+            $json['evidence_file'] = $this->evidenceFile;
+        }
+        if (isset($this->evidenceText)) {
+            $json['evidence_text'] = $this->evidenceText;
+        }
+        if (isset($this->uploadedAt)) {
+            $json['uploaded_at']   = $this->uploadedAt;
+        }
+        if (isset($this->evidenceType)) {
+            $json['evidence_type'] = $this->evidenceType;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

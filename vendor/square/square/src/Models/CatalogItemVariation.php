@@ -4,9 +4,27 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * An item variation (i.e., product) in the Catalog object model. Each item
- * may have a maximum of 250 item variations.
+ * An item variation, representing a product for sale, in the Catalog object model. Each
+ * [item]($m/CatalogItem) must have at least one
+ * item variation and can have at most 250 item variations.
+ *
+ * An item variation can be sellable, stockable, or both if it has a unit of measure for its count for
+ * the sold number of the variation, the stocked
+ * number of the variation, or both. For example, when a variation representing wine is stocked and
+ * sold by the bottle, the variation is both
+ * stockable and sellable. But when a variation of the wine is sold by the glass, the sold units cannot
+ * be used as a measure of the stocked units. This by-the-glass
+ * variation is sellable, but not stockable. To accurately keep track of the wine's inventory count at
+ * any time, the sellable count must be
+ * converted to stockable count. Typically, the seller defines this unit conversion. For example, 1
+ * bottle equals 5 glasses. The Square API exposes
+ * the `stockable_conversion` property on the variation to specify the conversion. Thus, when two
+ * glasses of the wine are sold, the sellable count
+ * decreases by 2, and the stockable count automatically decreases by 0.4 bottle according to the
+ * conversion.
  */
 class CatalogItemVariation implements \JsonSerializable
 {
@@ -91,13 +109,32 @@ class CatalogItemVariation implements \JsonSerializable
     private $measurementUnitId;
 
     /**
+     * @var bool|null
+     */
+    private $sellable;
+
+    /**
+     * @var bool|null
+     */
+    private $stockable;
+
+    /**
+     * @var string[]|null
+     */
+    private $imageIds;
+
+    /**
      * @var string[]|null
      */
     private $teamMemberIds;
 
     /**
+     * @var CatalogStockConversion|null
+     */
+    private $stockableConversion;
+
+    /**
      * Returns Item Id.
-     *
      * The ID of the `CatalogItem` associated with this item variation.
      */
     public function getItemId(): ?string
@@ -107,7 +144,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Item Id.
-     *
      * The ID of the `CatalogItem` associated with this item variation.
      *
      * @maps item_id
@@ -119,7 +155,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Name.
-     *
      * The item variation's name. This is a searchable attribute for use in applicable query filters, and
      * its value length is of Unicode code points.
      */
@@ -130,7 +165,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * The item variation's name. This is a searchable attribute for use in applicable query filters, and
      * its value length is of Unicode code points.
      *
@@ -143,7 +177,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Sku.
-     *
      * The item variation's SKU, if any. This is a searchable attribute for use in applicable query filters.
      */
     public function getSku(): ?string
@@ -153,7 +186,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Sku.
-     *
      * The item variation's SKU, if any. This is a searchable attribute for use in applicable query filters.
      *
      * @maps sku
@@ -165,7 +197,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Upc.
-     *
      * The universal product code (UPC) of the item variation, if any. This is a searchable attribute for
      * use in applicable query filters.
      *
@@ -184,7 +215,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Upc.
-     *
      * The universal product code (UPC) of the item variation, if any. This is a searchable attribute for
      * use in applicable query filters.
      *
@@ -205,7 +235,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Ordinal.
-     *
      * The order in which this item variation should be displayed. This value is read-only. On writes, the
      * ordinal
      * for each item variation within a parent `CatalogItem` is set according to the item variations's
@@ -218,7 +247,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Ordinal.
-     *
      * The order in which this item variation should be displayed. This value is read-only. On writes, the
      * ordinal
      * for each item variation within a parent `CatalogItem` is set according to the item variations's
@@ -233,7 +261,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Pricing Type.
-     *
      * Indicates whether the price of a CatalogItemVariation should be entered manually at the time of sale.
      */
     public function getPricingType(): ?string
@@ -243,7 +270,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Pricing Type.
-     *
      * Indicates whether the price of a CatalogItemVariation should be entered manually at the time of sale.
      *
      * @maps pricing_type
@@ -255,7 +281,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Price Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -271,7 +296,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Price Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -289,7 +313,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Location Overrides.
-     *
      * Per-location price and inventory overrides.
      *
      * @return ItemVariationLocationOverrides[]|null
@@ -301,7 +324,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Location Overrides.
-     *
      * Per-location price and inventory overrides.
      *
      * @maps location_overrides
@@ -315,7 +337,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Track Inventory.
-     *
      * If `true`, inventory tracking is active for the variation.
      */
     public function getTrackInventory(): ?bool
@@ -325,7 +346,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Track Inventory.
-     *
      * If `true`, inventory tracking is active for the variation.
      *
      * @maps track_inventory
@@ -337,7 +357,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Inventory Alert Type.
-     *
      * Indicates whether Square should alert the merchant when the inventory quantity of a
      * CatalogItemVariation is low.
      */
@@ -348,7 +367,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Inventory Alert Type.
-     *
      * Indicates whether Square should alert the merchant when the inventory quantity of a
      * CatalogItemVariation is low.
      *
@@ -361,7 +379,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Inventory Alert Threshold.
-     *
      * If the inventory quantity for the variation is less than or equal to this value and
      * `inventory_alert_type`
      * is `LOW_QUANTITY`, the variation displays an alert in the merchant dashboard.
@@ -375,7 +392,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Inventory Alert Threshold.
-     *
      * If the inventory quantity for the variation is less than or equal to this value and
      * `inventory_alert_type`
      * is `LOW_QUANTITY`, the variation displays an alert in the merchant dashboard.
@@ -391,7 +407,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns User Data.
-     *
      * Arbitrary user metadata to associate with the item variation. This attribute value length is of
      * Unicode code points.
      */
@@ -402,7 +417,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets User Data.
-     *
      * Arbitrary user metadata to associate with the item variation. This attribute value length is of
      * Unicode code points.
      *
@@ -415,7 +429,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Service Duration.
-     *
      * If the `CatalogItem` that owns this item variation is of type
      * `APPOINTMENTS_SERVICE`, then this is the duration of the service in milliseconds. For
      * example, a 30 minute appointment would have the value `1800000`, which is equal to
@@ -428,7 +441,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Service Duration.
-     *
      * If the `CatalogItem` that owns this item variation is of type
      * `APPOINTMENTS_SERVICE`, then this is the duration of the service in milliseconds. For
      * example, a 30 minute appointment would have the value `1800000`, which is equal to
@@ -443,7 +455,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Available for Booking.
-     *
      * If the `CatalogItem` that owns this item variation is of type
      * `APPOINTMENTS_SERVICE`, a bool representing whether this service is available for booking.
      */
@@ -454,7 +465,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Available for Booking.
-     *
      * If the `CatalogItem` that owns this item variation is of type
      * `APPOINTMENTS_SERVICE`, a bool representing whether this service is available for booking.
      *
@@ -467,7 +477,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Item Option Values.
-     *
      * List of item option values associated with this item variation. Listed
      * in the same order as the item options of the parent item.
      *
@@ -480,7 +489,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Item Option Values.
-     *
      * List of item option values associated with this item variation. Listed
      * in the same order as the item options of the parent item.
      *
@@ -495,7 +503,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Returns Measurement Unit Id.
-     *
      * ID of the ‘CatalogMeasurementUnit’ that is used to measure the quantity
      * sold of this item variation. If left unset, the item will be sold in
      * whole quantities.
@@ -507,7 +514,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Measurement Unit Id.
-     *
      * ID of the ‘CatalogMeasurementUnit’ that is used to measure the quantity
      * sold of this item variation. If left unset, the item will be sold in
      * whole quantities.
@@ -520,8 +526,83 @@ class CatalogItemVariation implements \JsonSerializable
     }
 
     /**
-     * Returns Team Member Ids.
+     * Returns Sellable.
+     * Whether this variation can be sold. The inventory count of a sellable variation indicates
+     * the number of units available for sale. When a variation is both stockable and sellable,
+     * its sellable inventory count can be smaller than or equal to its stockable count.
+     */
+    public function getSellable(): ?bool
+    {
+        return $this->sellable;
+    }
+
+    /**
+     * Sets Sellable.
+     * Whether this variation can be sold. The inventory count of a sellable variation indicates
+     * the number of units available for sale. When a variation is both stockable and sellable,
+     * its sellable inventory count can be smaller than or equal to its stockable count.
      *
+     * @maps sellable
+     */
+    public function setSellable(?bool $sellable): void
+    {
+        $this->sellable = $sellable;
+    }
+
+    /**
+     * Returns Stockable.
+     * Whether stock is counted directly on this variation (TRUE) or only on its components (FALSE).
+     * When a variation is both stockable and sellable, the inventory count of a stockable variation keeps
+     * track of the number of units of this variation in stock
+     * and is not an indicator of the number of units of the variation that can be sold.
+     */
+    public function getStockable(): ?bool
+    {
+        return $this->stockable;
+    }
+
+    /**
+     * Sets Stockable.
+     * Whether stock is counted directly on this variation (TRUE) or only on its components (FALSE).
+     * When a variation is both stockable and sellable, the inventory count of a stockable variation keeps
+     * track of the number of units of this variation in stock
+     * and is not an indicator of the number of units of the variation that can be sold.
+     *
+     * @maps stockable
+     */
+    public function setStockable(?bool $stockable): void
+    {
+        $this->stockable = $stockable;
+    }
+
+    /**
+     * Returns Image Ids.
+     * The IDs of images associated with this `CatalogItemVariation` instance.
+     * These images will be shown to customers in Square Online Store.
+     *
+     * @return string[]|null
+     */
+    public function getImageIds(): ?array
+    {
+        return $this->imageIds;
+    }
+
+    /**
+     * Sets Image Ids.
+     * The IDs of images associated with this `CatalogItemVariation` instance.
+     * These images will be shown to customers in Square Online Store.
+     *
+     * @maps image_ids
+     *
+     * @param string[]|null $imageIds
+     */
+    public function setImageIds(?array $imageIds): void
+    {
+        $this->imageIds = $imageIds;
+    }
+
+    /**
+     * Returns Team Member Ids.
      * Tokens of employees that can perform the service represented by this variation. Only valid for
      * variations of type `APPOINTMENTS_SERVICE`.
      *
@@ -534,7 +615,6 @@ class CatalogItemVariation implements \JsonSerializable
 
     /**
      * Sets Team Member Ids.
-     *
      * Tokens of employees that can perform the service represented by this variation. Only valid for
      * variations of type `APPOINTMENTS_SERVICE`.
      *
@@ -548,33 +628,110 @@ class CatalogItemVariation implements \JsonSerializable
     }
 
     /**
+     * Returns Stockable Conversion.
+     * Represents the rule of conversion between a stockable
+     * [CatalogItemVariation]($m/CatalogItemVariation)
+     * and a non-stockable sell-by or receive-by `CatalogItemVariation` that
+     * share the same underlying stock.
+     */
+    public function getStockableConversion(): ?CatalogStockConversion
+    {
+        return $this->stockableConversion;
+    }
+
+    /**
+     * Sets Stockable Conversion.
+     * Represents the rule of conversion between a stockable
+     * [CatalogItemVariation]($m/CatalogItemVariation)
+     * and a non-stockable sell-by or receive-by `CatalogItemVariation` that
+     * share the same underlying stock.
+     *
+     * @maps stockable_conversion
+     */
+    public function setStockableConversion(?CatalogStockConversion $stockableConversion): void
+    {
+        $this->stockableConversion = $stockableConversion;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['item_id']                 = $this->itemId;
-        $json['name']                    = $this->name;
-        $json['sku']                     = $this->sku;
-        $json['upc']                     = $this->upc;
-        $json['ordinal']                 = $this->ordinal;
-        $json['pricing_type']            = $this->pricingType;
-        $json['price_money']             = $this->priceMoney;
-        $json['location_overrides']      = $this->locationOverrides;
-        $json['track_inventory']         = $this->trackInventory;
-        $json['inventory_alert_type']    = $this->inventoryAlertType;
-        $json['inventory_alert_threshold'] = $this->inventoryAlertThreshold;
-        $json['user_data']               = $this->userData;
-        $json['service_duration']        = $this->serviceDuration;
-        $json['available_for_booking']   = $this->availableForBooking;
-        $json['item_option_values']      = $this->itemOptionValues;
-        $json['measurement_unit_id']     = $this->measurementUnitId;
-        $json['team_member_ids']         = $this->teamMemberIds;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->itemId)) {
+            $json['item_id']                   = $this->itemId;
+        }
+        if (isset($this->name)) {
+            $json['name']                      = $this->name;
+        }
+        if (isset($this->sku)) {
+            $json['sku']                       = $this->sku;
+        }
+        if (isset($this->upc)) {
+            $json['upc']                       = $this->upc;
+        }
+        if (isset($this->ordinal)) {
+            $json['ordinal']                   = $this->ordinal;
+        }
+        if (isset($this->pricingType)) {
+            $json['pricing_type']              = $this->pricingType;
+        }
+        if (isset($this->priceMoney)) {
+            $json['price_money']               = $this->priceMoney;
+        }
+        if (isset($this->locationOverrides)) {
+            $json['location_overrides']        = $this->locationOverrides;
+        }
+        if (isset($this->trackInventory)) {
+            $json['track_inventory']           = $this->trackInventory;
+        }
+        if (isset($this->inventoryAlertType)) {
+            $json['inventory_alert_type']      = $this->inventoryAlertType;
+        }
+        if (isset($this->inventoryAlertThreshold)) {
+            $json['inventory_alert_threshold'] = $this->inventoryAlertThreshold;
+        }
+        if (isset($this->userData)) {
+            $json['user_data']                 = $this->userData;
+        }
+        if (isset($this->serviceDuration)) {
+            $json['service_duration']          = $this->serviceDuration;
+        }
+        if (isset($this->availableForBooking)) {
+            $json['available_for_booking']     = $this->availableForBooking;
+        }
+        if (isset($this->itemOptionValues)) {
+            $json['item_option_values']        = $this->itemOptionValues;
+        }
+        if (isset($this->measurementUnitId)) {
+            $json['measurement_unit_id']       = $this->measurementUnitId;
+        }
+        if (isset($this->sellable)) {
+            $json['sellable']                  = $this->sellable;
+        }
+        if (isset($this->stockable)) {
+            $json['stockable']                 = $this->stockable;
+        }
+        if (isset($this->imageIds)) {
+            $json['image_ids']                 = $this->imageIds;
+        }
+        if (isset($this->teamMemberIds)) {
+            $json['team_member_ids']           = $this->teamMemberIds;
+        }
+        if (isset($this->stockableConversion)) {
+            $json['stockable_conversion']      = $this->stockableConversion;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

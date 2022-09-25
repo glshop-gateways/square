@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Represents a response from a bulk create request, containing the created `TeamMember` objects or
+ * Represents a response from a bulk create request containing the created `TeamMember` objects or
  * error messages.
  */
 class BulkCreateTeamMembersResponse implements \JsonSerializable
 {
     /**
-     * @var array|null
+     * @var array<string,CreateTeamMemberResponse>|null
      */
     private $teamMembers;
 
@@ -22,9 +24,10 @@ class BulkCreateTeamMembersResponse implements \JsonSerializable
 
     /**
      * Returns Team Members.
-     *
      * The successfully created `TeamMember` objects. Each key is the `idempotency_key` that maps to the
      * `CreateTeamMemberRequest`.
+     *
+     * @return array<string,CreateTeamMemberResponse>|null
      */
     public function getTeamMembers(): ?array
     {
@@ -33,11 +36,12 @@ class BulkCreateTeamMembersResponse implements \JsonSerializable
 
     /**
      * Sets Team Members.
-     *
      * The successfully created `TeamMember` objects. Each key is the `idempotency_key` that maps to the
      * `CreateTeamMemberRequest`.
      *
      * @maps team_members
+     *
+     * @param array<string,CreateTeamMemberResponse>|null $teamMembers
      */
     public function setTeamMembers(?array $teamMembers): void
     {
@@ -46,7 +50,6 @@ class BulkCreateTeamMembersResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * The errors that occurred during the request.
      *
      * @return Error[]|null
@@ -58,7 +61,6 @@ class BulkCreateTeamMembersResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * The errors that occurred during the request.
      *
      * @maps errors
@@ -73,16 +75,25 @@ class BulkCreateTeamMembersResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['team_members'] = $this->teamMembers;
-        $json['errors']      = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->teamMembers)) {
+            $json['team_members'] = $this->teamMembers;
+        }
+        if (isset($this->errors)) {
+            $json['errors']       = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class ListTeamMemberBookingProfilesRequest implements \JsonSerializable
 {
     /**
@@ -28,7 +30,6 @@ class ListTeamMemberBookingProfilesRequest implements \JsonSerializable
 
     /**
      * Returns Bookable Only.
-     *
      * Indicates whether to include only bookable team members in the returned result (`true`) or not
      * (`false`).
      */
@@ -39,7 +40,6 @@ class ListTeamMemberBookingProfilesRequest implements \JsonSerializable
 
     /**
      * Sets Bookable Only.
-     *
      * Indicates whether to include only bookable team members in the returned result (`true`) or not
      * (`false`).
      *
@@ -52,8 +52,7 @@ class ListTeamMemberBookingProfilesRequest implements \JsonSerializable
 
     /**
      * Returns Limit.
-     *
-     * The maximum number of results to return.
+     * The maximum number of results to return in a paged response.
      */
     public function getLimit(): ?int
     {
@@ -62,8 +61,7 @@ class ListTeamMemberBookingProfilesRequest implements \JsonSerializable
 
     /**
      * Sets Limit.
-     *
-     * The maximum number of results to return.
+     * The maximum number of results to return in a paged response.
      *
      * @maps limit
      */
@@ -74,8 +72,8 @@ class ListTeamMemberBookingProfilesRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
-     * The cursor for paginating through the results.
+     * The pagination cursor from the preceding response to return the next page of the results. Do not set
+     * this when retrieving the first page of the results.
      */
     public function getCursor(): ?string
     {
@@ -84,8 +82,8 @@ class ListTeamMemberBookingProfilesRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
-     * The cursor for paginating through the results.
+     * The pagination cursor from the preceding response to return the next page of the results. Do not set
+     * this when retrieving the first page of the results.
      *
      * @maps cursor
      */
@@ -96,7 +94,6 @@ class ListTeamMemberBookingProfilesRequest implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * Indicates whether to include only team members enabled at the given location in the returned result.
      */
     public function getLocationId(): ?string
@@ -106,7 +103,6 @@ class ListTeamMemberBookingProfilesRequest implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * Indicates whether to include only team members enabled at the given location in the returned result.
      *
      * @maps location_id
@@ -119,18 +115,31 @@ class ListTeamMemberBookingProfilesRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['bookable_only'] = $this->bookableOnly;
-        $json['limit']        = $this->limit;
-        $json['cursor']       = $this->cursor;
-        $json['location_id']  = $this->locationId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->bookableOnly)) {
+            $json['bookable_only'] = $this->bookableOnly;
+        }
+        if (isset($this->limit)) {
+            $json['limit']         = $this->limit;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']        = $this->cursor;
+        }
+        if (isset($this->locationId)) {
+            $json['location_id']   = $this->locationId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Describes changes to subscription and billing states.
+ * Describes changes to a subscription and the subscription status.
  */
 class SubscriptionEvent implements \JsonSerializable
 {
@@ -50,7 +52,6 @@ class SubscriptionEvent implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The ID of the subscription event.
      */
     public function getId(): string
@@ -60,7 +61,6 @@ class SubscriptionEvent implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The ID of the subscription event.
      *
      * @required
@@ -73,8 +73,7 @@ class SubscriptionEvent implements \JsonSerializable
 
     /**
      * Returns Subscription Event Type.
-     *
-     * The possible subscription event types.
+     * Supported types of an event occurred to a subscription.
      */
     public function getSubscriptionEventType(): string
     {
@@ -83,8 +82,7 @@ class SubscriptionEvent implements \JsonSerializable
 
     /**
      * Sets Subscription Event Type.
-     *
-     * The possible subscription event types.
+     * Supported types of an event occurred to a subscription.
      *
      * @required
      * @maps subscription_event_type
@@ -96,9 +94,7 @@ class SubscriptionEvent implements \JsonSerializable
 
     /**
      * Returns Effective Date.
-     *
-     * The date, in YYYY-MM-DD format (for
-     * example, 2013-01-15), when the subscription event went into effect.
+     * The `YYYY-MM-DD`-formatted date (for example, 2013-01-15) when the subscription event occurred.
      */
     public function getEffectiveDate(): string
     {
@@ -107,9 +103,7 @@ class SubscriptionEvent implements \JsonSerializable
 
     /**
      * Sets Effective Date.
-     *
-     * The date, in YYYY-MM-DD format (for
-     * example, 2013-01-15), when the subscription event went into effect.
+     * The `YYYY-MM-DD`-formatted date (for example, 2013-01-15) when the subscription event occurred.
      *
      * @required
      * @maps effective_date
@@ -121,7 +115,6 @@ class SubscriptionEvent implements \JsonSerializable
 
     /**
      * Returns Plan Id.
-     *
      * The ID of the subscription plan associated with the subscription.
      */
     public function getPlanId(): string
@@ -131,7 +124,6 @@ class SubscriptionEvent implements \JsonSerializable
 
     /**
      * Sets Plan Id.
-     *
      * The ID of the subscription plan associated with the subscription.
      *
      * @required
@@ -144,7 +136,6 @@ class SubscriptionEvent implements \JsonSerializable
 
     /**
      * Returns Info.
-     *
      * Provides information about the subscription event.
      */
     public function getInfo(): ?SubscriptionEventInfo
@@ -154,7 +145,6 @@ class SubscriptionEvent implements \JsonSerializable
 
     /**
      * Sets Info.
-     *
      * Provides information about the subscription event.
      *
      * @maps info
@@ -167,19 +157,26 @@ class SubscriptionEvent implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']                    = $this->id;
+        $json['id']                      = $this->id;
         $json['subscription_event_type'] = $this->subscriptionEventType;
-        $json['effective_date']        = $this->effectiveDate;
-        $json['plan_id']               = $this->planId;
-        $json['info']                  = $this->info;
-
-        return array_filter($json, function ($val) {
+        $json['effective_date']          = $this->effectiveDate;
+        $json['plan_id']                 = $this->planId;
+        if (isset($this->info)) {
+            $json['info']                = $this->info;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

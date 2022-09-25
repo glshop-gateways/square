@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * The set of line items, service charges, taxes, discounts, tips, etc. being returned in an Order.
+ * The set of line items, service charges, taxes, discounts, tips, and other items being returned in an
+ * order.
  */
 class OrderReturn implements \JsonSerializable
 {
@@ -51,8 +54,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Returns Uid.
-     *
-     * Unique ID that identifies the return only within this order.
+     * A unique ID that identifies the return only within this order.
      */
     public function getUid(): ?string
     {
@@ -61,8 +63,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Sets Uid.
-     *
-     * Unique ID that identifies the return only within this order.
+     * A unique ID that identifies the return only within this order.
      *
      * @maps uid
      */
@@ -73,8 +74,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Returns Source Order Id.
-     *
-     * Order which contains the original sale of these returned line items. This will be unset
+     * An order that contains the original sale of these return line items. This is unset
      * for unlinked returns.
      */
     public function getSourceOrderId(): ?string
@@ -84,8 +84,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Sets Source Order Id.
-     *
-     * Order which contains the original sale of these returned line items. This will be unset
+     * An order that contains the original sale of these return line items. This is unset
      * for unlinked returns.
      *
      * @maps source_order_id
@@ -97,8 +96,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Returns Return Line Items.
-     *
-     * Collection of line items which are being returned.
+     * A collection of line items that are being returned.
      *
      * @return OrderReturnLineItem[]|null
      */
@@ -109,8 +107,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Sets Return Line Items.
-     *
-     * Collection of line items which are being returned.
+     * A collection of line items that are being returned.
      *
      * @maps return_line_items
      *
@@ -123,8 +120,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Returns Return Service Charges.
-     *
-     * Collection of service charges which are being returned.
+     * A collection of service charges that are being returned.
      *
      * @return OrderReturnServiceCharge[]|null
      */
@@ -135,8 +131,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Sets Return Service Charges.
-     *
-     * Collection of service charges which are being returned.
+     * A collection of service charges that are being returned.
      *
      * @maps return_service_charges
      *
@@ -149,8 +144,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Returns Return Taxes.
-     *
-     * Collection of references to taxes being returned for an order, including the total
+     * A collection of references to taxes being returned for an order, including the total
      * applied tax amount to be returned. The taxes must reference a top-level tax ID from the source
      * order.
      *
@@ -163,8 +157,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Sets Return Taxes.
-     *
-     * Collection of references to taxes being returned for an order, including the total
+     * A collection of references to taxes being returned for an order, including the total
      * applied tax amount to be returned. The taxes must reference a top-level tax ID from the source
      * order.
      *
@@ -179,8 +172,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Returns Return Discounts.
-     *
-     * Collection of references to discounts being returned for an order, including the total
+     * A collection of references to discounts being returned for an order, including the total
      * applied discount amount to be returned. The discounts must reference a top-level discount ID
      * from the source order.
      *
@@ -193,8 +185,7 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Sets Return Discounts.
-     *
-     * Collection of references to discounts being returned for an order, including the total
+     * A collection of references to discounts being returned for an order, including the total
      * applied discount amount to be returned. The discounts must reference a top-level discount ID
      * from the source order.
      *
@@ -209,9 +200,9 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Returns Rounding Adjustment.
-     *
-     * A rounding adjustment of the money being returned. Commonly used to apply Cash Rounding
-     * when the minimum unit of account is smaller than the lowest physical denomination of currency.
+     * A rounding adjustment of the money being returned. Commonly used to apply cash rounding
+     * when the minimum unit of the account is smaller than the lowest physical denomination of the
+     * currency.
      */
     public function getRoundingAdjustment(): ?OrderRoundingAdjustment
     {
@@ -220,9 +211,9 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Sets Rounding Adjustment.
-     *
-     * A rounding adjustment of the money being returned. Commonly used to apply Cash Rounding
-     * when the minimum unit of account is smaller than the lowest physical denomination of currency.
+     * A rounding adjustment of the money being returned. Commonly used to apply cash rounding
+     * when the minimum unit of the account is smaller than the lowest physical denomination of the
+     * currency.
      *
      * @maps rounding_adjustment
      */
@@ -233,7 +224,6 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Returns Return Amounts.
-     *
      * A collection of various money amounts.
      */
     public function getReturnAmounts(): ?OrderMoneyAmounts
@@ -243,7 +233,6 @@ class OrderReturn implements \JsonSerializable
 
     /**
      * Sets Return Amounts.
-     *
      * A collection of various money amounts.
      *
      * @maps return_amounts
@@ -256,22 +245,43 @@ class OrderReturn implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['uid']                  = $this->uid;
-        $json['source_order_id']      = $this->sourceOrderId;
-        $json['return_line_items']    = $this->returnLineItems;
-        $json['return_service_charges'] = $this->returnServiceCharges;
-        $json['return_taxes']         = $this->returnTaxes;
-        $json['return_discounts']     = $this->returnDiscounts;
-        $json['rounding_adjustment']  = $this->roundingAdjustment;
-        $json['return_amounts']       = $this->returnAmounts;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->uid)) {
+            $json['uid']                    = $this->uid;
+        }
+        if (isset($this->sourceOrderId)) {
+            $json['source_order_id']        = $this->sourceOrderId;
+        }
+        if (isset($this->returnLineItems)) {
+            $json['return_line_items']      = $this->returnLineItems;
+        }
+        if (isset($this->returnServiceCharges)) {
+            $json['return_service_charges'] = $this->returnServiceCharges;
+        }
+        if (isset($this->returnTaxes)) {
+            $json['return_taxes']           = $this->returnTaxes;
+        }
+        if (isset($this->returnDiscounts)) {
+            $json['return_discounts']       = $this->returnDiscounts;
+        }
+        if (isset($this->roundingAdjustment)) {
+            $json['rounding_adjustment']    = $this->roundingAdjustment;
+        }
+        if (isset($this->returnAmounts)) {
+            $json['return_amounts']         = $this->returnAmounts;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

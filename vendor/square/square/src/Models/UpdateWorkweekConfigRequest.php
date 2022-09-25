@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * A request to update a `WorkweekConfig` object
+ * A request to update a `WorkweekConfig` object.
  */
 class UpdateWorkweekConfigRequest implements \JsonSerializable
 {
@@ -24,9 +26,8 @@ class UpdateWorkweekConfigRequest implements \JsonSerializable
 
     /**
      * Returns Workweek Config.
-     *
-     * Sets the Day of the week and hour of the day that a business starts a
-     * work week. Used for the calculation of overtime pay.
+     * Sets the day of the week and hour of the day that a business starts a
+     * workweek. This is used to calculate overtime pay.
      */
     public function getWorkweekConfig(): WorkweekConfig
     {
@@ -35,9 +36,8 @@ class UpdateWorkweekConfigRequest implements \JsonSerializable
 
     /**
      * Sets Workweek Config.
-     *
-     * Sets the Day of the week and hour of the day that a business starts a
-     * work week. Used for the calculation of overtime pay.
+     * Sets the day of the week and hour of the day that a business starts a
+     * workweek. This is used to calculate overtime pay.
      *
      * @required
      * @maps workweek_config
@@ -50,15 +50,20 @@ class UpdateWorkweekConfigRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['workweek_config'] = $this->workweekConfig;
-
-        return array_filter($json, function ($val) {
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

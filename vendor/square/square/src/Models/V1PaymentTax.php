@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * V1PaymentTax
  */
@@ -41,7 +43,6 @@ class V1PaymentTax implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -53,7 +54,6 @@ class V1PaymentTax implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -67,7 +67,6 @@ class V1PaymentTax implements \JsonSerializable
 
     /**
      * Returns Name.
-     *
      * The merchant-defined name of the tax.
      */
     public function getName(): ?string
@@ -77,7 +76,6 @@ class V1PaymentTax implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * The merchant-defined name of the tax.
      *
      * @maps name
@@ -107,7 +105,6 @@ class V1PaymentTax implements \JsonSerializable
 
     /**
      * Returns Rate.
-     *
      * The rate of the tax, as a string representation of a decimal number. A value of 0.07 corresponds to
      * a rate of 7%.
      */
@@ -118,7 +115,6 @@ class V1PaymentTax implements \JsonSerializable
 
     /**
      * Sets Rate.
-     *
      * The rate of the tax, as a string representation of a decimal number. A value of 0.07 corresponds to
      * a rate of 7%.
      *
@@ -149,7 +145,6 @@ class V1PaymentTax implements \JsonSerializable
 
     /**
      * Returns Fee Id.
-     *
      * The ID of the tax, if available. Taxes applied in older versions of Square Register might not have
      * an ID.
      */
@@ -160,7 +155,6 @@ class V1PaymentTax implements \JsonSerializable
 
     /**
      * Sets Fee Id.
-     *
      * The ID of the tax, if available. Taxes applied in older versions of Square Register might not have
      * an ID.
      *
@@ -174,20 +168,37 @@ class V1PaymentTax implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']        = $this->errors;
-        $json['name']          = $this->name;
-        $json['applied_money'] = $this->appliedMoney;
-        $json['rate']          = $this->rate;
-        $json['inclusion_type'] = $this->inclusionType;
-        $json['fee_id']        = $this->feeId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']         = $this->errors;
+        }
+        if (isset($this->name)) {
+            $json['name']           = $this->name;
+        }
+        if (isset($this->appliedMoney)) {
+            $json['applied_money']  = $this->appliedMoney;
+        }
+        if (isset($this->rate)) {
+            $json['rate']           = $this->rate;
+        }
+        if (isset($this->inclusionType)) {
+            $json['inclusion_type'] = $this->inclusionType;
+        }
+        if (isset($this->feeId)) {
+            $json['fee_id']         = $this->feeId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

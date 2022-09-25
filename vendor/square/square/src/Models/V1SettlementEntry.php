@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * V1SettlementEntry
  */
@@ -31,7 +33,6 @@ class V1SettlementEntry implements \JsonSerializable
 
     /**
      * Returns Payment Id.
-     *
      * The settlement's unique identifier.
      */
     public function getPaymentId(): ?string
@@ -41,7 +42,6 @@ class V1SettlementEntry implements \JsonSerializable
 
     /**
      * Sets Payment Id.
-     *
      * The settlement's unique identifier.
      *
      * @maps payment_id
@@ -108,18 +108,31 @@ class V1SettlementEntry implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['payment_id']  = $this->paymentId;
-        $json['type']        = $this->type;
-        $json['amount_money'] = $this->amountMoney;
-        $json['fee_money']   = $this->feeMoney;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->paymentId)) {
+            $json['payment_id']   = $this->paymentId;
+        }
+        if (isset($this->type)) {
+            $json['type']         = $this->type;
+        }
+        if (isset($this->amountMoney)) {
+            $json['amount_money'] = $this->amountMoney;
+        }
+        if (isset($this->feeMoney)) {
+            $json['fee_money']    = $this->feeMoney;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

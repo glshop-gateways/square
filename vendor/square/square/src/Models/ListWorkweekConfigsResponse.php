@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * The response to a request for a set of `WorkweekConfig` objects. Contains
- * the requested `WorkweekConfig` objects. May contain a set of `Error` objects if
+ * The response to a request for a set of `WorkweekConfig` objects. The response contains
+ * the requested `WorkweekConfig` objects and might contain a set of `Error` objects if
  * the request resulted in errors.
  */
 class ListWorkweekConfigsResponse implements \JsonSerializable
@@ -28,8 +30,7 @@ class ListWorkweekConfigsResponse implements \JsonSerializable
 
     /**
      * Returns Workweek Configs.
-     *
-     * A page of Employee Wage results.
+     * A page of `WorkweekConfig` results.
      *
      * @return WorkweekConfig[]|null
      */
@@ -40,8 +41,7 @@ class ListWorkweekConfigsResponse implements \JsonSerializable
 
     /**
      * Sets Workweek Configs.
-     *
-     * A page of Employee Wage results.
+     * A page of `WorkweekConfig` results.
      *
      * @maps workweek_configs
      *
@@ -54,9 +54,8 @@ class ListWorkweekConfigsResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
-     * Value supplied in the subsequent request to fetch the next page of
-     * Employee Wage results.
+     * The value supplied in the subsequent request to fetch the next page of
+     * `WorkweekConfig` results.
      */
     public function getCursor(): ?string
     {
@@ -65,9 +64,8 @@ class ListWorkweekConfigsResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
-     * Value supplied in the subsequent request to fetch the next page of
-     * Employee Wage results.
+     * The value supplied in the subsequent request to fetch the next page of
+     * `WorkweekConfig` results.
      *
      * @maps cursor
      */
@@ -78,7 +76,6 @@ class ListWorkweekConfigsResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -90,7 +87,6 @@ class ListWorkweekConfigsResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -105,17 +101,28 @@ class ListWorkweekConfigsResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['workweek_configs'] = $this->workweekConfigs;
-        $json['cursor']          = $this->cursor;
-        $json['errors']          = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->workweekConfigs)) {
+            $json['workweek_configs'] = $this->workweekConfigs;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']           = $this->cursor;
+        }
+        if (isset($this->errors)) {
+            $json['errors']           = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

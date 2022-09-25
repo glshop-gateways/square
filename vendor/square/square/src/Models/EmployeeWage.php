@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * The hourly wage rate that an employee will earn on a `Shift` for doing the job
+ * The hourly wage rate that an employee earns on a `Shift` for doing the job
  * specified by the `title` property of this object. Deprecated at version 2020-08-26. Use
  * `TeamMemberWage` instead.
  */
@@ -33,8 +35,7 @@ class EmployeeWage implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
-     * UUID for this object.
+     * The UUID for this object.
      */
     public function getId(): ?string
     {
@@ -43,8 +44,7 @@ class EmployeeWage implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
-     * UUID for this object.
+     * The UUID for this object.
      *
      * @maps id
      */
@@ -55,7 +55,6 @@ class EmployeeWage implements \JsonSerializable
 
     /**
      * Returns Employee Id.
-     *
      * The `Employee` that this wage is assigned to.
      */
     public function getEmployeeId(): ?string
@@ -65,7 +64,6 @@ class EmployeeWage implements \JsonSerializable
 
     /**
      * Sets Employee Id.
-     *
      * The `Employee` that this wage is assigned to.
      *
      * @maps employee_id
@@ -77,7 +75,6 @@ class EmployeeWage implements \JsonSerializable
 
     /**
      * Returns Title.
-     *
      * The job title that this wage relates to.
      */
     public function getTitle(): ?string
@@ -87,7 +84,6 @@ class EmployeeWage implements \JsonSerializable
 
     /**
      * Sets Title.
-     *
      * The job title that this wage relates to.
      *
      * @maps title
@@ -99,7 +95,6 @@ class EmployeeWage implements \JsonSerializable
 
     /**
      * Returns Hourly Rate.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -115,7 +110,6 @@ class EmployeeWage implements \JsonSerializable
 
     /**
      * Sets Hourly Rate.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -134,18 +128,31 @@ class EmployeeWage implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']         = $this->id;
-        $json['employee_id'] = $this->employeeId;
-        $json['title']      = $this->title;
-        $json['hourly_rate'] = $this->hourlyRate;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']          = $this->id;
+        }
+        if (isset($this->employeeId)) {
+            $json['employee_id'] = $this->employeeId;
+        }
+        if (isset($this->title)) {
+            $json['title']       = $this->title;
+        }
+        if (isset($this->hourlyRate)) {
+            $json['hourly_rate'] = $this->hourlyRate;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Sets the sort order of search results.
  */
@@ -21,7 +23,6 @@ class ShiftSort implements \JsonSerializable
 
     /**
      * Returns Field.
-     *
      * Enumerates the `Shift` fields to sort on.
      */
     public function getField(): ?string
@@ -31,7 +32,6 @@ class ShiftSort implements \JsonSerializable
 
     /**
      * Sets Field.
-     *
      * Enumerates the `Shift` fields to sort on.
      *
      * @maps field
@@ -43,7 +43,6 @@ class ShiftSort implements \JsonSerializable
 
     /**
      * Returns Order.
-     *
      * The order (e.g., chronological or alphabetical) in which results from a request are returned.
      */
     public function getOrder(): ?string
@@ -53,7 +52,6 @@ class ShiftSort implements \JsonSerializable
 
     /**
      * Sets Order.
-     *
      * The order (e.g., chronological or alphabetical) in which results from a request are returned.
      *
      * @maps order
@@ -66,16 +64,25 @@ class ShiftSort implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['field'] = $this->field;
-        $json['order'] = $this->order;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->field)) {
+            $json['field'] = $this->field;
+        }
+        if (isset($this->order)) {
+            $json['order'] = $this->order;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

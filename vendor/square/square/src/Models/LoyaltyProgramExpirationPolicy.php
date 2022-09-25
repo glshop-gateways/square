@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Describes when the loyalty program expires.
  */
@@ -24,8 +26,10 @@ class LoyaltyProgramExpirationPolicy implements \JsonSerializable
 
     /**
      * Returns Expiration Duration.
-     *
-     * The duration of time before points expire, in RFC 3339 format.
+     * The number of months before points expire, in `P[n]M` RFC 3339 duration format. For example, a value
+     * of `P12M` represents a duration of 12 months.
+     * Points are valid through the last day of the month in which they are scheduled to expire. For
+     * example, with a  `P12M` duration, points earned on July 6, 2020 expire on August 1, 2021.
      */
     public function getExpirationDuration(): string
     {
@@ -34,8 +38,10 @@ class LoyaltyProgramExpirationPolicy implements \JsonSerializable
 
     /**
      * Sets Expiration Duration.
-     *
-     * The duration of time before points expire, in RFC 3339 format.
+     * The number of months before points expire, in `P[n]M` RFC 3339 duration format. For example, a value
+     * of `P12M` represents a duration of 12 months.
+     * Points are valid through the last day of the month in which they are scheduled to expire. For
+     * example, with a  `P12M` duration, points earned on July 6, 2020 expire on August 1, 2021.
      *
      * @required
      * @maps expiration_duration
@@ -48,15 +54,20 @@ class LoyaltyProgramExpirationPolicy implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['expiration_duration'] = $this->expirationDuration;
-
-        return array_filter($json, function ($val) {
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

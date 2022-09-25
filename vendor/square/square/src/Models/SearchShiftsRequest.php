@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A request for a filtered and sorted set of `Shift` objects.
  */
@@ -26,8 +28,7 @@ class SearchShiftsRequest implements \JsonSerializable
 
     /**
      * Returns Query.
-     *
-     * The parameters of a `Shift` search query. Includes filter and sort options.
+     * The parameters of a `Shift` search query, which includes filter and sort options.
      */
     public function getQuery(): ?ShiftQuery
     {
@@ -36,8 +37,7 @@ class SearchShiftsRequest implements \JsonSerializable
 
     /**
      * Sets Query.
-     *
-     * The parameters of a `Shift` search query. Includes filter and sort options.
+     * The parameters of a `Shift` search query, which includes filter and sort options.
      *
      * @maps query
      */
@@ -48,8 +48,7 @@ class SearchShiftsRequest implements \JsonSerializable
 
     /**
      * Returns Limit.
-     *
-     * number of resources in a page (200 by default).
+     * The number of resources in a page (200 by default).
      */
     public function getLimit(): ?int
     {
@@ -58,8 +57,7 @@ class SearchShiftsRequest implements \JsonSerializable
 
     /**
      * Sets Limit.
-     *
-     * number of resources in a page (200 by default).
+     * The number of resources in a page (200 by default).
      *
      * @maps limit
      */
@@ -70,8 +68,7 @@ class SearchShiftsRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
-     * opaque cursor for fetching the next page.
+     * An opaque cursor for fetching the next page.
      */
     public function getCursor(): ?string
     {
@@ -80,8 +77,7 @@ class SearchShiftsRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
-     * opaque cursor for fetching the next page.
+     * An opaque cursor for fetching the next page.
      *
      * @maps cursor
      */
@@ -93,17 +89,28 @@ class SearchShiftsRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['query']  = $this->query;
-        $json['limit']  = $this->limit;
-        $json['cursor'] = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->query)) {
+            $json['query']  = $this->query;
+        }
+        if (isset($this->limit)) {
+            $json['limit']  = $this->limit;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor'] = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

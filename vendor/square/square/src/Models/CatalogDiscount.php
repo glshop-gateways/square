@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A discount applicable to items.
  */
@@ -45,8 +47,12 @@ class CatalogDiscount implements \JsonSerializable
     private $modifyTaxBasis;
 
     /**
+     * @var Money|null
+     */
+    private $maximumAmountMoney;
+
+    /**
      * Returns Name.
-     *
      * The discount name. This is a searchable attribute for use in applicable query filters, and its value
      * length is of Unicode code points.
      */
@@ -57,7 +63,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * The discount name. This is a searchable attribute for use in applicable query filters, and its value
      * length is of Unicode code points.
      *
@@ -70,7 +75,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Returns Discount Type.
-     *
      * How to apply a CatalogDiscount to a CatalogItem.
      */
     public function getDiscountType(): ?string
@@ -80,7 +84,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Sets Discount Type.
-     *
      * How to apply a CatalogDiscount to a CatalogItem.
      *
      * @maps discount_type
@@ -92,7 +95,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Returns Percentage.
-     *
      * The percentage of the discount as a string representation of a decimal number, using a `.` as the
      * decimal
      * separator and without a `%` sign. A value of `7.5` corresponds to `7.5%`. Specify a percentage of
@@ -108,7 +110,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Sets Percentage.
-     *
      * The percentage of the discount as a string representation of a decimal number, using a `.` as the
      * decimal
      * separator and without a `%` sign. A value of `7.5` corresponds to `7.5%`. Specify a percentage of
@@ -126,7 +127,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Returns Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -142,7 +142,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Sets Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -160,7 +159,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Returns Pin Required.
-     *
      * Indicates whether a mobile staff member needs to enter their PIN to apply the
      * discount to a payment in the Square Point of Sale app.
      */
@@ -171,7 +169,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Sets Pin Required.
-     *
      * Indicates whether a mobile staff member needs to enter their PIN to apply the
      * discount to a payment in the Square Point of Sale app.
      *
@@ -184,7 +181,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Returns Label Color.
-     *
      * The color of the discount display label in the Square Point of Sale app. This must be a valid hex
      * color code.
      */
@@ -195,7 +191,6 @@ class CatalogDiscount implements \JsonSerializable
 
     /**
      * Sets Label Color.
-     *
      * The color of the discount display label in the Square Point of Sale app. This must be a valid hex
      * color code.
      *
@@ -225,23 +220,77 @@ class CatalogDiscount implements \JsonSerializable
     }
 
     /**
+     * Returns Maximum Amount Money.
+     * Represents an amount of money. `Money` fields can be signed or unsigned.
+     * Fields that do not explicitly define whether they are signed or unsigned are
+     * considered unsigned and can only hold positive amounts. For signed fields, the
+     * sign of the value indicates the purpose of the money transfer. See
+     * [Working with Monetary Amounts](https://developer.squareup.com/docs/build-basics/working-with-
+     * monetary-amounts)
+     * for more information.
+     */
+    public function getMaximumAmountMoney(): ?Money
+    {
+        return $this->maximumAmountMoney;
+    }
+
+    /**
+     * Sets Maximum Amount Money.
+     * Represents an amount of money. `Money` fields can be signed or unsigned.
+     * Fields that do not explicitly define whether they are signed or unsigned are
+     * considered unsigned and can only hold positive amounts. For signed fields, the
+     * sign of the value indicates the purpose of the money transfer. See
+     * [Working with Monetary Amounts](https://developer.squareup.com/docs/build-basics/working-with-
+     * monetary-amounts)
+     * for more information.
+     *
+     * @maps maximum_amount_money
+     */
+    public function setMaximumAmountMoney(?Money $maximumAmountMoney): void
+    {
+        $this->maximumAmountMoney = $maximumAmountMoney;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['name']           = $this->name;
-        $json['discount_type']  = $this->discountType;
-        $json['percentage']     = $this->percentage;
-        $json['amount_money']   = $this->amountMoney;
-        $json['pin_required']   = $this->pinRequired;
-        $json['label_color']    = $this->labelColor;
-        $json['modify_tax_basis'] = $this->modifyTaxBasis;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->name)) {
+            $json['name']                 = $this->name;
+        }
+        if (isset($this->discountType)) {
+            $json['discount_type']        = $this->discountType;
+        }
+        if (isset($this->percentage)) {
+            $json['percentage']           = $this->percentage;
+        }
+        if (isset($this->amountMoney)) {
+            $json['amount_money']         = $this->amountMoney;
+        }
+        if (isset($this->pinRequired)) {
+            $json['pin_required']         = $this->pinRequired;
+        }
+        if (isset($this->labelColor)) {
+            $json['label_color']          = $this->labelColor;
+        }
+        if (isset($this->modifyTaxBasis)) {
+            $json['modify_tax_basis']     = $this->modifyTaxBasis;
+        }
+        if (isset($this->maximumAmountMoney)) {
+            $json['maximum_amount_money'] = $this->maximumAmountMoney;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

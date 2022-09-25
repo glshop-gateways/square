@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class ListCashDrawerShiftsResponse implements \JsonSerializable
 {
     /**
@@ -23,7 +25,6 @@ class ListCashDrawerShiftsResponse implements \JsonSerializable
 
     /**
      * Returns Items.
-     *
      * A collection of CashDrawerShiftSummary objects for shifts that match
      * the query.
      *
@@ -36,7 +37,6 @@ class ListCashDrawerShiftsResponse implements \JsonSerializable
 
     /**
      * Sets Items.
-     *
      * A collection of CashDrawerShiftSummary objects for shifts that match
      * the query.
      *
@@ -51,7 +51,6 @@ class ListCashDrawerShiftsResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * Opaque cursor for fetching the next page of results. Cursor is not
      * present in the last page of results.
      */
@@ -62,7 +61,6 @@ class ListCashDrawerShiftsResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * Opaque cursor for fetching the next page of results. Cursor is not
      * present in the last page of results.
      *
@@ -75,7 +73,6 @@ class ListCashDrawerShiftsResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -87,7 +84,6 @@ class ListCashDrawerShiftsResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -102,17 +98,28 @@ class ListCashDrawerShiftsResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['items']  = $this->items;
-        $json['cursor'] = $this->cursor;
-        $json['errors'] = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->items)) {
+            $json['items']  = $this->items;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor'] = $this->cursor;
+        }
+        if (isset($this->errors)) {
+            $json['errors'] = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

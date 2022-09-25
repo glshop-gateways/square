@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A payment represents a paid transaction between a Square merchant and a
  * customer. Payment details are usually available from Connect API endpoints
@@ -164,7 +166,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The payment's unique identifier.
      */
     public function getId(): ?string
@@ -174,7 +175,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The payment's unique identifier.
      *
      * @maps id
@@ -186,7 +186,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Merchant Id.
-     *
      * The unique identifier of the merchant that took the payment.
      */
     public function getMerchantId(): ?string
@@ -196,7 +195,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Merchant Id.
-     *
      * The unique identifier of the merchant that took the payment.
      *
      * @maps merchant_id
@@ -208,7 +206,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * The time when the payment was created, in ISO 8601 format. Reflects the time of the first payment if
      * the object represents an incomplete partial payment, and the time of the last or complete payment
      * otherwise.
@@ -220,7 +217,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * The time when the payment was created, in ISO 8601 format. Reflects the time of the first payment if
      * the object represents an incomplete partial payment, and the time of the last or complete payment
      * otherwise.
@@ -234,7 +230,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Creator Id.
-     *
      * The unique identifier of the Square account that took the payment.
      */
     public function getCreatorId(): ?string
@@ -244,7 +239,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Creator Id.
-     *
      * The unique identifier of the Square account that took the payment.
      *
      * @maps creator_id
@@ -274,7 +268,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Payment Url.
-     *
      * The URL of the payment's detail page in the merchant dashboard. The merchant must be signed in to
      * the merchant dashboard to view this page.
      */
@@ -285,7 +278,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Payment Url.
-     *
      * The URL of the payment's detail page in the merchant dashboard. The merchant must be signed in to
      * the merchant dashboard to view this page.
      *
@@ -298,7 +290,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Receipt Url.
-     *
      * The URL of the receipt for the payment. Note that for split tender
      * payments, this URL corresponds to the receipt for the first tender
      * listed in the payment's tender field. Each Tender object has its own
@@ -312,7 +303,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Receipt Url.
-     *
      * The URL of the receipt for the payment. Note that for split tender
      * payments, this URL corresponds to the receipt for the first tender
      * listed in the payment's tender field. Each Tender object has its own
@@ -544,7 +534,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Inclusive Tax.
-     *
      * All of the inclusive taxes associated with the payment.
      *
      * @return V1PaymentTax[]|null
@@ -556,7 +545,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Inclusive Tax.
-     *
      * All of the inclusive taxes associated with the payment.
      *
      * @maps inclusive_tax
@@ -570,7 +558,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Additive Tax.
-     *
      * All of the additive taxes associated with the payment.
      *
      * @return V1PaymentTax[]|null
@@ -582,7 +569,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Additive Tax.
-     *
      * All of the additive taxes associated with the payment.
      *
      * @maps additive_tax
@@ -596,7 +582,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Tender.
-     *
      * All of the tenders associated with the payment.
      *
      * @return V1Tender[]|null
@@ -608,7 +593,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Tender.
-     *
      * All of the tenders associated with the payment.
      *
      * @maps tender
@@ -622,7 +606,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Refunds.
-     *
      * All of the refunds applied to the payment. Note that the value of all refunds on a payment can
      * exceed the value of all tenders if a merchant chooses to refund money to a tender after previously
      * accepting returned goods as part of an exchange.
@@ -636,7 +619,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Refunds.
-     *
      * All of the refunds applied to the payment. Note that the value of all refunds on a payment can
      * exceed the value of all tenders if a merchant chooses to refund money to a tender after previously
      * accepting returned goods as part of an exchange.
@@ -652,7 +634,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Itemizations.
-     *
      * The items purchased in the payment.
      *
      * @return V1PaymentItemization[]|null
@@ -664,7 +645,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Itemizations.
-     *
      * The items purchased in the payment.
      *
      * @maps itemizations
@@ -696,7 +676,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Surcharges.
-     *
      * A list of all surcharges associated with the payment.
      *
      * @return V1PaymentSurcharge[]|null
@@ -708,7 +687,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Surcharges.
-     *
      * A list of all surcharges associated with the payment.
      *
      * @maps surcharges
@@ -722,7 +700,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Returns Is Partial.
-     *
      * Indicates whether or not the payment is only partially paid for.
      * If true, this payment will have the tenders collected so far, but the
      * itemizations will be empty until the payment is completed.
@@ -734,7 +711,6 @@ class V1Payment implements \JsonSerializable
 
     /**
      * Sets Is Partial.
-     *
      * Indicates whether or not the payment is only partially paid for.
      * If true, this payment will have the tenders collected so far, but the
      * itemizations will be empty until the payment is completed.
@@ -749,41 +725,100 @@ class V1Payment implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']                   = $this->id;
-        $json['merchant_id']          = $this->merchantId;
-        $json['created_at']           = $this->createdAt;
-        $json['creator_id']           = $this->creatorId;
-        $json['device']               = $this->device;
-        $json['payment_url']          = $this->paymentUrl;
-        $json['receipt_url']          = $this->receiptUrl;
-        $json['inclusive_tax_money']  = $this->inclusiveTaxMoney;
-        $json['additive_tax_money']   = $this->additiveTaxMoney;
-        $json['tax_money']            = $this->taxMoney;
-        $json['tip_money']            = $this->tipMoney;
-        $json['discount_money']       = $this->discountMoney;
-        $json['total_collected_money'] = $this->totalCollectedMoney;
-        $json['processing_fee_money'] = $this->processingFeeMoney;
-        $json['net_total_money']      = $this->netTotalMoney;
-        $json['refunded_money']       = $this->refundedMoney;
-        $json['swedish_rounding_money'] = $this->swedishRoundingMoney;
-        $json['gross_sales_money']    = $this->grossSalesMoney;
-        $json['net_sales_money']      = $this->netSalesMoney;
-        $json['inclusive_tax']        = $this->inclusiveTax;
-        $json['additive_tax']         = $this->additiveTax;
-        $json['tender']               = $this->tender;
-        $json['refunds']              = $this->refunds;
-        $json['itemizations']         = $this->itemizations;
-        $json['surcharge_money']      = $this->surchargeMoney;
-        $json['surcharges']           = $this->surcharges;
-        $json['is_partial']           = $this->isPartial;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']                     = $this->id;
+        }
+        if (isset($this->merchantId)) {
+            $json['merchant_id']            = $this->merchantId;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']             = $this->createdAt;
+        }
+        if (isset($this->creatorId)) {
+            $json['creator_id']             = $this->creatorId;
+        }
+        if (isset($this->device)) {
+            $json['device']                 = $this->device;
+        }
+        if (isset($this->paymentUrl)) {
+            $json['payment_url']            = $this->paymentUrl;
+        }
+        if (isset($this->receiptUrl)) {
+            $json['receipt_url']            = $this->receiptUrl;
+        }
+        if (isset($this->inclusiveTaxMoney)) {
+            $json['inclusive_tax_money']    = $this->inclusiveTaxMoney;
+        }
+        if (isset($this->additiveTaxMoney)) {
+            $json['additive_tax_money']     = $this->additiveTaxMoney;
+        }
+        if (isset($this->taxMoney)) {
+            $json['tax_money']              = $this->taxMoney;
+        }
+        if (isset($this->tipMoney)) {
+            $json['tip_money']              = $this->tipMoney;
+        }
+        if (isset($this->discountMoney)) {
+            $json['discount_money']         = $this->discountMoney;
+        }
+        if (isset($this->totalCollectedMoney)) {
+            $json['total_collected_money']  = $this->totalCollectedMoney;
+        }
+        if (isset($this->processingFeeMoney)) {
+            $json['processing_fee_money']   = $this->processingFeeMoney;
+        }
+        if (isset($this->netTotalMoney)) {
+            $json['net_total_money']        = $this->netTotalMoney;
+        }
+        if (isset($this->refundedMoney)) {
+            $json['refunded_money']         = $this->refundedMoney;
+        }
+        if (isset($this->swedishRoundingMoney)) {
+            $json['swedish_rounding_money'] = $this->swedishRoundingMoney;
+        }
+        if (isset($this->grossSalesMoney)) {
+            $json['gross_sales_money']      = $this->grossSalesMoney;
+        }
+        if (isset($this->netSalesMoney)) {
+            $json['net_sales_money']        = $this->netSalesMoney;
+        }
+        if (isset($this->inclusiveTax)) {
+            $json['inclusive_tax']          = $this->inclusiveTax;
+        }
+        if (isset($this->additiveTax)) {
+            $json['additive_tax']           = $this->additiveTax;
+        }
+        if (isset($this->tender)) {
+            $json['tender']                 = $this->tender;
+        }
+        if (isset($this->refunds)) {
+            $json['refunds']                = $this->refunds;
+        }
+        if (isset($this->itemizations)) {
+            $json['itemizations']           = $this->itemizations;
+        }
+        if (isset($this->surchargeMoney)) {
+            $json['surcharge_money']        = $this->surchargeMoney;
+        }
+        if (isset($this->surcharges)) {
+            $json['surcharges']             = $this->surcharges;
+        }
+        if (isset($this->isPartial)) {
+            $json['is_partial']             = $this->isPartial;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

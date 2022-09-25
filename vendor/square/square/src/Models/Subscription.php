@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Represents a customer subscription to a subscription plan.
+ * Represents a subscription to a subscription plan by a subscriber.
+ *
  * For an overview of the `Subscription` type, see
  * [Subscription object](https://developer.squareup.com/docs/subscriptions-api/overview#subscription-
  * object-overview).
@@ -45,6 +48,11 @@ class Subscription implements \JsonSerializable
     /**
      * @var string|null
      */
+    private $chargedThroughDate;
+
+    /**
+     * @var string|null
+     */
     private $status;
 
     /**
@@ -80,16 +88,20 @@ class Subscription implements \JsonSerializable
     /**
      * @var string|null
      */
-    private $paidUntilDate;
-
-    /**
-     * @var string|null
-     */
     private $timezone;
 
     /**
+     * @var SubscriptionSource|null
+     */
+    private $source;
+
+    /**
+     * @var SubscriptionAction[]|null
+     */
+    private $actions;
+
+    /**
      * Returns Id.
-     *
      * The Square-assigned ID of the subscription.
      */
     public function getId(): ?string
@@ -99,7 +111,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The Square-assigned ID of the subscription.
      *
      * @maps id
@@ -111,7 +122,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * The ID of the location associated with the subscription.
      */
     public function getLocationId(): ?string
@@ -121,7 +131,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * The ID of the location associated with the subscription.
      *
      * @maps location_id
@@ -133,8 +142,7 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Plan Id.
-     *
-     * The ID of the associated [subscription plan]($m/CatalogSubscriptionPlan).
+     * The ID of the subscribed-to [subscription plan]($m/CatalogSubscriptionPlan).
      */
     public function getPlanId(): ?string
     {
@@ -143,8 +151,7 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Plan Id.
-     *
-     * The ID of the associated [subscription plan]($m/CatalogSubscriptionPlan).
+     * The ID of the subscribed-to [subscription plan]($m/CatalogSubscriptionPlan).
      *
      * @maps plan_id
      */
@@ -155,8 +162,7 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Customer Id.
-     *
-     * The ID of the associated [customer]($m/Customer) profile.
+     * The ID of the subscribing [customer]($m/Customer) profile.
      */
     public function getCustomerId(): ?string
     {
@@ -165,8 +171,7 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Customer Id.
-     *
-     * The ID of the associated [customer]($m/Customer) profile.
+     * The ID of the subscribing [customer]($m/Customer) profile.
      *
      * @maps customer_id
      */
@@ -177,9 +182,7 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Start Date.
-     *
-     * The start date of the subscription, in YYYY-MM-DD format (for example,
-     * 2013-01-15).
+     * The `YYYY-MM-DD`-formatted date (for example, 2013-01-15) to start the subscription.
      */
     public function getStartDate(): ?string
     {
@@ -188,9 +191,7 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Start Date.
-     *
-     * The start date of the subscription, in YYYY-MM-DD format (for example,
-     * 2013-01-15).
+     * The `YYYY-MM-DD`-formatted date (for example, 2013-01-15) to start the subscription.
      *
      * @maps start_date
      */
@@ -201,14 +202,12 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Canceled Date.
+     * The `YYYY-MM-DD`-formatted date (for example, 2013-01-15) to cancel the subscription,
+     * when the subscription status changes to `CANCELED` and the subscription billing stops.
      *
-     * The subscription cancellation date, in YYYY-MM-DD format (for
-     * example, 2013-01-15). On this date, the subscription status changes
-     * to `CANCELED` and the subscription billing stops.
-     * If you don't set this field, the subscription plan dictates if and
-     * when subscription ends.
+     * If this field is not set, the subscription ends according its subscription plan.
      *
-     * You cannot update this field, you can only clear it.
+     * This field cannot be updated, other than being cleared.
      */
     public function getCanceledDate(): ?string
     {
@@ -217,14 +216,12 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Canceled Date.
+     * The `YYYY-MM-DD`-formatted date (for example, 2013-01-15) to cancel the subscription,
+     * when the subscription status changes to `CANCELED` and the subscription billing stops.
      *
-     * The subscription cancellation date, in YYYY-MM-DD format (for
-     * example, 2013-01-15). On this date, the subscription status changes
-     * to `CANCELED` and the subscription billing stops.
-     * If you don't set this field, the subscription plan dictates if and
-     * when subscription ends.
+     * If this field is not set, the subscription ends according its subscription plan.
      *
-     * You cannot update this field, you can only clear it.
+     * This field cannot be updated, other than being cleared.
      *
      * @maps canceled_date
      */
@@ -234,9 +231,44 @@ class Subscription implements \JsonSerializable
     }
 
     /**
-     * Returns Status.
+     * Returns Charged Through Date.
+     * The `YYYY-MM-DD`-formatted date up to when the subscriber is invoiced for the
+     * subscription.
      *
-     * Possible subscription status values.
+     * After the invoice is sent for a given billing period,
+     * this date will be the last day of the billing period.
+     * For example,
+     * suppose for the month of May a subscriber gets an invoice
+     * (or charged the card) on May 1. For the monthly billing scenario,
+     * this date is then set to May 31.
+     */
+    public function getChargedThroughDate(): ?string
+    {
+        return $this->chargedThroughDate;
+    }
+
+    /**
+     * Sets Charged Through Date.
+     * The `YYYY-MM-DD`-formatted date up to when the subscriber is invoiced for the
+     * subscription.
+     *
+     * After the invoice is sent for a given billing period,
+     * this date will be the last day of the billing period.
+     * For example,
+     * suppose for the month of May a subscriber gets an invoice
+     * (or charged the card) on May 1. For the monthly billing scenario,
+     * this date is then set to May 31.
+     *
+     * @maps charged_through_date
+     */
+    public function setChargedThroughDate(?string $chargedThroughDate): void
+    {
+        $this->chargedThroughDate = $chargedThroughDate;
+    }
+
+    /**
+     * Returns Status.
+     * Supported subscription statuses.
      */
     public function getStatus(): ?string
     {
@@ -245,8 +277,7 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Status.
-     *
-     * Possible subscription status values.
+     * Supported subscription statuses.
      *
      * @maps status
      */
@@ -257,7 +288,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Tax Percentage.
-     *
      * The tax amount applied when billing the subscription. The
      * percentage is expressed in decimal form, using a `'.'` as the decimal
      * separator and without a `'%'` sign. For example, a value of `7.5`
@@ -270,7 +300,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Tax Percentage.
-     *
      * The tax amount applied when billing the subscription. The
      * percentage is expressed in decimal form, using a `'.'` as the decimal
      * separator and without a `'%'` sign. For example, a value of `7.5`
@@ -285,10 +314,9 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Invoice Ids.
-     *
      * The IDs of the [invoices]($m/Invoice) created for the
      * subscription, listed in order when the invoices were created
-     * (oldest invoices appear first).
+     * (newest invoices appear first).
      *
      * @return string[]|null
      */
@@ -299,10 +327,9 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Invoice Ids.
-     *
      * The IDs of the [invoices]($m/Invoice) created for the
      * subscription, listed in order when the invoices were created
-     * (oldest invoices appear first).
+     * (newest invoices appear first).
      *
      * @maps invoice_ids
      *
@@ -315,7 +342,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Price Override Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -331,7 +357,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Price Override Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -349,7 +374,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Version.
-     *
      * The version of the object. When updating an object, the version
      * supplied must match the version in the database, otherwise the write will
      * be rejected as conflicting.
@@ -361,7 +385,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Version.
-     *
      * The version of the object. When updating an object, the version
      * supplied must match the version in the database, otherwise the write will
      * be rejected as conflicting.
@@ -375,7 +398,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * The timestamp when the subscription was created, in RFC 3339 format.
      */
     public function getCreatedAt(): ?string
@@ -385,7 +407,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * The timestamp when the subscription was created, in RFC 3339 format.
      *
      * @maps created_at
@@ -397,9 +418,8 @@ class Subscription implements \JsonSerializable
 
     /**
      * Returns Card Id.
-     *
-     * The ID of the [customer]($m/Customer) [card]($m/Card)
-     * that is charged for the subscription.
+     * The ID of the [subscriber's]($m/Customer) [card]($m/Card)
+     * used to charge for the subscription.
      */
     public function getCardId(): ?string
     {
@@ -408,9 +428,8 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Card Id.
-     *
-     * The ID of the [customer]($m/Customer) [card]($m/Card)
-     * that is charged for the subscription.
+     * The ID of the [subscriber's]($m/Customer) [card]($m/Card)
+     * used to charge for the subscription.
      *
      * @maps card_id
      */
@@ -420,46 +439,7 @@ class Subscription implements \JsonSerializable
     }
 
     /**
-     * Returns Paid Until Date.
-     *
-     * The date up to which the customer is invoiced for the
-     * subscription, in YYYY-MM-DD format (for example, 2013-01-15).
-     *
-     * After the invoice is paid for a given billing period,
-     * this date will be the last day of the billing period.
-     * For example,
-     * suppose for the month of May a customer gets an invoice
-     * (or charged the card) on May 1. For the monthly billing scenario,
-     * this date is then set to May 31.
-     */
-    public function getPaidUntilDate(): ?string
-    {
-        return $this->paidUntilDate;
-    }
-
-    /**
-     * Sets Paid Until Date.
-     *
-     * The date up to which the customer is invoiced for the
-     * subscription, in YYYY-MM-DD format (for example, 2013-01-15).
-     *
-     * After the invoice is paid for a given billing period,
-     * this date will be the last day of the billing period.
-     * For example,
-     * suppose for the month of May a customer gets an invoice
-     * (or charged the card) on May 1. For the monthly billing scenario,
-     * this date is then set to May 31.
-     *
-     * @maps paid_until_date
-     */
-    public function setPaidUntilDate(?string $paidUntilDate): void
-    {
-        $this->paidUntilDate = $paidUntilDate;
-    }
-
-    /**
      * Returns Timezone.
-     *
      * Timezone that will be used in date calculations for the subscription.
      * Defaults to the timezone of the location based on `location_id`.
      * Format: the IANA Timezone Database identifier for the location timezone (for example,
@@ -472,7 +452,6 @@ class Subscription implements \JsonSerializable
 
     /**
      * Sets Timezone.
-     *
      * Timezone that will be used in date calculations for the subscription.
      * Defaults to the timezone of the location based on `location_id`.
      * Format: the IANA Timezone Database identifier for the location timezone (for example,
@@ -486,31 +465,124 @@ class Subscription implements \JsonSerializable
     }
 
     /**
+     * Returns Source.
+     * The origination details of the subscription.
+     */
+    public function getSource(): ?SubscriptionSource
+    {
+        return $this->source;
+    }
+
+    /**
+     * Sets Source.
+     * The origination details of the subscription.
+     *
+     * @maps source
+     */
+    public function setSource(?SubscriptionSource $source): void
+    {
+        $this->source = $source;
+    }
+
+    /**
+     * Returns Actions.
+     * The list of scheduled actions on this subscription. It is set only in the response from
+     * [RetrieveSubscription]($e/Subscriptions/RetrieveSubscription) with the query parameter
+     * of `include=actions` or from
+     * [SearchSubscriptions]($e/Subscriptions/SearchSubscriptions) with the input parameter
+     * of `include:["actions"]`.
+     *
+     * @return SubscriptionAction[]|null
+     */
+    public function getActions(): ?array
+    {
+        return $this->actions;
+    }
+
+    /**
+     * Sets Actions.
+     * The list of scheduled actions on this subscription. It is set only in the response from
+     * [RetrieveSubscription]($e/Subscriptions/RetrieveSubscription) with the query parameter
+     * of `include=actions` or from
+     * [SearchSubscriptions]($e/Subscriptions/SearchSubscriptions) with the input parameter
+     * of `include:["actions"]`.
+     *
+     * @maps actions
+     *
+     * @param SubscriptionAction[]|null $actions
+     */
+    public function setActions(?array $actions): void
+    {
+        $this->actions = $actions;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']                 = $this->id;
-        $json['location_id']        = $this->locationId;
-        $json['plan_id']            = $this->planId;
-        $json['customer_id']        = $this->customerId;
-        $json['start_date']         = $this->startDate;
-        $json['canceled_date']      = $this->canceledDate;
-        $json['status']             = $this->status;
-        $json['tax_percentage']     = $this->taxPercentage;
-        $json['invoice_ids']        = $this->invoiceIds;
-        $json['price_override_money'] = $this->priceOverrideMoney;
-        $json['version']            = $this->version;
-        $json['created_at']         = $this->createdAt;
-        $json['card_id']            = $this->cardId;
-        $json['paid_until_date']    = $this->paidUntilDate;
-        $json['timezone']           = $this->timezone;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']                   = $this->id;
+        }
+        if (isset($this->locationId)) {
+            $json['location_id']          = $this->locationId;
+        }
+        if (isset($this->planId)) {
+            $json['plan_id']              = $this->planId;
+        }
+        if (isset($this->customerId)) {
+            $json['customer_id']          = $this->customerId;
+        }
+        if (isset($this->startDate)) {
+            $json['start_date']           = $this->startDate;
+        }
+        if (isset($this->canceledDate)) {
+            $json['canceled_date']        = $this->canceledDate;
+        }
+        if (isset($this->chargedThroughDate)) {
+            $json['charged_through_date'] = $this->chargedThroughDate;
+        }
+        if (isset($this->status)) {
+            $json['status']               = $this->status;
+        }
+        if (isset($this->taxPercentage)) {
+            $json['tax_percentage']       = $this->taxPercentage;
+        }
+        if (isset($this->invoiceIds)) {
+            $json['invoice_ids']          = $this->invoiceIds;
+        }
+        if (isset($this->priceOverrideMoney)) {
+            $json['price_override_money'] = $this->priceOverrideMoney;
+        }
+        if (isset($this->version)) {
+            $json['version']              = $this->version;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']           = $this->createdAt;
+        }
+        if (isset($this->cardId)) {
+            $json['card_id']              = $this->cardId;
+        }
+        if (isset($this->timezone)) {
+            $json['timezone']             = $this->timezone;
+        }
+        if (isset($this->source)) {
+            $json['source']               = $this->source;
+        }
+        if (isset($this->actions)) {
+            $json['actions']              = $this->actions;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Contains all information related to a single order to process with Square,
- * including line items that specify the products to purchase. Order objects also
- * include information on any associated tenders, refunds, and returns.
+ * including line items that specify the products to purchase. `Order` objects also
+ * include information about any associated tenders, refunds, and returns.
  *
  * All Connect V2 Transactions have all been converted to Orders including all associated
  * itemization data.
@@ -95,7 +97,7 @@ class Order implements \JsonSerializable
     private $refunds;
 
     /**
-     * @var array|null
+     * @var array<string,string>|null
      */
     private $metadata;
 
@@ -150,6 +152,11 @@ class Order implements \JsonSerializable
     private $totalServiceChargeMoney;
 
     /**
+     * @var string|null
+     */
+    private $ticketName;
+
+    /**
      * @var OrderPricingOptions|null
      */
     private $pricingOptions;
@@ -158,6 +165,11 @@ class Order implements \JsonSerializable
      * @var OrderReward[]|null
      */
     private $rewards;
+
+    /**
+     * @var Money|null
+     */
+    private $netAmountDueMoney;
 
     /**
      * @param string $locationId
@@ -169,7 +181,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The order's unique ID.
      */
     public function getId(): ?string
@@ -179,7 +190,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The order's unique ID.
      *
      * @maps id
@@ -191,8 +201,7 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
-     * The ID of the merchant location this order is associated with.
+     * The ID of the seller location that this order is associated with.
      */
     public function getLocationId(): string
     {
@@ -201,8 +210,7 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
-     * The ID of the merchant location this order is associated with.
+     * The ID of the seller location that this order is associated with.
      *
      * @required
      * @maps location_id
@@ -214,8 +222,7 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Reference Id.
-     *
-     * A client specified identifier to associate an entity in another system
+     * A client-specified ID to associate an entity in another system
      * with this order.
      */
     public function getReferenceId(): ?string
@@ -225,8 +232,7 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Reference Id.
-     *
-     * A client specified identifier to associate an entity in another system
+     * A client-specified ID to associate an entity in another system
      * with this order.
      *
      * @maps reference_id
@@ -238,7 +244,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Source.
-     *
      * Represents the origination details of an order.
      */
     public function getSource(): ?OrderSource
@@ -248,7 +253,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Source.
-     *
      * Represents the origination details of an order.
      *
      * @maps source
@@ -260,8 +264,14 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Customer Id.
+     * The ID of the [customer]($m/Customer) associated with the order.
      *
-     * The [Customer]($m/Customer) ID of the customer associated with the order.
+     * __IMPORTANT:__ You should specify a `customer_id` if you want the corresponding payment
+     * transactions
+     * to be explicitly linked to the customer in the Seller Dashboard. If this field is omitted, the
+     * `customer_id` assigned to any underlying `Payment` objects is ignored and might result in the
+     * creation of new [instant profiles](https://developer.squareup.com/docs/customers-api/what-it-
+     * does#instant-profiles).
      */
     public function getCustomerId(): ?string
     {
@@ -270,8 +280,14 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Customer Id.
+     * The ID of the [customer]($m/Customer) associated with the order.
      *
-     * The [Customer]($m/Customer) ID of the customer associated with the order.
+     * __IMPORTANT:__ You should specify a `customer_id` if you want the corresponding payment
+     * transactions
+     * to be explicitly linked to the customer in the Seller Dashboard. If this field is omitted, the
+     * `customer_id` assigned to any underlying `Payment` objects is ignored and might result in the
+     * creation of new [instant profiles](https://developer.squareup.com/docs/customers-api/what-it-
+     * does#instant-profiles).
      *
      * @maps customer_id
      */
@@ -282,7 +298,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Line Items.
-     *
      * The line items included in the order.
      *
      * @return OrderLineItem[]|null
@@ -294,7 +309,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Line Items.
-     *
      * The line items included in the order.
      *
      * @maps line_items
@@ -308,17 +322,16 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Taxes.
-     *
      * The list of all taxes associated with the order.
      *
      * Taxes can be scoped to either `ORDER` or `LINE_ITEM`. For taxes with `LINE_ITEM` scope, an
      * `OrderLineItemAppliedTax` must be added to each line item that the tax applies to. For taxes
-     * with `ORDER` scope, the server will generate an `OrderLineItemAppliedTax` for every line item.
+     * with `ORDER` scope, the server generates an `OrderLineItemAppliedTax` for every line item.
      *
-     * On reads, each tax in the list will include the total amount of that tax applied to the order.
+     * On reads, each tax in the list includes the total amount of that tax applied to the order.
      *
-     * __IMPORTANT__: If `LINE_ITEM` scope is set on any taxes in this field, usage of the deprecated
-     * `line_items.taxes` field will result in an error. Please use `line_items.applied_taxes`
+     * __IMPORTANT__: If `LINE_ITEM` scope is set on any taxes in this field, using the deprecated
+     * `line_items.taxes` field results in an error. Use `line_items.applied_taxes`
      * instead.
      *
      * @return OrderLineItemTax[]|null
@@ -330,17 +343,16 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Taxes.
-     *
      * The list of all taxes associated with the order.
      *
      * Taxes can be scoped to either `ORDER` or `LINE_ITEM`. For taxes with `LINE_ITEM` scope, an
      * `OrderLineItemAppliedTax` must be added to each line item that the tax applies to. For taxes
-     * with `ORDER` scope, the server will generate an `OrderLineItemAppliedTax` for every line item.
+     * with `ORDER` scope, the server generates an `OrderLineItemAppliedTax` for every line item.
      *
-     * On reads, each tax in the list will include the total amount of that tax applied to the order.
+     * On reads, each tax in the list includes the total amount of that tax applied to the order.
      *
-     * __IMPORTANT__: If `LINE_ITEM` scope is set on any taxes in this field, usage of the deprecated
-     * `line_items.taxes` field will result in an error. Please use `line_items.applied_taxes`
+     * __IMPORTANT__: If `LINE_ITEM` scope is set on any taxes in this field, using the deprecated
+     * `line_items.taxes` field results in an error. Use `line_items.applied_taxes`
      * instead.
      *
      * @maps taxes
@@ -354,16 +366,15 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Discounts.
-     *
      * The list of all discounts associated with the order.
      *
      * Discounts can be scoped to either `ORDER` or `LINE_ITEM`. For discounts scoped to `LINE_ITEM`,
      * an `OrderLineItemAppliedDiscount` must be added to each line item that the discount applies to.
-     * For discounts with `ORDER` scope, the server will generate an `OrderLineItemAppliedDiscount`
+     * For discounts with `ORDER` scope, the server generates an `OrderLineItemAppliedDiscount`
      * for every line item.
      *
-     * __IMPORTANT__: If `LINE_ITEM` scope is set on any discounts in this field, usage of the deprecated
-     * `line_items.discounts` field will result in an error. Please use `line_items.applied_discounts`
+     * __IMPORTANT__: If `LINE_ITEM` scope is set on any discounts in this field, using the deprecated
+     * `line_items.discounts` field results in an error. Use `line_items.applied_discounts`
      * instead.
      *
      * @return OrderLineItemDiscount[]|null
@@ -375,16 +386,15 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Discounts.
-     *
      * The list of all discounts associated with the order.
      *
      * Discounts can be scoped to either `ORDER` or `LINE_ITEM`. For discounts scoped to `LINE_ITEM`,
      * an `OrderLineItemAppliedDiscount` must be added to each line item that the discount applies to.
-     * For discounts with `ORDER` scope, the server will generate an `OrderLineItemAppliedDiscount`
+     * For discounts with `ORDER` scope, the server generates an `OrderLineItemAppliedDiscount`
      * for every line item.
      *
-     * __IMPORTANT__: If `LINE_ITEM` scope is set on any discounts in this field, usage of the deprecated
-     * `line_items.discounts` field will result in an error. Please use `line_items.applied_discounts`
+     * __IMPORTANT__: If `LINE_ITEM` scope is set on any discounts in this field, using the deprecated
+     * `line_items.discounts` field results in an error. Use `line_items.applied_discounts`
      * instead.
      *
      * @maps discounts
@@ -398,7 +408,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Service Charges.
-     *
      * A list of service charges applied to the order.
      *
      * @return OrderServiceCharge[]|null
@@ -410,7 +419,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Service Charges.
-     *
      * A list of service charges applied to the order.
      *
      * @maps service_charges
@@ -424,11 +432,10 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Fulfillments.
-     *
-     * Details on order fulfillment.
+     * Details about order fulfillment.
      *
      * Orders can only be created with at most one fulfillment. However, orders returned
-     * by the API may contain multiple fulfillments.
+     * by the API might contain multiple fulfillments.
      *
      * @return OrderFulfillment[]|null
      */
@@ -439,11 +446,10 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Fulfillments.
-     *
-     * Details on order fulfillment.
+     * Details about order fulfillment.
      *
      * Orders can only be created with at most one fulfillment. However, orders returned
-     * by the API may contain multiple fulfillments.
+     * by the API might contain multiple fulfillments.
      *
      * @maps fulfillments
      *
@@ -456,9 +462,8 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Returns.
-     *
-     * Collection of items from sale Orders being returned in this one. Normally part of an
-     * Itemized Return or Exchange.  There will be exactly one `Return` object per sale Order being
+     * A collection of items from sale orders being returned in this one. Normally part of an
+     * itemized return or exchange. There is exactly one `Return` object per sale `Order` being
      * referenced.
      *
      * @return OrderReturn[]|null
@@ -470,9 +475,8 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Returns.
-     *
-     * Collection of items from sale Orders being returned in this one. Normally part of an
-     * Itemized Return or Exchange.  There will be exactly one `Return` object per sale Order being
+     * A collection of items from sale orders being returned in this one. Normally part of an
+     * itemized return or exchange. There is exactly one `Return` object per sale `Order` being
      * referenced.
      *
      * @maps returns
@@ -486,7 +490,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Return Amounts.
-     *
      * A collection of various money amounts.
      */
     public function getReturnAmounts(): ?OrderMoneyAmounts
@@ -496,7 +499,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Return Amounts.
-     *
      * A collection of various money amounts.
      *
      * @maps return_amounts
@@ -508,7 +510,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Net Amounts.
-     *
      * A collection of various money amounts.
      */
     public function getNetAmounts(): ?OrderMoneyAmounts
@@ -518,7 +519,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Net Amounts.
-     *
      * A collection of various money amounts.
      *
      * @maps net_amounts
@@ -530,9 +530,9 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Rounding Adjustment.
-     *
-     * A rounding adjustment of the money being returned. Commonly used to apply Cash Rounding
-     * when the minimum unit of account is smaller than the lowest physical denomination of currency.
+     * A rounding adjustment of the money being returned. Commonly used to apply cash rounding
+     * when the minimum unit of the account is smaller than the lowest physical denomination of the
+     * currency.
      */
     public function getRoundingAdjustment(): ?OrderRoundingAdjustment
     {
@@ -541,9 +541,9 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Rounding Adjustment.
-     *
-     * A rounding adjustment of the money being returned. Commonly used to apply Cash Rounding
-     * when the minimum unit of account is smaller than the lowest physical denomination of currency.
+     * A rounding adjustment of the money being returned. Commonly used to apply cash rounding
+     * when the minimum unit of the account is smaller than the lowest physical denomination of the
+     * currency.
      *
      * @maps rounding_adjustment
      */
@@ -554,8 +554,7 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Tenders.
-     *
-     * The Tenders which were used to pay for the Order.
+     * The tenders that were used to pay for the order.
      *
      * @return Tender[]|null
      */
@@ -566,8 +565,7 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Tenders.
-     *
-     * The Tenders which were used to pay for the Order.
+     * The tenders that were used to pay for the order.
      *
      * @maps tenders
      *
@@ -580,8 +578,7 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Refunds.
-     *
-     * The Refunds that are part of this Order.
+     * The refunds that are part of this order.
      *
      * @return Refund[]|null
      */
@@ -592,8 +589,7 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Refunds.
-     *
-     * The Refunds that are part of this Order.
+     * The refunds that are part of this order.
      *
      * @maps refunds
      *
@@ -606,25 +602,26 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Metadata.
-     *
      * Application-defined data attached to this order. Metadata fields are intended
      * to store descriptive references or associations with an entity in another system or store brief
      * information about the object. Square does not process this field; it only stores and returns it
-     * in relevant API calls. Do not use metadata to store any sensitive information (personally
-     * identifiable information, card details, etc.).
+     * in relevant API calls. Do not use metadata to store any sensitive information (such as personally
+     * identifiable information or card details).
      *
      * Keys written by applications must be 60 characters or less and must be in the character set
-     * `[a-zA-Z0-9_-]`. Entries may also include metadata generated by Square. These keys are prefixed
+     * `[a-zA-Z0-9_-]`. Entries can also include metadata generated by Square. These keys are prefixed
      * with a namespace, separated from the key with a ':' character.
      *
-     * Values have a max length of 255 characters.
+     * Values have a maximum length of 255 characters.
      *
-     * An application may have up to 10 entries per metadata field.
+     * An application can have up to 10 entries per metadata field.
      *
      * Entries written by applications are private and can only be read or modified by the same
      * application.
      *
-     * See [Metadata](https://developer.squareup.com/docs/build-basics/metadata) for more information.
+     * For more information, see  [Metadata](https://developer.squareup.com/docs/build-basics/metadata).
+     *
+     * @return array<string,string>|null
      */
     public function getMetadata(): ?array
     {
@@ -633,27 +630,28 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Metadata.
-     *
      * Application-defined data attached to this order. Metadata fields are intended
      * to store descriptive references or associations with an entity in another system or store brief
      * information about the object. Square does not process this field; it only stores and returns it
-     * in relevant API calls. Do not use metadata to store any sensitive information (personally
-     * identifiable information, card details, etc.).
+     * in relevant API calls. Do not use metadata to store any sensitive information (such as personally
+     * identifiable information or card details).
      *
      * Keys written by applications must be 60 characters or less and must be in the character set
-     * `[a-zA-Z0-9_-]`. Entries may also include metadata generated by Square. These keys are prefixed
+     * `[a-zA-Z0-9_-]`. Entries can also include metadata generated by Square. These keys are prefixed
      * with a namespace, separated from the key with a ':' character.
      *
-     * Values have a max length of 255 characters.
+     * Values have a maximum length of 255 characters.
      *
-     * An application may have up to 10 entries per metadata field.
+     * An application can have up to 10 entries per metadata field.
      *
      * Entries written by applications are private and can only be read or modified by the same
      * application.
      *
-     * See [Metadata](https://developer.squareup.com/docs/build-basics/metadata) for more information.
+     * For more information, see  [Metadata](https://developer.squareup.com/docs/build-basics/metadata).
      *
      * @maps metadata
+     *
+     * @param array<string,string>|null $metadata
      */
     public function setMetadata(?array $metadata): void
     {
@@ -662,8 +660,8 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
-     * Timestamp for when the order was created. In RFC 3339 format, e.g., "2016-09-04T23:59:33.123Z".
+     * The timestamp for when the order was created, in RFC 3339 format (for example, "2016-09-04T23:59:33.
+     * 123Z").
      */
     public function getCreatedAt(): ?string
     {
@@ -672,8 +670,8 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
-     * Timestamp for when the order was created. In RFC 3339 format, e.g., "2016-09-04T23:59:33.123Z".
+     * The timestamp for when the order was created, in RFC 3339 format (for example, "2016-09-04T23:59:33.
+     * 123Z").
      *
      * @maps created_at
      */
@@ -684,8 +682,8 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Updated At.
-     *
-     * Timestamp for when the order was last updated. In RFC 3339 format, e.g., "2016-09-04T23:59:33.123Z".
+     * The timestamp for when the order was last updated, in RFC 3339 format (for example, "2016-09-04T23:
+     * 59:33.123Z").
      */
     public function getUpdatedAt(): ?string
     {
@@ -694,8 +692,8 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Updated At.
-     *
-     * Timestamp for when the order was last updated. In RFC 3339 format, e.g., "2016-09-04T23:59:33.123Z".
+     * The timestamp for when the order was last updated, in RFC 3339 format (for example, "2016-09-04T23:
+     * 59:33.123Z").
      *
      * @maps updated_at
      */
@@ -706,9 +704,8 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Closed At.
-     *
-     * Timestamp for when the order reached a terminal [state]($m/OrderState). In RFC 3339 format, e.g.,
-     * "2016-09-04T23:59:33.123Z".
+     * The timestamp for when the order reached a terminal [state]($m/OrderState), in RFC 3339 format (for
+     * example "2016-09-04T23:59:33.123Z").
      */
     public function getClosedAt(): ?string
     {
@@ -717,9 +714,8 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Closed At.
-     *
-     * Timestamp for when the order reached a terminal [state]($m/OrderState). In RFC 3339 format, e.g.,
-     * "2016-09-04T23:59:33.123Z".
+     * The timestamp for when the order reached a terminal [state]($m/OrderState), in RFC 3339 format (for
+     * example "2016-09-04T23:59:33.123Z").
      *
      * @maps closed_at
      */
@@ -730,7 +726,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns State.
-     *
      * The state of the order.
      */
     public function getState(): ?string
@@ -740,7 +735,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets State.
-     *
      * The state of the order.
      *
      * @maps state
@@ -752,10 +746,9 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Version.
-     *
-     * Version number which is incremented each time an update is committed to the order.
-     * Orders that were not created through the API will not include a version and
-     * thus cannot be updated.
+     * The version number, which is incremented each time an update is committed to the order.
+     * Orders not created through the API do not include a version number and
+     * therefore cannot be updated.
      *
      * [Read more about working with versions](https://developer.squareup.com/docs/orders-api/manage-
      * orders#update-orders).
@@ -767,10 +760,9 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Version.
-     *
-     * Version number which is incremented each time an update is committed to the order.
-     * Orders that were not created through the API will not include a version and
-     * thus cannot be updated.
+     * The version number, which is incremented each time an update is committed to the order.
+     * Orders not created through the API do not include a version number and
+     * therefore cannot be updated.
      *
      * [Read more about working with versions](https://developer.squareup.com/docs/orders-api/manage-
      * orders#update-orders).
@@ -784,7 +776,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Total Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -800,7 +791,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Total Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -818,7 +808,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Total Tax Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -834,7 +823,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Total Tax Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -852,7 +840,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Total Discount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -868,7 +855,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Total Discount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -886,7 +872,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Total Tip Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -902,7 +887,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Total Tip Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -920,7 +904,6 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Total Service Charge Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -936,7 +919,6 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Total Service Charge Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -953,11 +935,31 @@ class Order implements \JsonSerializable
     }
 
     /**
-     * Returns Pricing Options.
+     * Returns Ticket Name.
+     * A short-term identifier for the order (such as a customer first name,
+     * table number, or auto-generated order number that resets daily).
+     */
+    public function getTicketName(): ?string
+    {
+        return $this->ticketName;
+    }
+
+    /**
+     * Sets Ticket Name.
+     * A short-term identifier for the order (such as a customer first name,
+     * table number, or auto-generated order number that resets daily).
      *
+     * @maps ticket_name
+     */
+    public function setTicketName(?string $ticketName): void
+    {
+        $this->ticketName = $ticketName;
+    }
+
+    /**
+     * Returns Pricing Options.
      * Pricing options for an order. The options affect how the order's price is calculated.
-     * They can be used, for example, to apply automatic price adjustments that are based on pre-
-     * configured
+     * They can be used, for example, to apply automatic price adjustments that are based on preconfigured
      * [pricing rules]($m/CatalogPricingRule).
      */
     public function getPricingOptions(): ?OrderPricingOptions
@@ -967,10 +969,8 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Pricing Options.
-     *
      * Pricing options for an order. The options affect how the order's price is calculated.
-     * They can be used, for example, to apply automatic price adjustments that are based on pre-
-     * configured
+     * They can be used, for example, to apply automatic price adjustments that are based on preconfigured
      * [pricing rules]($m/CatalogPricingRule).
      *
      * @maps pricing_options
@@ -982,8 +982,7 @@ class Order implements \JsonSerializable
 
     /**
      * Returns Rewards.
-     *
-     * A set-like list of rewards that have been added to the order.
+     * A set-like list of Rewards that have been added to the Order.
      *
      * @return OrderReward[]|null
      */
@@ -994,8 +993,7 @@ class Order implements \JsonSerializable
 
     /**
      * Sets Rewards.
-     *
-     * A set-like list of rewards that have been added to the order.
+     * A set-like list of Rewards that have been added to the Order.
      *
      * @maps rewards
      *
@@ -1007,45 +1005,144 @@ class Order implements \JsonSerializable
     }
 
     /**
+     * Returns Net Amount Due Money.
+     * Represents an amount of money. `Money` fields can be signed or unsigned.
+     * Fields that do not explicitly define whether they are signed or unsigned are
+     * considered unsigned and can only hold positive amounts. For signed fields, the
+     * sign of the value indicates the purpose of the money transfer. See
+     * [Working with Monetary Amounts](https://developer.squareup.com/docs/build-basics/working-with-
+     * monetary-amounts)
+     * for more information.
+     */
+    public function getNetAmountDueMoney(): ?Money
+    {
+        return $this->netAmountDueMoney;
+    }
+
+    /**
+     * Sets Net Amount Due Money.
+     * Represents an amount of money. `Money` fields can be signed or unsigned.
+     * Fields that do not explicitly define whether they are signed or unsigned are
+     * considered unsigned and can only hold positive amounts. For signed fields, the
+     * sign of the value indicates the purpose of the money transfer. See
+     * [Working with Monetary Amounts](https://developer.squareup.com/docs/build-basics/working-with-
+     * monetary-amounts)
+     * for more information.
+     *
+     * @maps net_amount_due_money
+     */
+    public function setNetAmountDueMoney(?Money $netAmountDueMoney): void
+    {
+        $this->netAmountDueMoney = $netAmountDueMoney;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']                      = $this->id;
-        $json['location_id']             = $this->locationId;
-        $json['reference_id']            = $this->referenceId;
-        $json['source']                  = $this->source;
-        $json['customer_id']             = $this->customerId;
-        $json['line_items']              = $this->lineItems;
-        $json['taxes']                   = $this->taxes;
-        $json['discounts']               = $this->discounts;
-        $json['service_charges']         = $this->serviceCharges;
-        $json['fulfillments']            = $this->fulfillments;
-        $json['returns']                 = $this->returns;
-        $json['return_amounts']          = $this->returnAmounts;
-        $json['net_amounts']             = $this->netAmounts;
-        $json['rounding_adjustment']     = $this->roundingAdjustment;
-        $json['tenders']                 = $this->tenders;
-        $json['refunds']                 = $this->refunds;
-        $json['metadata']                = $this->metadata;
-        $json['created_at']              = $this->createdAt;
-        $json['updated_at']              = $this->updatedAt;
-        $json['closed_at']               = $this->closedAt;
-        $json['state']                   = $this->state;
-        $json['version']                 = $this->version;
-        $json['total_money']             = $this->totalMoney;
-        $json['total_tax_money']         = $this->totalTaxMoney;
-        $json['total_discount_money']    = $this->totalDiscountMoney;
-        $json['total_tip_money']         = $this->totalTipMoney;
-        $json['total_service_charge_money'] = $this->totalServiceChargeMoney;
-        $json['pricing_options']         = $this->pricingOptions;
-        $json['rewards']                 = $this->rewards;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']                         = $this->id;
+        }
+        $json['location_id']                    = $this->locationId;
+        if (isset($this->referenceId)) {
+            $json['reference_id']               = $this->referenceId;
+        }
+        if (isset($this->source)) {
+            $json['source']                     = $this->source;
+        }
+        if (isset($this->customerId)) {
+            $json['customer_id']                = $this->customerId;
+        }
+        if (isset($this->lineItems)) {
+            $json['line_items']                 = $this->lineItems;
+        }
+        if (isset($this->taxes)) {
+            $json['taxes']                      = $this->taxes;
+        }
+        if (isset($this->discounts)) {
+            $json['discounts']                  = $this->discounts;
+        }
+        if (isset($this->serviceCharges)) {
+            $json['service_charges']            = $this->serviceCharges;
+        }
+        if (isset($this->fulfillments)) {
+            $json['fulfillments']               = $this->fulfillments;
+        }
+        if (isset($this->returns)) {
+            $json['returns']                    = $this->returns;
+        }
+        if (isset($this->returnAmounts)) {
+            $json['return_amounts']             = $this->returnAmounts;
+        }
+        if (isset($this->netAmounts)) {
+            $json['net_amounts']                = $this->netAmounts;
+        }
+        if (isset($this->roundingAdjustment)) {
+            $json['rounding_adjustment']        = $this->roundingAdjustment;
+        }
+        if (isset($this->tenders)) {
+            $json['tenders']                    = $this->tenders;
+        }
+        if (isset($this->refunds)) {
+            $json['refunds']                    = $this->refunds;
+        }
+        if (isset($this->metadata)) {
+            $json['metadata']                   = $this->metadata;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']                 = $this->createdAt;
+        }
+        if (isset($this->updatedAt)) {
+            $json['updated_at']                 = $this->updatedAt;
+        }
+        if (isset($this->closedAt)) {
+            $json['closed_at']                  = $this->closedAt;
+        }
+        if (isset($this->state)) {
+            $json['state']                      = $this->state;
+        }
+        if (isset($this->version)) {
+            $json['version']                    = $this->version;
+        }
+        if (isset($this->totalMoney)) {
+            $json['total_money']                = $this->totalMoney;
+        }
+        if (isset($this->totalTaxMoney)) {
+            $json['total_tax_money']            = $this->totalTaxMoney;
+        }
+        if (isset($this->totalDiscountMoney)) {
+            $json['total_discount_money']       = $this->totalDiscountMoney;
+        }
+        if (isset($this->totalTipMoney)) {
+            $json['total_tip_money']            = $this->totalTipMoney;
+        }
+        if (isset($this->totalServiceChargeMoney)) {
+            $json['total_service_charge_money'] = $this->totalServiceChargeMoney;
+        }
+        if (isset($this->ticketName)) {
+            $json['ticket_name']                = $this->ticketName;
+        }
+        if (isset($this->pricingOptions)) {
+            $json['pricing_options']            = $this->pricingOptions;
+        }
+        if (isset($this->rewards)) {
+            $json['rewards']                    = $this->rewards;
+        }
+        if (isset($this->netAmountDueMoney)) {
+            $json['net_amount_due_money']       = $this->netAmountDueMoney;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents an applied portion of a discount to a line item in an order.
  *
- * Order scoped discounts will automatically have applied discounts present for each line item.
- * Line item scoped discounts must have applied discounts added manually for any applicable line
- * items. The corresponding applied money will automatically be computed based on participating
+ * Order scoped discounts have automatically applied discounts present for each line item.
+ * Line-item scoped discounts must have applied discounts added manually for any applicable line
+ * items. The corresponding applied money is automatically computed based on participating
  * line items.
  */
 class OrderLineItemAppliedDiscount implements \JsonSerializable
@@ -39,8 +41,7 @@ class OrderLineItemAppliedDiscount implements \JsonSerializable
 
     /**
      * Returns Uid.
-     *
-     * Unique ID that identifies the applied discount only within this order.
+     * A unique ID that identifies the applied discount only within this order.
      */
     public function getUid(): ?string
     {
@@ -49,8 +50,7 @@ class OrderLineItemAppliedDiscount implements \JsonSerializable
 
     /**
      * Sets Uid.
-     *
-     * Unique ID that identifies the applied discount only within this order.
+     * A unique ID that identifies the applied discount only within this order.
      *
      * @maps uid
      */
@@ -61,8 +61,7 @@ class OrderLineItemAppliedDiscount implements \JsonSerializable
 
     /**
      * Returns Discount Uid.
-     *
-     * The `uid` of the discount the applied discount represents. Must
+     * The `uid` of the discount that the applied discount represents. It must
      * reference a discount present in the `order.discounts` field.
      *
      * This field is immutable. To change which discounts apply to a line item,
@@ -75,8 +74,7 @@ class OrderLineItemAppliedDiscount implements \JsonSerializable
 
     /**
      * Sets Discount Uid.
-     *
-     * The `uid` of the discount the applied discount represents. Must
+     * The `uid` of the discount that the applied discount represents. It must
      * reference a discount present in the `order.discounts` field.
      *
      * This field is immutable. To change which discounts apply to a line item,
@@ -92,7 +90,6 @@ class OrderLineItemAppliedDiscount implements \JsonSerializable
 
     /**
      * Returns Applied Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -108,7 +105,6 @@ class OrderLineItemAppliedDiscount implements \JsonSerializable
 
     /**
      * Sets Applied Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -127,17 +123,26 @@ class OrderLineItemAppliedDiscount implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['uid']          = $this->uid;
-        $json['discount_uid'] = $this->discountUid;
-        $json['applied_money'] = $this->appliedMoney;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->uid)) {
+            $json['uid']           = $this->uid;
+        }
+        $json['discount_uid']      = $this->discountUid;
+        if (isset($this->appliedMoney)) {
+            $json['applied_money'] = $this->appliedMoney;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Pricing options for an order. The options affect how the order's price is calculated.
- * They can be used, for example, to apply automatic price adjustments that are based on pre-
- * configured
+ * They can be used, for example, to apply automatic price adjustments that are based on preconfigured
  * [pricing rules]($m/CatalogPricingRule).
  */
 class OrderPricingOptions implements \JsonSerializable
@@ -24,7 +25,6 @@ class OrderPricingOptions implements \JsonSerializable
 
     /**
      * Returns Auto Apply Discounts.
-     *
      * The option to determine whether pricing rule-based
      * discounts are automatically applied to an order.
      */
@@ -35,7 +35,6 @@ class OrderPricingOptions implements \JsonSerializable
 
     /**
      * Sets Auto Apply Discounts.
-     *
      * The option to determine whether pricing rule-based
      * discounts are automatically applied to an order.
      *
@@ -48,7 +47,6 @@ class OrderPricingOptions implements \JsonSerializable
 
     /**
      * Returns Auto Apply Taxes.
-     *
      * The option to determine whether rule-based taxes are automatically
      * applied to an order when the criteria of the corresponding rules are met.
      */
@@ -59,7 +57,6 @@ class OrderPricingOptions implements \JsonSerializable
 
     /**
      * Sets Auto Apply Taxes.
-     *
      * The option to determine whether rule-based taxes are automatically
      * applied to an order when the criteria of the corresponding rules are met.
      *
@@ -73,16 +70,25 @@ class OrderPricingOptions implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['auto_apply_discounts'] = $this->autoApplyDiscounts;
-        $json['auto_apply_taxes']   = $this->autoApplyTaxes;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->autoApplyDiscounts)) {
+            $json['auto_apply_discounts'] = $this->autoApplyDiscounts;
+        }
+        if (isset($this->autoApplyTaxes)) {
+            $json['auto_apply_taxes']     = $this->autoApplyTaxes;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

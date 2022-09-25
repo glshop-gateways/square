@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Defines parameters in a
- * [CreateSubscription]($e/Subscriptions/CreateSubscription) endpoint request.
+ * Defines input parameters in a request to the
+ * [CreateSubscription]($e/Subscriptions/CreateSubscription) endpoint.
  */
 class CreateSubscriptionRequest implements \JsonSerializable
 {
     /**
-     * @var string
+     * @var string|null
      */
     private $idempotencyKey;
 
@@ -61,14 +63,17 @@ class CreateSubscriptionRequest implements \JsonSerializable
     private $timezone;
 
     /**
-     * @param string $idempotencyKey
+     * @var SubscriptionSource|null
+     */
+    private $source;
+
+    /**
      * @param string $locationId
      * @param string $planId
      * @param string $customerId
      */
-    public function __construct(string $idempotencyKey, string $locationId, string $planId, string $customerId)
+    public function __construct(string $locationId, string $planId, string $customerId)
     {
-        $this->idempotencyKey = $idempotencyKey;
         $this->locationId = $locationId;
         $this->planId = $planId;
         $this->customerId = $customerId;
@@ -76,7 +81,6 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Returns Idempotency Key.
-     *
      * A unique string that identifies this `CreateSubscription` request.
      * If you do not provide a unique string (or provide an empty string as the value),
      * the endpoint treats each request as independent.
@@ -84,14 +88,13 @@ class CreateSubscriptionRequest implements \JsonSerializable
      * For more information, see [Idempotency keys](https://developer.squareup.com/docs/working-with-
      * apis/idempotency).
      */
-    public function getIdempotencyKey(): string
+    public function getIdempotencyKey(): ?string
     {
         return $this->idempotencyKey;
     }
 
     /**
      * Sets Idempotency Key.
-     *
      * A unique string that identifies this `CreateSubscription` request.
      * If you do not provide a unique string (or provide an empty string as the value),
      * the endpoint treats each request as independent.
@@ -99,17 +102,15 @@ class CreateSubscriptionRequest implements \JsonSerializable
      * For more information, see [Idempotency keys](https://developer.squareup.com/docs/working-with-
      * apis/idempotency).
      *
-     * @required
      * @maps idempotency_key
      */
-    public function setIdempotencyKey(string $idempotencyKey): void
+    public function setIdempotencyKey(?string $idempotencyKey): void
     {
         $this->idempotencyKey = $idempotencyKey;
     }
 
     /**
      * Returns Location Id.
-     *
      * The ID of the location the subscription is associated with.
      */
     public function getLocationId(): string
@@ -119,7 +120,6 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * The ID of the location the subscription is associated with.
      *
      * @required
@@ -132,9 +132,11 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Returns Plan Id.
-     *
-     * The ID of the subscription plan. For more information, see
-     * [Subscription Plan Overview](https://developer.squareup.com/docs/subscriptions/overview).
+     * The ID of the subscription plan created using the Catalog API.
+     * For more information, see
+     * [Set Up and Manage a Subscription Plan](https://developer.squareup.com/docs/subscriptions-api/setup-
+     * plan) and
+     * [Subscriptions Walkthrough](https://developer.squareup.com/docs/subscriptions-api/walkthrough).
      */
     public function getPlanId(): string
     {
@@ -143,9 +145,11 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Sets Plan Id.
-     *
-     * The ID of the subscription plan. For more information, see
-     * [Subscription Plan Overview](https://developer.squareup.com/docs/subscriptions/overview).
+     * The ID of the subscription plan created using the Catalog API.
+     * For more information, see
+     * [Set Up and Manage a Subscription Plan](https://developer.squareup.com/docs/subscriptions-api/setup-
+     * plan) and
+     * [Subscriptions Walkthrough](https://developer.squareup.com/docs/subscriptions-api/walkthrough).
      *
      * @required
      * @maps plan_id
@@ -157,8 +161,7 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Returns Customer Id.
-     *
-     * The ID of the [customer]($m/Customer) profile.
+     * The ID of the [customer]($m/Customer) subscribing to the subscription plan.
      */
     public function getCustomerId(): string
     {
@@ -167,8 +170,7 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Sets Customer Id.
-     *
-     * The ID of the [customer]($m/Customer) profile.
+     * The ID of the [customer]($m/Customer) subscribing to the subscription plan.
      *
      * @required
      * @maps customer_id
@@ -180,10 +182,8 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Returns Start Date.
-     *
-     * The start date of the subscription, in YYYY-MM-DD format. For example,
-     * 2013-01-15. If the start date is left empty, the subscription begins
-     * immediately.
+     * The `YYYY-MM-DD`-formatted date to start the subscription.
+     * If it is unspecified, the subscription starts immediately.
      */
     public function getStartDate(): ?string
     {
@@ -192,10 +192,8 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Sets Start Date.
-     *
-     * The start date of the subscription, in YYYY-MM-DD format. For example,
-     * 2013-01-15. If the start date is left empty, the subscription begins
-     * immediately.
+     * The `YYYY-MM-DD`-formatted date to start the subscription.
+     * If it is unspecified, the subscription starts immediately.
      *
      * @maps start_date
      */
@@ -206,10 +204,19 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Returns Canceled Date.
+     * The `YYYY-MM-DD`-formatted date when the newly created subscription is scheduled for cancellation.
      *
-     * The date when the subscription should be canceled, in
-     * YYYY-MM-DD format (for example, 2025-02-29). This overrides the plan configuration
-     * if it comes before the date the subscription would otherwise end.
+     * This date overrides the cancellation date set in the plan configuration.
+     * If the cancellation date is earlier than the end date of a subscription cycle, the subscription
+     * stops
+     * at the canceled date and the subscriber is sent a prorated invoice at the beginning of the canceled
+     * cycle.
+     *
+     * When the subscription plan of the newly created subscription has a fixed number of cycles and the
+     * `canceled_date`
+     * occurs before the subscription plan expires, the specified `canceled_date` sets the date when the
+     * subscription
+     * stops through the end of the last cycle.
      */
     public function getCanceledDate(): ?string
     {
@@ -218,10 +225,19 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Sets Canceled Date.
+     * The `YYYY-MM-DD`-formatted date when the newly created subscription is scheduled for cancellation.
      *
-     * The date when the subscription should be canceled, in
-     * YYYY-MM-DD format (for example, 2025-02-29). This overrides the plan configuration
-     * if it comes before the date the subscription would otherwise end.
+     * This date overrides the cancellation date set in the plan configuration.
+     * If the cancellation date is earlier than the end date of a subscription cycle, the subscription
+     * stops
+     * at the canceled date and the subscriber is sent a prorated invoice at the beginning of the canceled
+     * cycle.
+     *
+     * When the subscription plan of the newly created subscription has a fixed number of cycles and the
+     * `canceled_date`
+     * occurs before the subscription plan expires, the specified `canceled_date` sets the date when the
+     * subscription
+     * stops through the end of the last cycle.
      *
      * @maps canceled_date
      */
@@ -232,7 +248,6 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Returns Tax Percentage.
-     *
      * The tax to add when billing the subscription.
      * The percentage is expressed in decimal form, using a `'.'` as the decimal
      * separator and without a `'%'` sign. For example, a value of 7.5
@@ -245,7 +260,6 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Sets Tax Percentage.
-     *
      * The tax to add when billing the subscription.
      * The percentage is expressed in decimal form, using a `'.'` as the decimal
      * separator and without a `'%'` sign. For example, a value of 7.5
@@ -260,7 +274,6 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Returns Price Override Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -276,7 +289,6 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Sets Price Override Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -294,11 +306,10 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Returns Card Id.
-     *
-     * The ID of the [customer]($m/Customer) [card]($m/Card) to charge.
-     * If not specified, Square sends an invoice via email. For an example to
-     * create a customer and add a card on file, see [Subscriptions Walkthrough](https://developer.squareup.
-     * com/docs/subscriptions-api/walkthrough).
+     * The ID of the [subscriber's]($m/Customer) [card]($m/Card) to charge.
+     * If it is not specified, the subscriber receives an invoice via email. For an example to
+     * create a customer profile for a subscriber and add a card on file, see [Subscriptions
+     * Walkthrough](https://developer.squareup.com/docs/subscriptions-api/walkthrough).
      */
     public function getCardId(): ?string
     {
@@ -307,11 +318,10 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Sets Card Id.
-     *
-     * The ID of the [customer]($m/Customer) [card]($m/Card) to charge.
-     * If not specified, Square sends an invoice via email. For an example to
-     * create a customer and add a card on file, see [Subscriptions Walkthrough](https://developer.squareup.
-     * com/docs/subscriptions-api/walkthrough).
+     * The ID of the [subscriber's]($m/Customer) [card]($m/Card) to charge.
+     * If it is not specified, the subscriber receives an invoice via email. For an example to
+     * create a customer profile for a subscriber and add a card on file, see [Subscriptions
+     * Walkthrough](https://developer.squareup.com/docs/subscriptions-api/walkthrough).
      *
      * @maps card_id
      */
@@ -322,7 +332,6 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Returns Timezone.
-     *
      * The timezone that is used in date calculations for the subscription. If unset, defaults to
      * the location timezone. If a timezone is not configured for the location, defaults to
      * "America/New_York".
@@ -337,7 +346,6 @@ class CreateSubscriptionRequest implements \JsonSerializable
 
     /**
      * Sets Timezone.
-     *
      * The timezone that is used in date calculations for the subscription. If unset, defaults to
      * the location timezone. If a timezone is not configured for the location, defaults to
      * "America/New_York".
@@ -353,26 +361,68 @@ class CreateSubscriptionRequest implements \JsonSerializable
     }
 
     /**
+     * Returns Source.
+     * The origination details of the subscription.
+     */
+    public function getSource(): ?SubscriptionSource
+    {
+        return $this->source;
+    }
+
+    /**
+     * Sets Source.
+     * The origination details of the subscription.
+     *
+     * @maps source
+     */
+    public function setSource(?SubscriptionSource $source): void
+    {
+        $this->source = $source;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['idempotency_key']    = $this->idempotencyKey;
-        $json['location_id']        = $this->locationId;
-        $json['plan_id']            = $this->planId;
-        $json['customer_id']        = $this->customerId;
-        $json['start_date']         = $this->startDate;
-        $json['canceled_date']      = $this->canceledDate;
-        $json['tax_percentage']     = $this->taxPercentage;
-        $json['price_override_money'] = $this->priceOverrideMoney;
-        $json['card_id']            = $this->cardId;
-        $json['timezone']           = $this->timezone;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->idempotencyKey)) {
+            $json['idempotency_key']      = $this->idempotencyKey;
+        }
+        $json['location_id']              = $this->locationId;
+        $json['plan_id']                  = $this->planId;
+        $json['customer_id']              = $this->customerId;
+        if (isset($this->startDate)) {
+            $json['start_date']           = $this->startDate;
+        }
+        if (isset($this->canceledDate)) {
+            $json['canceled_date']        = $this->canceledDate;
+        }
+        if (isset($this->taxPercentage)) {
+            $json['tax_percentage']       = $this->taxPercentage;
+        }
+        if (isset($this->priceOverrideMoney)) {
+            $json['price_override_money'] = $this->priceOverrideMoney;
+        }
+        if (isset($this->cardId)) {
+            $json['card_id']              = $this->cardId;
+        }
+        if (isset($this->timezone)) {
+            $json['timezone']             = $this->timezone;
+        }
+        if (isset($this->source)) {
+            $json['source']               = $this->source;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class CreateDeviceCodeRequest implements \JsonSerializable
 {
     /**
@@ -28,7 +30,6 @@ class CreateDeviceCodeRequest implements \JsonSerializable
 
     /**
      * Returns Idempotency Key.
-     *
      * A unique string that identifies this CreateDeviceCode request. Keys can
      * be any valid string but must be unique for every CreateDeviceCode request.
      *
@@ -42,7 +43,6 @@ class CreateDeviceCodeRequest implements \JsonSerializable
 
     /**
      * Sets Idempotency Key.
-     *
      * A unique string that identifies this CreateDeviceCode request. Keys can
      * be any valid string but must be unique for every CreateDeviceCode request.
      *
@@ -79,16 +79,21 @@ class CreateDeviceCodeRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['idempotency_key'] = $this->idempotencyKey;
-        $json['device_code']    = $this->deviceCode;
-
-        return array_filter($json, function ($val) {
+        $json['device_code']     = $this->deviceCode;
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

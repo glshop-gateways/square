@@ -1,4 +1,5 @@
 <?php
+
 namespace Square\Tests;
 
 use Square\ApiHelper;
@@ -41,10 +42,10 @@ class RefundsTest extends TestCase
      */
     public static function setUpBeforeClass(): void
     {
-        $config = ClientFactory::create();
         self::$httpResponse = new HttpCallBackCatcher();
-        self::$controller = new RefundsApi($config, self::$httpResponse);
-        self::$paymentsController = new PaymentsApi($config, self::$httpResponse);
+        $client = ClientFactory::create(self::$httpResponse);
+        self::$controller = $client->getRefundsApi();
+        self::$paymentsController = $client->getPaymentsApi();
     }
 
 
@@ -103,9 +104,9 @@ class RefundsTest extends TestCase
         $refundBody_paymentId = $payment_id;
         $refundBody = new RefundPaymentRequest(
             $refundBody_idempotencyKey,
-            $refundBody_amountMoney,
-            $refundBody_paymentId
+            $refundBody_amountMoney
         );
+        $refundBody->setPaymentId($refundBody_paymentId);
 
         $apiResponse = self::$controller->refundPayment($refundBody);
 

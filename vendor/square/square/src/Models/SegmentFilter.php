@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * A query filter to search for appointment segments by.
+ * A query filter to search for buyer-accessible appointment segments by.
  */
 class SegmentFilter implements \JsonSerializable
 {
@@ -29,9 +31,8 @@ class SegmentFilter implements \JsonSerializable
 
     /**
      * Returns Service Variation Id.
-     *
-     * The ID of the [CatalogItemVariation]($m/CatalogItemVariation) representing the service booked in
-     * this segment.
+     * The ID of the [CatalogItemVariation]($m/CatalogItemVariation) object representing the service booked
+     * in this segment.
      */
     public function getServiceVariationId(): string
     {
@@ -40,9 +41,8 @@ class SegmentFilter implements \JsonSerializable
 
     /**
      * Sets Service Variation Id.
-     *
-     * The ID of the [CatalogItemVariation]($m/CatalogItemVariation) representing the service booked in
-     * this segment.
+     * The ID of the [CatalogItemVariation]($m/CatalogItemVariation) object representing the service booked
+     * in this segment.
      *
      * @required
      * @maps service_variation_id
@@ -54,7 +54,6 @@ class SegmentFilter implements \JsonSerializable
 
     /**
      * Returns Team Member Id Filter.
-     *
      * A filter to select resources based on an exact field value. For any given
      * value, the value can only be in one property. Depending on the field, either
      * all properties can be set or only a subset will be available.
@@ -68,7 +67,6 @@ class SegmentFilter implements \JsonSerializable
 
     /**
      * Sets Team Member Id Filter.
-     *
      * A filter to select resources based on an exact field value. For any given
      * value, the value can only be in one property. Depending on the field, either
      * all properties can be set or only a subset will be available.
@@ -85,16 +83,23 @@ class SegmentFilter implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['service_variation_id'] = $this->serviceVariationId;
-        $json['team_member_id_filter'] = $this->teamMemberIdFilter;
-
-        return array_filter($json, function ($val) {
+        $json['service_variation_id']      = $this->serviceVariationId;
+        if (isset($this->teamMemberIdFilter)) {
+            $json['team_member_id_filter'] = $this->teamMemberIdFilter;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

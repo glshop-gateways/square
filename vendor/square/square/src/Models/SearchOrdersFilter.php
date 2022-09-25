@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Filtering criteria to use for a SearchOrders request. Multiple filters
- * will be ANDed together.
+ * Filtering criteria to use for a `SearchOrders` request. Multiple filters
+ * are ANDed together.
  */
 class SearchOrdersFilter implements \JsonSerializable
 {
@@ -37,8 +39,7 @@ class SearchOrdersFilter implements \JsonSerializable
 
     /**
      * Returns State Filter.
-     *
-     * Filter by current Order `state`.
+     * Filter by the current order `state`.
      */
     public function getStateFilter(): ?SearchOrdersStateFilter
     {
@@ -47,8 +48,7 @@ class SearchOrdersFilter implements \JsonSerializable
 
     /**
      * Sets State Filter.
-     *
-     * Filter by current Order `state`.
+     * Filter by the current order `state`.
      *
      * @maps state_filter
      */
@@ -59,22 +59,21 @@ class SearchOrdersFilter implements \JsonSerializable
 
     /**
      * Returns Date Time Filter.
-     *
      * Filter for `Order` objects based on whether their `CREATED_AT`,
-     * `CLOSED_AT` or `UPDATED_AT` timestamps fall within a specified time range.
+     * `CLOSED_AT`, or `UPDATED_AT` timestamps fall within a specified time range.
      * You can specify the time range and which timestamp to filter for. You can filter
      * for only one time range at a time.
      *
      * For each time range, the start time and end time are inclusive. If the end time
      * is absent, it defaults to the time of the first request for the cursor.
      *
-     * __Important:__ If you use the DateTimeFilter in a SearchOrders query,
-     * you must also set the `sort_field` in [OrdersSort]($m/SearchOrdersSort)
+     * __Important:__ If you use the `DateTimeFilter` in a `SearchOrders` query,
+     * you must set the `sort_field` in [OrdersSort]($m/SearchOrdersSort)
      * to the same field you filter for. For example, if you set the `CLOSED_AT` field
-     * in DateTimeFilter, you must also set the `sort_field` in SearchOrdersSort to
-     * `CLOSED_AT`. Otherwise, SearchOrders will throw an error.
-     * [Learn more about filtering orders by time range](https://developer.squareup.com/docs/orders-
-     * api/manage-orders#important-note-on-filtering-orders-by-time-range).
+     * in `DateTimeFilter`, you must set the `sort_field` in `SearchOrdersSort` to
+     * `CLOSED_AT`. Otherwise, `SearchOrders` throws an error.
+     * [Learn more about filtering orders by time range.](https://developer.squareup.com/docs/orders-
+     * api/manage-orders#important-note-on-filtering-orders-by-time-range)
      */
     public function getDateTimeFilter(): ?SearchOrdersDateTimeFilter
     {
@@ -83,22 +82,21 @@ class SearchOrdersFilter implements \JsonSerializable
 
     /**
      * Sets Date Time Filter.
-     *
      * Filter for `Order` objects based on whether their `CREATED_AT`,
-     * `CLOSED_AT` or `UPDATED_AT` timestamps fall within a specified time range.
+     * `CLOSED_AT`, or `UPDATED_AT` timestamps fall within a specified time range.
      * You can specify the time range and which timestamp to filter for. You can filter
      * for only one time range at a time.
      *
      * For each time range, the start time and end time are inclusive. If the end time
      * is absent, it defaults to the time of the first request for the cursor.
      *
-     * __Important:__ If you use the DateTimeFilter in a SearchOrders query,
-     * you must also set the `sort_field` in [OrdersSort]($m/SearchOrdersSort)
+     * __Important:__ If you use the `DateTimeFilter` in a `SearchOrders` query,
+     * you must set the `sort_field` in [OrdersSort]($m/SearchOrdersSort)
      * to the same field you filter for. For example, if you set the `CLOSED_AT` field
-     * in DateTimeFilter, you must also set the `sort_field` in SearchOrdersSort to
-     * `CLOSED_AT`. Otherwise, SearchOrders will throw an error.
-     * [Learn more about filtering orders by time range](https://developer.squareup.com/docs/orders-
-     * api/manage-orders#important-note-on-filtering-orders-by-time-range).
+     * in `DateTimeFilter`, you must set the `sort_field` in `SearchOrdersSort` to
+     * `CLOSED_AT`. Otherwise, `SearchOrders` throws an error.
+     * [Learn more about filtering orders by time range.](https://developer.squareup.com/docs/orders-
+     * api/manage-orders#important-note-on-filtering-orders-by-time-range)
      *
      * @maps date_time_filter
      */
@@ -109,8 +107,7 @@ class SearchOrdersFilter implements \JsonSerializable
 
     /**
      * Returns Fulfillment Filter.
-     *
-     * Filter based on [Order Fulfillment]($m/OrderFulfillment) information.
+     * Filter based on [order fulfillment]($m/OrderFulfillment) information.
      */
     public function getFulfillmentFilter(): ?SearchOrdersFulfillmentFilter
     {
@@ -119,8 +116,7 @@ class SearchOrdersFilter implements \JsonSerializable
 
     /**
      * Sets Fulfillment Filter.
-     *
-     * Filter based on [Order Fulfillment]($m/OrderFulfillment) information.
+     * Filter based on [order fulfillment]($m/OrderFulfillment) information.
      *
      * @maps fulfillment_filter
      */
@@ -131,8 +127,7 @@ class SearchOrdersFilter implements \JsonSerializable
 
     /**
      * Returns Source Filter.
-     *
-     * Filter based on order `source` information.
+     * A filter based on order `source` information.
      */
     public function getSourceFilter(): ?SearchOrdersSourceFilter
     {
@@ -141,8 +136,7 @@ class SearchOrdersFilter implements \JsonSerializable
 
     /**
      * Sets Source Filter.
-     *
-     * Filter based on order `source` information.
+     * A filter based on order `source` information.
      *
      * @maps source_filter
      */
@@ -153,9 +147,8 @@ class SearchOrdersFilter implements \JsonSerializable
 
     /**
      * Returns Customer Filter.
-     *
-     * Filter based on Order `customer_id` and any Tender `customer_id`
-     * associated with the Order. Does not filter based on the
+     * A filter based on the order `customer_id` and any tender `customer_id`
+     * associated with the order. It does not filter based on the
      * [FulfillmentRecipient]($m/OrderFulfillmentRecipient) `customer_id`.
      */
     public function getCustomerFilter(): ?SearchOrdersCustomerFilter
@@ -165,9 +158,8 @@ class SearchOrdersFilter implements \JsonSerializable
 
     /**
      * Sets Customer Filter.
-     *
-     * Filter based on Order `customer_id` and any Tender `customer_id`
-     * associated with the Order. Does not filter based on the
+     * A filter based on the order `customer_id` and any tender `customer_id`
+     * associated with the order. It does not filter based on the
      * [FulfillmentRecipient]($m/OrderFulfillmentRecipient) `customer_id`.
      *
      * @maps customer_filter
@@ -180,19 +172,34 @@ class SearchOrdersFilter implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['state_filter']      = $this->stateFilter;
-        $json['date_time_filter']  = $this->dateTimeFilter;
-        $json['fulfillment_filter'] = $this->fulfillmentFilter;
-        $json['source_filter']     = $this->sourceFilter;
-        $json['customer_filter']   = $this->customerFilter;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->stateFilter)) {
+            $json['state_filter']       = $this->stateFilter;
+        }
+        if (isset($this->dateTimeFilter)) {
+            $json['date_time_filter']   = $this->dateTimeFilter;
+        }
+        if (isset($this->fulfillmentFilter)) {
+            $json['fulfillment_filter'] = $this->fulfillmentFilter;
+        }
+        if (isset($this->sourceFilter)) {
+            $json['source_filter']      = $this->sourceFilter;
+        }
+        if (isset($this->customerFilter)) {
+            $json['customer_filter']    = $this->customerFilter;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

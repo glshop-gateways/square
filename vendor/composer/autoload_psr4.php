@@ -7,5 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'apimatic\\jsonmapper\\' => array($vendorDir . '/apimatic/jsonmapper/src'),
+    'Unirest\\' => array($vendorDir . '/apimatic/unirest-php/src'),
     'Square\\' => array($vendorDir . '/square/square/src'),
 );

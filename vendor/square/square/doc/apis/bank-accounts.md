@@ -10,14 +10,14 @@ $bankAccountsApi = $client->getBankAccountsApi();
 
 ## Methods
 
-* [List Bank Accounts](/doc/apis/bank-accounts.md#list-bank-accounts)
-* [Get Bank Account by V1 Id](/doc/apis/bank-accounts.md#get-bank-account-by-v1-id)
-* [Get Bank Account](/doc/apis/bank-accounts.md#get-bank-account)
+* [List Bank Accounts](../../doc/apis/bank-accounts.md#list-bank-accounts)
+* [Get Bank Account by V1 Id](../../doc/apis/bank-accounts.md#get-bank-account-by-v1-id)
+* [Get Bank Account](../../doc/apis/bank-accounts.md#get-bank-account)
 
 
 # List Bank Accounts
 
-Returns a list of [BankAccount](/doc/models/bank-account.md) objects linked to a Square account.
+Returns a list of [BankAccount](../../doc/models/bank-account.md) objects linked to a Square account.
 
 ```php
 function listBankAccounts(?string $cursor = null, ?int $limit = null, ?string $locationId = null): ApiResponse
@@ -33,16 +33,12 @@ function listBankAccounts(?string $cursor = null, ?int $limit = null, ?string $l
 
 ## Response Type
 
-[`ListBankAccountsResponse`](/doc/models/list-bank-accounts-response.md)
+[`ListBankAccountsResponse`](../../doc/models/list-bank-accounts-response.md)
 
 ## Example Usage
 
 ```php
-$cursor = 'cursor6';
-$limit = 172;
-$locationId = 'location_id4';
-
-$apiResponse = $bankAccountsApi->listBankAccounts($cursor, $limit, $locationId);
+$apiResponse = $bankAccountsApi->listBankAccounts();
 
 if ($apiResponse->isSuccess()) {
     $listBankAccountsResponse = $apiResponse->getResult();
@@ -58,7 +54,7 @@ if ($apiResponse->isSuccess()) {
 
 # Get Bank Account by V1 Id
 
-Returns details of a [BankAccount](/doc/models/bank-account.md) identified by V1 bank account ID.
+Returns details of a [BankAccount](../../doc/models/bank-account.md) identified by V1 bank account ID.
 
 ```php
 function getBankAccountByV1Id(string $v1BankAccountId): ApiResponse
@@ -72,7 +68,7 @@ function getBankAccountByV1Id(string $v1BankAccountId): ApiResponse
 
 ## Response Type
 
-[`GetBankAccountByV1IdResponse`](/doc/models/get-bank-account-by-v1-id-response.md)
+[`GetBankAccountByV1IdResponse`](../../doc/models/get-bank-account-by-v1-id-response.md)
 
 ## Example Usage
 
@@ -95,7 +91,7 @@ if ($apiResponse->isSuccess()) {
 
 # Get Bank Account
 
-Returns details of a [BankAccount](/doc/models/bank-account.md)
+Returns details of a [BankAccount](../../doc/models/bank-account.md)
 linked to a Square account.
 
 ```php
@@ -110,7 +106,7 @@ function getBankAccount(string $bankAccountId): ApiResponse
 
 ## Response Type
 
-[`GetBankAccountResponse`](/doc/models/get-bank-account-response.md)
+[`GetBankAccountResponse`](../../doc/models/get-bank-account-response.md)
 
 ## Example Usage
 

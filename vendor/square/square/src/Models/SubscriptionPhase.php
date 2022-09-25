@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Describes a phase in a subscription plan. For more information, see
  * [Set Up and Manage a Subscription Plan](https://developer.squareup.com/docs/subscriptions-api/setup-
@@ -27,7 +29,7 @@ class SubscriptionPhase implements \JsonSerializable
     private $periods;
 
     /**
-     * @var Money
+     * @var Money|null
      */
     private $recurringPriceMoney;
 
@@ -38,17 +40,14 @@ class SubscriptionPhase implements \JsonSerializable
 
     /**
      * @param string $cadence
-     * @param Money $recurringPriceMoney
      */
-    public function __construct(string $cadence, Money $recurringPriceMoney)
+    public function __construct(string $cadence)
     {
         $this->cadence = $cadence;
-        $this->recurringPriceMoney = $recurringPriceMoney;
     }
 
     /**
      * Returns Uid.
-     *
      * The Square-assigned ID of the subscription phase. This field cannot be changed after a
      * `SubscriptionPhase` is created.
      */
@@ -59,7 +58,6 @@ class SubscriptionPhase implements \JsonSerializable
 
     /**
      * Sets Uid.
-     *
      * The Square-assigned ID of the subscription phase. This field cannot be changed after a
      * `SubscriptionPhase` is created.
      *
@@ -72,7 +70,6 @@ class SubscriptionPhase implements \JsonSerializable
 
     /**
      * Returns Cadence.
-     *
      * Determines the billing cadence of a [Subscription]($m/Subscription)
      */
     public function getCadence(): string
@@ -82,7 +79,6 @@ class SubscriptionPhase implements \JsonSerializable
 
     /**
      * Sets Cadence.
-     *
      * Determines the billing cadence of a [Subscription]($m/Subscription)
      *
      * @required
@@ -95,7 +91,6 @@ class SubscriptionPhase implements \JsonSerializable
 
     /**
      * Returns Periods.
-     *
      * The number of `cadence`s the phase lasts. If not set, the phase never ends. Only the last phase can
      * be indefinite. This field cannot be changed after a `SubscriptionPhase` is created.
      */
@@ -106,7 +101,6 @@ class SubscriptionPhase implements \JsonSerializable
 
     /**
      * Sets Periods.
-     *
      * The number of `cadence`s the phase lasts. If not set, the phase never ends. Only the last phase can
      * be indefinite. This field cannot be changed after a `SubscriptionPhase` is created.
      *
@@ -119,7 +113,6 @@ class SubscriptionPhase implements \JsonSerializable
 
     /**
      * Returns Recurring Price Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -128,14 +121,13 @@ class SubscriptionPhase implements \JsonSerializable
      * monetary-amounts)
      * for more information.
      */
-    public function getRecurringPriceMoney(): Money
+    public function getRecurringPriceMoney(): ?Money
     {
         return $this->recurringPriceMoney;
     }
 
     /**
      * Sets Recurring Price Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -144,17 +136,15 @@ class SubscriptionPhase implements \JsonSerializable
      * monetary-amounts)
      * for more information.
      *
-     * @required
      * @maps recurring_price_money
      */
-    public function setRecurringPriceMoney(Money $recurringPriceMoney): void
+    public function setRecurringPriceMoney(?Money $recurringPriceMoney): void
     {
         $this->recurringPriceMoney = $recurringPriceMoney;
     }
 
     /**
      * Returns Ordinal.
-     *
      * The position this phase appears in the sequence of phases defined for the plan, indexed from 0. This
      * field cannot be changed after a `SubscriptionPhase` is created.
      */
@@ -165,7 +155,6 @@ class SubscriptionPhase implements \JsonSerializable
 
     /**
      * Sets Ordinal.
-     *
      * The position this phase appears in the sequence of phases defined for the plan, indexed from 0. This
      * field cannot be changed after a `SubscriptionPhase` is created.
      *
@@ -179,19 +168,32 @@ class SubscriptionPhase implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['uid']                 = $this->uid;
-        $json['cadence']             = $this->cadence;
-        $json['periods']             = $this->periods;
-        $json['recurring_price_money'] = $this->recurringPriceMoney;
-        $json['ordinal']             = $this->ordinal;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->uid)) {
+            $json['uid']                   = $this->uid;
+        }
+        $json['cadence']                   = $this->cadence;
+        if (isset($this->periods)) {
+            $json['periods']               = $this->periods;
+        }
+        if (isset($this->recurringPriceMoney)) {
+            $json['recurring_price_money'] = $this->recurringPriceMoney;
+        }
+        if (isset($this->ordinal)) {
+            $json['ordinal']               = $this->ordinal;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

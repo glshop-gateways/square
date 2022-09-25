@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents an error encountered during a request to the Connect API.
  *
@@ -44,7 +46,6 @@ class Error implements \JsonSerializable
 
     /**
      * Returns Category.
-     *
      * Indicates which high-level category of error has occurred during a
      * request to the Connect API.
      */
@@ -55,7 +56,6 @@ class Error implements \JsonSerializable
 
     /**
      * Sets Category.
-     *
      * Indicates which high-level category of error has occurred during a
      * request to the Connect API.
      *
@@ -69,7 +69,6 @@ class Error implements \JsonSerializable
 
     /**
      * Returns Code.
-     *
      * Indicates the specific error that occurred during a request to a
      * Square API.
      */
@@ -80,7 +79,6 @@ class Error implements \JsonSerializable
 
     /**
      * Sets Code.
-     *
      * Indicates the specific error that occurred during a request to a
      * Square API.
      *
@@ -94,7 +92,6 @@ class Error implements \JsonSerializable
 
     /**
      * Returns Detail.
-     *
      * A human-readable description of the error for debugging purposes.
      */
     public function getDetail(): ?string
@@ -104,7 +101,6 @@ class Error implements \JsonSerializable
 
     /**
      * Sets Detail.
-     *
      * A human-readable description of the error for debugging purposes.
      *
      * @maps detail
@@ -116,7 +112,6 @@ class Error implements \JsonSerializable
 
     /**
      * Returns Field.
-     *
      * The name of the field provided in the original request (if any) that
      * the error pertains to.
      */
@@ -127,7 +122,6 @@ class Error implements \JsonSerializable
 
     /**
      * Sets Field.
-     *
      * The name of the field provided in the original request (if any) that
      * the error pertains to.
      *
@@ -141,18 +135,27 @@ class Error implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['category'] = $this->category;
-        $json['code']     = $this->code;
-        $json['detail']   = $this->detail;
-        $json['field']    = $this->field;
-
-        return array_filter($json, function ($val) {
+        $json['category']   = $this->category;
+        $json['code']       = $this->code;
+        if (isset($this->detail)) {
+            $json['detail'] = $this->detail;
+        }
+        if (isset($this->field)) {
+            $json['field']  = $this->field;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

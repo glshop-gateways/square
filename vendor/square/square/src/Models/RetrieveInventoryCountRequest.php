@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class RetrieveInventoryCountRequest implements \JsonSerializable
 {
     /**
@@ -18,7 +20,6 @@ class RetrieveInventoryCountRequest implements \JsonSerializable
 
     /**
      * Returns Location Ids.
-     *
      * The [Location]($m/Location) IDs to look up as a comma-separated
      * list. An empty list queries all locations.
      */
@@ -29,7 +30,6 @@ class RetrieveInventoryCountRequest implements \JsonSerializable
 
     /**
      * Sets Location Ids.
-     *
      * The [Location]($m/Location) IDs to look up as a comma-separated
      * list. An empty list queries all locations.
      *
@@ -42,7 +42,6 @@ class RetrieveInventoryCountRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * A pagination cursor returned by a previous call to this endpoint.
      * Provide this to retrieve the next set of results for the original query.
      *
@@ -56,7 +55,6 @@ class RetrieveInventoryCountRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * A pagination cursor returned by a previous call to this endpoint.
      * Provide this to retrieve the next set of results for the original query.
      *
@@ -73,16 +71,25 @@ class RetrieveInventoryCountRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['location_ids'] = $this->locationIds;
-        $json['cursor']      = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->locationIds)) {
+            $json['location_ids'] = $this->locationIds;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']       = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * An object that represents a team member's assignment to locations.
  */
@@ -21,8 +23,7 @@ class TeamMemberAssignedLocations implements \JsonSerializable
 
     /**
      * Returns Assignment Type.
-     *
-     * Enumerates the possible assignment types the team member can have
+     * Enumerates the possible assignment types that the team member can have.
      */
     public function getAssignmentType(): ?string
     {
@@ -31,8 +32,7 @@ class TeamMemberAssignedLocations implements \JsonSerializable
 
     /**
      * Sets Assignment Type.
-     *
-     * Enumerates the possible assignment types the team member can have
+     * Enumerates the possible assignment types that the team member can have.
      *
      * @maps assignment_type
      */
@@ -43,7 +43,6 @@ class TeamMemberAssignedLocations implements \JsonSerializable
 
     /**
      * Returns Location Ids.
-     *
      * The locations that the team member is assigned to.
      *
      * @return string[]|null
@@ -55,7 +54,6 @@ class TeamMemberAssignedLocations implements \JsonSerializable
 
     /**
      * Sets Location Ids.
-     *
      * The locations that the team member is assigned to.
      *
      * @maps location_ids
@@ -70,16 +68,25 @@ class TeamMemberAssignedLocations implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['assignment_type'] = $this->assignmentType;
-        $json['location_ids']   = $this->locationIds;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->assignmentType)) {
+            $json['assignment_type'] = $this->assignmentType;
+        }
+        if (isset($this->locationIds)) {
+            $json['location_ids']    = $this->locationIds;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

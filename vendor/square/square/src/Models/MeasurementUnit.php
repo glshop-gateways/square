@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a unit of measurement to use with a quantity, such as ounces
  * or inches. Exactly one of the following fields are required: `custom_unit`,
@@ -53,7 +55,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Returns Custom Unit.
-     *
      * The information needed to define a custom unit, provided by the seller.
      */
     public function getCustomUnit(): ?MeasurementUnitCustom
@@ -63,7 +64,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Sets Custom Unit.
-     *
      * The information needed to define a custom unit, provided by the seller.
      *
      * @maps custom_unit
@@ -75,7 +75,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Returns Area Unit.
-     *
      * Unit of area used to measure a quantity.
      */
     public function getAreaUnit(): ?string
@@ -85,7 +84,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Sets Area Unit.
-     *
      * Unit of area used to measure a quantity.
      *
      * @maps area_unit
@@ -97,7 +95,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Returns Length Unit.
-     *
      * The unit of length used to measure a quantity.
      */
     public function getLengthUnit(): ?string
@@ -107,7 +104,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Sets Length Unit.
-     *
      * The unit of length used to measure a quantity.
      *
      * @maps length_unit
@@ -119,7 +115,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Returns Volume Unit.
-     *
      * The unit of volume used to measure a quantity.
      */
     public function getVolumeUnit(): ?string
@@ -129,7 +124,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Sets Volume Unit.
-     *
      * The unit of volume used to measure a quantity.
      *
      * @maps volume_unit
@@ -141,7 +135,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Returns Weight Unit.
-     *
      * Unit of weight used to measure a quantity.
      */
     public function getWeightUnit(): ?string
@@ -151,7 +144,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Sets Weight Unit.
-     *
      * Unit of weight used to measure a quantity.
      *
      * @maps weight_unit
@@ -181,7 +173,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Returns Time Unit.
-     *
      * Unit of time used to measure a quantity (a duration).
      */
     public function getTimeUnit(): ?string
@@ -191,7 +182,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Sets Time Unit.
-     *
      * Unit of time used to measure a quantity (a duration).
      *
      * @maps time_unit
@@ -203,7 +193,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Returns Type.
-     *
      * Describes the type of this unit and indicates which field contains the unit information. This is an
      * ‘open’ enum.
      */
@@ -214,7 +203,6 @@ class MeasurementUnit implements \JsonSerializable
 
     /**
      * Sets Type.
-     *
      * Describes the type of this unit and indicates which field contains the unit information. This is an
      * ‘open’ enum.
      *
@@ -228,22 +216,43 @@ class MeasurementUnit implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['custom_unit'] = $this->customUnit;
-        $json['area_unit']   = $this->areaUnit;
-        $json['length_unit'] = $this->lengthUnit;
-        $json['volume_unit'] = $this->volumeUnit;
-        $json['weight_unit'] = $this->weightUnit;
-        $json['generic_unit'] = $this->genericUnit;
-        $json['time_unit']   = $this->timeUnit;
-        $json['type']        = $this->type;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->customUnit)) {
+            $json['custom_unit']  = $this->customUnit;
+        }
+        if (isset($this->areaUnit)) {
+            $json['area_unit']    = $this->areaUnit;
+        }
+        if (isset($this->lengthUnit)) {
+            $json['length_unit']  = $this->lengthUnit;
+        }
+        if (isset($this->volumeUnit)) {
+            $json['volume_unit']  = $this->volumeUnit;
+        }
+        if (isset($this->weightUnit)) {
+            $json['weight_unit']  = $this->weightUnit;
+        }
+        if (isset($this->genericUnit)) {
+            $json['generic_unit'] = $this->genericUnit;
+        }
+        if (isset($this->timeUnit)) {
+            $json['time_unit']    = $this->timeUnit;
+        }
+        if (isset($this->type)) {
+            $json['type']         = $this->type;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

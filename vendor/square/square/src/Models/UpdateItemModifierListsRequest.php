@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class UpdateItemModifierListsRequest implements \JsonSerializable
 {
     /**
@@ -31,7 +33,6 @@ class UpdateItemModifierListsRequest implements \JsonSerializable
 
     /**
      * Returns Item Ids.
-     *
      * The IDs of the catalog items associated with the CatalogModifierList objects being updated.
      *
      * @return string[]
@@ -43,7 +44,6 @@ class UpdateItemModifierListsRequest implements \JsonSerializable
 
     /**
      * Sets Item Ids.
-     *
      * The IDs of the catalog items associated with the CatalogModifierList objects being updated.
      *
      * @required
@@ -58,8 +58,8 @@ class UpdateItemModifierListsRequest implements \JsonSerializable
 
     /**
      * Returns Modifier Lists to Enable.
-     *
      * The IDs of the CatalogModifierList objects to enable for the CatalogItem.
+     * At least one of `modifier_lists_to_enable` or `modifier_lists_to_disable` must be specified.
      *
      * @return string[]|null
      */
@@ -70,8 +70,8 @@ class UpdateItemModifierListsRequest implements \JsonSerializable
 
     /**
      * Sets Modifier Lists to Enable.
-     *
      * The IDs of the CatalogModifierList objects to enable for the CatalogItem.
+     * At least one of `modifier_lists_to_enable` or `modifier_lists_to_disable` must be specified.
      *
      * @maps modifier_lists_to_enable
      *
@@ -84,8 +84,8 @@ class UpdateItemModifierListsRequest implements \JsonSerializable
 
     /**
      * Returns Modifier Lists to Disable.
-     *
      * The IDs of the CatalogModifierList objects to disable for the CatalogItem.
+     * At least one of `modifier_lists_to_enable` or `modifier_lists_to_disable` must be specified.
      *
      * @return string[]|null
      */
@@ -96,8 +96,8 @@ class UpdateItemModifierListsRequest implements \JsonSerializable
 
     /**
      * Sets Modifier Lists to Disable.
-     *
      * The IDs of the CatalogModifierList objects to disable for the CatalogItem.
+     * At least one of `modifier_lists_to_enable` or `modifier_lists_to_disable` must be specified.
      *
      * @maps modifier_lists_to_disable
      *
@@ -111,17 +111,26 @@ class UpdateItemModifierListsRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['item_ids']               = $this->itemIds;
-        $json['modifier_lists_to_enable'] = $this->modifierListsToEnable;
-        $json['modifier_lists_to_disable'] = $this->modifierListsToDisable;
-
-        return array_filter($json, function ($val) {
+        $json['item_ids']                      = $this->itemIds;
+        if (isset($this->modifierListsToEnable)) {
+            $json['modifier_lists_to_enable']  = $this->modifierListsToEnable;
+        }
+        if (isset($this->modifierListsToDisable)) {
+            $json['modifier_lists_to_disable'] = $this->modifierListsToDisable;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

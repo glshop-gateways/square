@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the response body returned from the [SearchCatalogItems]($e/Catalog/SearchCatalogItems)
  * endpoint.
@@ -32,7 +34,6 @@ class SearchCatalogItemsResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -44,7 +45,6 @@ class SearchCatalogItemsResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -58,7 +58,6 @@ class SearchCatalogItemsResponse implements \JsonSerializable
 
     /**
      * Returns Items.
-     *
      * Returned items matching the specified query expressions.
      *
      * @return CatalogObject[]|null
@@ -70,7 +69,6 @@ class SearchCatalogItemsResponse implements \JsonSerializable
 
     /**
      * Sets Items.
-     *
      * Returned items matching the specified query expressions.
      *
      * @maps items
@@ -84,7 +82,6 @@ class SearchCatalogItemsResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * Pagination token used in the next request to return more of the search result.
      */
     public function getCursor(): ?string
@@ -94,7 +91,6 @@ class SearchCatalogItemsResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * Pagination token used in the next request to return more of the search result.
      *
      * @maps cursor
@@ -106,7 +102,6 @@ class SearchCatalogItemsResponse implements \JsonSerializable
 
     /**
      * Returns Matched Variation Ids.
-     *
      * Ids of returned item variations matching the specified query expression.
      *
      * @return string[]|null
@@ -118,7 +113,6 @@ class SearchCatalogItemsResponse implements \JsonSerializable
 
     /**
      * Sets Matched Variation Ids.
-     *
      * Ids of returned item variations matching the specified query expression.
      *
      * @maps matched_variation_ids
@@ -133,18 +127,31 @@ class SearchCatalogItemsResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']              = $this->errors;
-        $json['items']               = $this->items;
-        $json['cursor']              = $this->cursor;
-        $json['matched_variation_ids'] = $this->matchedVariationIds;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']                = $this->errors;
+        }
+        if (isset($this->items)) {
+            $json['items']                 = $this->items;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']                = $this->cursor;
+        }
+        if (isset($this->matchedVariationIds)) {
+            $json['matched_variation_ids'] = $this->matchedVariationIds;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

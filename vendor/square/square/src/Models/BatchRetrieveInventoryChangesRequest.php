@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 {
     /**
@@ -42,8 +44,12 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
     private $cursor;
 
     /**
+     * @var int|null
+     */
+    private $limit;
+
+    /**
      * Returns Catalog Object Ids.
-     *
      * The filter to return results by `CatalogObject` ID.
      * The filter is only applicable when set. The default value is null.
      *
@@ -56,7 +62,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Sets Catalog Object Ids.
-     *
      * The filter to return results by `CatalogObject` ID.
      * The filter is only applicable when set. The default value is null.
      *
@@ -71,7 +76,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Returns Location Ids.
-     *
      * The filter to return results by `Location` ID.
      * The filter is only applicable when set. The default value is null.
      *
@@ -84,7 +88,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Sets Location Ids.
-     *
      * The filter to return results by `Location` ID.
      * The filter is only applicable when set. The default value is null.
      *
@@ -99,7 +102,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Returns Types.
-     *
      * The filter to return results by `InventoryChangeType` values other than `TRANSFER`.
      * The default value is `[PHYSICAL_COUNT, ADJUSTMENT]`.
      *
@@ -112,7 +114,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Sets Types.
-     *
      * The filter to return results by `InventoryChangeType` values other than `TRANSFER`.
      * The default value is `[PHYSICAL_COUNT, ADJUSTMENT]`.
      *
@@ -127,7 +128,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Returns States.
-     *
      * The filter to return `ADJUSTMENT` query results by
      * `InventoryState`. This filter is only applied when set.
      * The default value is null.
@@ -141,7 +141,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Sets States.
-     *
      * The filter to return `ADJUSTMENT` query results by
      * `InventoryState`. This filter is only applied when set.
      * The default value is null.
@@ -157,7 +156,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Returns Updated After.
-     *
      * The filter to return results with their `calculated_at` value
      * after the given time as specified in an RFC 3339 timestamp.
      * The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
@@ -169,7 +167,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Sets Updated After.
-     *
      * The filter to return results with their `calculated_at` value
      * after the given time as specified in an RFC 3339 timestamp.
      * The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
@@ -183,7 +180,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Returns Updated Before.
-     *
      * The filter to return results with their `created_at` or `calculated_at` value
      * strictly before the given time as specified in an RFC 3339 timestamp.
      * The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
@@ -195,7 +191,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Sets Updated Before.
-     *
      * The filter to return results with their `created_at` or `calculated_at` value
      * strictly before the given time as specified in an RFC 3339 timestamp.
      * The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
@@ -209,7 +204,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * A pagination cursor returned by a previous call to this endpoint.
      * Provide this to retrieve the next set of results for the original query.
      *
@@ -223,7 +217,6 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * A pagination cursor returned by a previous call to this endpoint.
      * Provide this to retrieve the next set of results for the original query.
      *
@@ -238,23 +231,65 @@ class BatchRetrieveInventoryChangesRequest implements \JsonSerializable
     }
 
     /**
+     * Returns Limit.
+     * The number of [records]($m/InventoryChange) to return.
+     */
+    public function getLimit(): ?int
+    {
+        return $this->limit;
+    }
+
+    /**
+     * Sets Limit.
+     * The number of [records]($m/InventoryChange) to return.
+     *
+     * @maps limit
+     */
+    public function setLimit(?int $limit): void
+    {
+        $this->limit = $limit;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['catalog_object_ids'] = $this->catalogObjectIds;
-        $json['location_ids']     = $this->locationIds;
-        $json['types']            = $this->types;
-        $json['states']           = $this->states;
-        $json['updated_after']    = $this->updatedAfter;
-        $json['updated_before']   = $this->updatedBefore;
-        $json['cursor']           = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->catalogObjectIds)) {
+            $json['catalog_object_ids'] = $this->catalogObjectIds;
+        }
+        if (isset($this->locationIds)) {
+            $json['location_ids']       = $this->locationIds;
+        }
+        if (isset($this->types)) {
+            $json['types']              = $this->types;
+        }
+        if (isset($this->states)) {
+            $json['states']             = $this->states;
+        }
+        if (isset($this->updatedAfter)) {
+            $json['updated_after']      = $this->updatedAfter;
+        }
+        if (isset($this->updatedBefore)) {
+            $json['updated_before']     = $this->updatedBefore;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']             = $this->cursor;
+        }
+        if (isset($this->limit)) {
+            $json['limit']              = $this->limit;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

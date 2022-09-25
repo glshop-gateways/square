@@ -11,9 +11,9 @@ $mobileAuthorizationApi = $client->getMobileAuthorizationApi();
 
 # Create Mobile Authorization Code
 
-Generates code to authorize a mobile application to connect to a Square card reader
+Generates code to authorize a mobile application to connect to a Square card reader.
 
-Authorization codes are one-time-use and expire __60 minutes__ after being issued.
+Authorization codes are one-time-use codes and expire 60 minutes after being issued.
 
 __Important:__ The `Authorization` header you provide to this endpoint must have the following format:
 
@@ -32,11 +32,11 @@ function createMobileAuthorizationCode(CreateMobileAuthorizationCodeRequest $bod
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `body` | [`CreateMobileAuthorizationCodeRequest`](/doc/models/create-mobile-authorization-code-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
+| `body` | [`CreateMobileAuthorizationCodeRequest`](../../doc/models/create-mobile-authorization-code-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`CreateMobileAuthorizationCodeResponse`](/doc/models/create-mobile-authorization-code-response.md)
+[`CreateMobileAuthorizationCodeResponse`](../../doc/models/create-mobile-authorization-code-response.md)
 
 ## Example Usage
 

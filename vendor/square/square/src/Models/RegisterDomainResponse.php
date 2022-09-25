@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields that are included in the response body of
  * a request to the [RegisterDomain]($e/ApplePay/RegisterDomain) endpoint.
@@ -24,7 +26,6 @@ class RegisterDomainResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -36,7 +37,6 @@ class RegisterDomainResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -50,7 +50,6 @@ class RegisterDomainResponse implements \JsonSerializable
 
     /**
      * Returns Status.
-     *
      * The status of the domain registration.
      */
     public function getStatus(): ?string
@@ -60,7 +59,6 @@ class RegisterDomainResponse implements \JsonSerializable
 
     /**
      * Sets Status.
-     *
      * The status of the domain registration.
      *
      * @maps status
@@ -73,16 +71,25 @@ class RegisterDomainResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors'] = $this->errors;
-        $json['status'] = $this->status;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors'] = $this->errors;
+        }
+        if (isset($this->status)) {
+            $json['status'] = $this->status;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

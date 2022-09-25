@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a collection of catalog objects for the purpose of applying a
  * `PricingRule`. Including a catalog object will include all of its subtypes.
@@ -50,7 +52,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Returns Name.
-     *
      * User-defined name for the product set. For example, "Clearance Items"
      * or "Winter Sale Items".
      */
@@ -61,7 +62,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * User-defined name for the product set. For example, "Clearance Items"
      * or "Winter Sale Items".
      *
@@ -74,7 +74,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Returns Product Ids Any.
-     *
      * Unique IDs for any `CatalogObject` included in this product set. Any
      * number of these catalog objects can be in an order for a pricing rule to apply.
      *
@@ -95,7 +94,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Sets Product Ids Any.
-     *
      * Unique IDs for any `CatalogObject` included in this product set. Any
      * number of these catalog objects can be in an order for a pricing rule to apply.
      *
@@ -118,7 +116,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Returns Product Ids All.
-     *
      * Unique IDs for any `CatalogObject` included in this product set.
      * All objects in this set must be included in an order for a pricing rule to apply.
      *
@@ -135,7 +132,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Sets Product Ids All.
-     *
      * Unique IDs for any `CatalogObject` included in this product set.
      * All objects in this set must be included in an order for a pricing rule to apply.
      *
@@ -154,7 +150,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Returns Quantity Exact.
-     *
      * If set, there must be exactly this many items from `products_any` or `products_all`
      * in the cart for the discount to apply.
      *
@@ -167,7 +162,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Sets Quantity Exact.
-     *
      * If set, there must be exactly this many items from `products_any` or `products_all`
      * in the cart for the discount to apply.
      *
@@ -182,7 +176,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Returns Quantity Min.
-     *
      * If set, there must be at least this many items from `products_any` or `products_all`
      * in a cart for the discount to apply. See `quantity_exact`. Defaults to 0 if
      * `quantity_exact`, `quantity_min` and `quantity_max` are all unspecified.
@@ -194,7 +187,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Sets Quantity Min.
-     *
      * If set, there must be at least this many items from `products_any` or `products_all`
      * in a cart for the discount to apply. See `quantity_exact`. Defaults to 0 if
      * `quantity_exact`, `quantity_min` and `quantity_max` are all unspecified.
@@ -208,7 +200,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Returns Quantity Max.
-     *
      * If set, the pricing rule will apply to a maximum of this many items from
      * `products_any` or `products_all`.
      */
@@ -219,7 +210,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Sets Quantity Max.
-     *
      * If set, the pricing rule will apply to a maximum of this many items from
      * `products_any` or `products_all`.
      *
@@ -232,7 +222,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Returns All Products.
-     *
      * If set to `true`, the product set will include every item in the catalog.
      * Only one of `product_ids_all`, `product_ids_any`, or `all_products` can be set.
      */
@@ -243,7 +232,6 @@ class CatalogProductSet implements \JsonSerializable
 
     /**
      * Sets All Products.
-     *
      * If set to `true`, the product set will include every item in the catalog.
      * Only one of `product_ids_all`, `product_ids_any`, or `all_products` can be set.
      *
@@ -257,21 +245,40 @@ class CatalogProductSet implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['name']          = $this->name;
-        $json['product_ids_any'] = $this->productIdsAny;
-        $json['product_ids_all'] = $this->productIdsAll;
-        $json['quantity_exact'] = $this->quantityExact;
-        $json['quantity_min']  = $this->quantityMin;
-        $json['quantity_max']  = $this->quantityMax;
-        $json['all_products']  = $this->allProducts;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->name)) {
+            $json['name']            = $this->name;
+        }
+        if (isset($this->productIdsAny)) {
+            $json['product_ids_any'] = $this->productIdsAny;
+        }
+        if (isset($this->productIdsAll)) {
+            $json['product_ids_all'] = $this->productIdsAll;
+        }
+        if (isset($this->quantityExact)) {
+            $json['quantity_exact']  = $this->quantityExact;
+        }
+        if (isset($this->quantityMin)) {
+            $json['quantity_min']    = $this->quantityMin;
+        }
+        if (isset($this->quantityMax)) {
+            $json['quantity_max']    = $this->quantityMax;
+        }
+        if (isset($this->allProducts)) {
+            $json['all_products']    = $this->allProducts;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

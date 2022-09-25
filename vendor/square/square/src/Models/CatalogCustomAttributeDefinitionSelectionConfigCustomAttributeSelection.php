@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A named selection for this `SELECTION`-type custom attribute definition.
  */
@@ -29,7 +31,6 @@ class CatalogCustomAttributeDefinitionSelectionConfigCustomAttributeSelection im
 
     /**
      * Returns Uid.
-     *
      * Unique ID set by Square.
      */
     public function getUid(): ?string
@@ -39,7 +40,6 @@ class CatalogCustomAttributeDefinitionSelectionConfigCustomAttributeSelection im
 
     /**
      * Sets Uid.
-     *
      * Unique ID set by Square.
      *
      * @maps uid
@@ -51,7 +51,6 @@ class CatalogCustomAttributeDefinitionSelectionConfigCustomAttributeSelection im
 
     /**
      * Returns Name.
-     *
      * Selection name, unique within `allowed_selections`.
      */
     public function getName(): string
@@ -61,7 +60,6 @@ class CatalogCustomAttributeDefinitionSelectionConfigCustomAttributeSelection im
 
     /**
      * Sets Name.
-     *
      * Selection name, unique within `allowed_selections`.
      *
      * @required
@@ -75,16 +73,23 @@ class CatalogCustomAttributeDefinitionSelectionConfigCustomAttributeSelection im
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['uid']  = $this->uid;
-        $json['name'] = $this->name;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->uid)) {
+            $json['uid'] = $this->uid;
+        }
+        $json['name']    = $this->name;
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

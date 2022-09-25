@@ -10,25 +10,25 @@ $teamApi = $client->getTeamApi();
 
 ## Methods
 
-* [Create Team Member](/doc/apis/team.md#create-team-member)
-* [Bulk Create Team Members](/doc/apis/team.md#bulk-create-team-members)
-* [Bulk Update Team Members](/doc/apis/team.md#bulk-update-team-members)
-* [Search Team Members](/doc/apis/team.md#search-team-members)
-* [Retrieve Team Member](/doc/apis/team.md#retrieve-team-member)
-* [Update Team Member](/doc/apis/team.md#update-team-member)
-* [Retrieve Wage Setting](/doc/apis/team.md#retrieve-wage-setting)
-* [Update Wage Setting](/doc/apis/team.md#update-wage-setting)
+* [Create Team Member](../../doc/apis/team.md#create-team-member)
+* [Bulk Create Team Members](../../doc/apis/team.md#bulk-create-team-members)
+* [Bulk Update Team Members](../../doc/apis/team.md#bulk-update-team-members)
+* [Search Team Members](../../doc/apis/team.md#search-team-members)
+* [Retrieve Team Member](../../doc/apis/team.md#retrieve-team-member)
+* [Update Team Member](../../doc/apis/team.md#update-team-member)
+* [Retrieve Wage Setting](../../doc/apis/team.md#retrieve-wage-setting)
+* [Update Wage Setting](../../doc/apis/team.md#update-wage-setting)
 
 
 # Create Team Member
 
-Creates a single `TeamMember` object. The `TeamMember` will be returned on successful creates.
+Creates a single `TeamMember` object. The `TeamMember` object is returned on successful creates.
 You must provide the following values in your request to this endpoint:
 
 - `given_name`
 - `family_name`
 
-Learn about [Troubleshooting the Teams API](https://developer.squareup.com/docs/team/troubleshooting#createteammember).
+Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/team/troubleshooting#createteammember).
 
 ```php
 function createTeamMember(CreateTeamMemberRequest $body): ApiResponse
@@ -38,11 +38,11 @@ function createTeamMember(CreateTeamMemberRequest $body): ApiResponse
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `body` | [`CreateTeamMemberRequest`](/doc/models/create-team-member-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
+| `body` | [`CreateTeamMemberRequest`](../../doc/models/create-team-member-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`CreateTeamMemberResponse`](/doc/models/create-team-member-response.md)
+[`CreateTeamMemberResponse`](../../doc/models/create-team-member-response.md)
 
 ## Example Usage
 
@@ -50,9 +50,7 @@ function createTeamMember(CreateTeamMemberRequest $body): ApiResponse
 $body = new Models\CreateTeamMemberRequest;
 $body->setIdempotencyKey('idempotency-key-0');
 $body->setTeamMember(new Models\TeamMember);
-$body->getTeamMember()->setId('id2');
 $body->getTeamMember()->setReferenceId('reference_id_1');
-$body->getTeamMember()->setIsOwner(false);
 $body->getTeamMember()->setStatus(Models\TeamMemberStatus::ACTIVE);
 $body->getTeamMember()->setGivenName('Joe');
 $body->getTeamMember()->setFamilyName('Doe');
@@ -78,12 +76,12 @@ if ($apiResponse->isSuccess()) {
 
 # Bulk Create Team Members
 
-Creates multiple `TeamMember` objects. The created `TeamMember` objects will be returned on successful creates.
-This process is non-transactional and will process as much of the request as is possible. If one of the creates in
-the request cannot be successfully processed, the request will NOT be marked as failed, but the body of the response
-will contain explicit error information for this particular create.
+Creates multiple `TeamMember` objects. The created `TeamMember` objects are returned on successful creates.
+This process is non-transactional and processes as much of the request as possible. If one of the creates in
+the request cannot be successfully processed, the request is not marked as failed, but the body of the response
+contains explicit error information for the failed create.
 
-Learn about [Troubleshooting the Teams API](https://developer.squareup.com/docs/team/troubleshooting#bulk-create-team-members).
+Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/team/troubleshooting#bulk-create-team-members).
 
 ```php
 function bulkCreateTeamMembers(BulkCreateTeamMembersRequest $body): ApiResponse
@@ -93,11 +91,11 @@ function bulkCreateTeamMembers(BulkCreateTeamMembersRequest $body): ApiResponse
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `body` | [`BulkCreateTeamMembersRequest`](/doc/models/bulk-create-team-members-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
+| `body` | [`BulkCreateTeamMembersRequest`](../../doc/models/bulk-create-team-members-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`BulkCreateTeamMembersResponse`](/doc/models/bulk-create-team-members-response.md)
+[`BulkCreateTeamMembersResponse`](../../doc/models/bulk-create-team-members-response.md)
 
 ## Example Usage
 
@@ -128,11 +126,11 @@ if ($apiResponse->isSuccess()) {
 
 # Bulk Update Team Members
 
-Updates multiple `TeamMember` objects. The updated `TeamMember` objects will be returned on successful updates.
-This process is non-transactional and will process as much of the request as is possible. If one of the updates in
-the request cannot be successfully processed, the request will NOT be marked as failed, but the body of the response
-will contain explicit error information for this particular update.
-Learn about [Troubleshooting the Teams API](https://developer.squareup.com/docs/team/troubleshooting#bulk-update-team-members).
+Updates multiple `TeamMember` objects. The updated `TeamMember` objects are returned on successful updates.
+This process is non-transactional and processes as much of the request as possible. If one of the updates in
+the request cannot be successfully processed, the request is not marked as failed, but the body of the response
+contains explicit error information for the failed update.
+Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/team/troubleshooting#bulk-update-team-members).
 
 ```php
 function bulkUpdateTeamMembers(BulkUpdateTeamMembersRequest $body): ApiResponse
@@ -142,11 +140,11 @@ function bulkUpdateTeamMembers(BulkUpdateTeamMembersRequest $body): ApiResponse
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `body` | [`BulkUpdateTeamMembersRequest`](/doc/models/bulk-update-team-members-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
+| `body` | [`BulkUpdateTeamMembersRequest`](../../doc/models/bulk-update-team-members-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`BulkUpdateTeamMembersResponse`](/doc/models/bulk-update-team-members-response.md)
+[`BulkUpdateTeamMembersResponse`](../../doc/models/bulk-update-team-members-response.md)
 
 ## Example Usage
 
@@ -178,9 +176,9 @@ if ($apiResponse->isSuccess()) {
 # Search Team Members
 
 Returns a paginated list of `TeamMember` objects for a business.
-The list to be returned can be filtered by:
+The list can be filtered by the following:
 
-- location IDs **and**
+- location IDs
 - `status`
 
 ```php
@@ -191,11 +189,11 @@ function searchTeamMembers(SearchTeamMembersRequest $body): ApiResponse
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `body` | [`SearchTeamMembersRequest`](/doc/models/search-team-members-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
+| `body` | [`SearchTeamMembersRequest`](../../doc/models/search-team-members-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`SearchTeamMembersResponse`](/doc/models/search-team-members-response.md)
+[`SearchTeamMembersResponse`](../../doc/models/search-team-members-response.md)
 
 ## Example Usage
 
@@ -206,7 +204,6 @@ $body->getQuery()->setFilter(new Models\SearchTeamMembersFilter);
 $body->getQuery()->getFilter()->setLocationIds(['0G5P3VGACMMQZ']);
 $body->getQuery()->getFilter()->setStatus(Models\TeamMemberStatus::ACTIVE);
 $body->setLimit(10);
-$body->setCursor('cursor0');
 
 $apiResponse = $teamApi->searchTeamMembers($body);
 
@@ -224,8 +221,8 @@ if ($apiResponse->isSuccess()) {
 
 # Retrieve Team Member
 
-Retrieve a `TeamMember` object for the given `TeamMember.id`.
-Learn about [Troubleshooting the Teams API](https://developer.squareup.com/docs/team/troubleshooting#retrieve-a-team-member).
+Retrieves a `TeamMember` object for the given `TeamMember.id`.
+Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/team/troubleshooting#retrieve-a-team-member).
 
 ```php
 function retrieveTeamMember(string $teamMemberId): ApiResponse
@@ -239,7 +236,7 @@ function retrieveTeamMember(string $teamMemberId): ApiResponse
 
 ## Response Type
 
-[`RetrieveTeamMemberResponse`](/doc/models/retrieve-team-member-response.md)
+[`RetrieveTeamMemberResponse`](../../doc/models/retrieve-team-member-response.md)
 
 ## Example Usage
 
@@ -262,8 +259,8 @@ if ($apiResponse->isSuccess()) {
 
 # Update Team Member
 
-Updates a single `TeamMember` object. The `TeamMember` will be returned on successful updates.
-Learn about [Troubleshooting the Teams API](https://developer.squareup.com/docs/team/troubleshooting#update-a-team-member).
+Updates a single `TeamMember` object. The `TeamMember` object is returned on successful updates.
+Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/team/troubleshooting#update-a-team-member).
 
 ```php
 function updateTeamMember(string $teamMemberId, UpdateTeamMemberRequest $body): ApiResponse
@@ -274,11 +271,11 @@ function updateTeamMember(string $teamMemberId, UpdateTeamMemberRequest $body): 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
 | `teamMemberId` | `string` | Template, Required | The ID of the team member to update. |
-| `body` | [`UpdateTeamMemberRequest`](/doc/models/update-team-member-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
+| `body` | [`UpdateTeamMemberRequest`](../../doc/models/update-team-member-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`UpdateTeamMemberResponse`](/doc/models/update-team-member-response.md)
+[`UpdateTeamMemberResponse`](../../doc/models/update-team-member-response.md)
 
 ## Example Usage
 
@@ -286,9 +283,7 @@ function updateTeamMember(string $teamMemberId, UpdateTeamMemberRequest $body): 
 $teamMemberId = 'team_member_id0';
 $body = new Models\UpdateTeamMemberRequest;
 $body->setTeamMember(new Models\TeamMember);
-$body->getTeamMember()->setId('id2');
 $body->getTeamMember()->setReferenceId('reference_id_1');
-$body->getTeamMember()->setIsOwner(false);
 $body->getTeamMember()->setStatus(Models\TeamMemberStatus::ACTIVE);
 $body->getTeamMember()->setGivenName('Joe');
 $body->getTeamMember()->setFamilyName('Doe');
@@ -314,9 +309,9 @@ if ($apiResponse->isSuccess()) {
 
 # Retrieve Wage Setting
 
-Retrieve a `WageSetting` object for a team member specified
+Retrieves a `WageSetting` object for a team member specified
 by `TeamMember.id`.
-Learn about [Troubleshooting the Teams API](https://developer.squareup.com/docs/team/troubleshooting#retrievewagesetting).
+Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/team/troubleshooting#retrievewagesetting).
 
 ```php
 function retrieveWageSetting(string $teamMemberId): ApiResponse
@@ -326,11 +321,11 @@ function retrieveWageSetting(string $teamMemberId): ApiResponse
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `teamMemberId` | `string` | Template, Required | The ID of the team member to retrieve wage setting for |
+| `teamMemberId` | `string` | Template, Required | The ID of the team member for which to retrieve the wage setting. |
 
 ## Response Type
 
-[`RetrieveWageSettingResponse`](/doc/models/retrieve-wage-setting-response.md)
+[`RetrieveWageSettingResponse`](../../doc/models/retrieve-wage-setting-response.md)
 
 ## Example Usage
 
@@ -356,8 +351,8 @@ if ($apiResponse->isSuccess()) {
 Creates or updates a `WageSetting` object. The object is created if a
 `WageSetting` with the specified `team_member_id` does not exist. Otherwise,
 it fully replaces the `WageSetting` object for the team member.
-The `WageSetting` will be returned upon successful update.
-Learn about [Troubleshooting the Teams API](https://developer.squareup.com/docs/team/troubleshooting#create-or-update-a-wage-setting).
+The `WageSetting` is returned on a successful update.
+Learn about [Troubleshooting the Team API](https://developer.squareup.com/docs/team/troubleshooting#create-or-update-a-wage-setting).
 
 ```php
 function updateWageSetting(string $teamMemberId, UpdateWageSettingRequest $body): ApiResponse
@@ -367,19 +362,18 @@ function updateWageSetting(string $teamMemberId, UpdateWageSettingRequest $body)
 
 | Parameter | Type | Tags | Description |
 |  --- | --- | --- | --- |
-| `teamMemberId` | `string` | Template, Required | The ID of the team member to update the `WageSetting` object for. |
-| `body` | [`UpdateWageSettingRequest`](/doc/models/update-wage-setting-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
+| `teamMemberId` | `string` | Template, Required | The ID of the team member for which to update the `WageSetting` object. |
+| `body` | [`UpdateWageSettingRequest`](../../doc/models/update-wage-setting-request.md) | Body, Required | An object containing the fields to POST for the request.<br><br>See the corresponding object definition for field details. |
 
 ## Response Type
 
-[`UpdateWageSettingResponse`](/doc/models/update-wage-setting-response.md)
+[`UpdateWageSettingResponse`](../../doc/models/update-wage-setting-response.md)
 
 ## Example Usage
 
 ```php
 $teamMemberId = 'team_member_id0';
 $body_wageSetting = new Models\WageSetting;
-$body_wageSetting->setTeamMemberId('team_member_id2');
 $body_wageSetting_jobAssignments = [];
 
 $body_wageSetting_jobAssignments_0_jobTitle = 'Manager';
@@ -388,9 +382,6 @@ $body_wageSetting_jobAssignments[0] = new Models\JobAssignment(
     $body_wageSetting_jobAssignments_0_jobTitle,
     $body_wageSetting_jobAssignments_0_payType
 );
-$body_wageSetting_jobAssignments[0]->setHourlyRate(new Models\Money);
-$body_wageSetting_jobAssignments[0]->getHourlyRate()->setAmount(117);
-$body_wageSetting_jobAssignments[0]->getHourlyRate()->setCurrency(Models\Currency::ERN);
 $body_wageSetting_jobAssignments[0]->setAnnualRate(new Models\Money);
 $body_wageSetting_jobAssignments[0]->getAnnualRate()->setAmount(3000000);
 $body_wageSetting_jobAssignments[0]->getAnnualRate()->setCurrency(Models\Currency::USD);
@@ -405,15 +396,9 @@ $body_wageSetting_jobAssignments[1] = new Models\JobAssignment(
 $body_wageSetting_jobAssignments[1]->setHourlyRate(new Models\Money);
 $body_wageSetting_jobAssignments[1]->getHourlyRate()->setAmount(1200);
 $body_wageSetting_jobAssignments[1]->getHourlyRate()->setCurrency(Models\Currency::USD);
-$body_wageSetting_jobAssignments[1]->setAnnualRate(new Models\Money);
-$body_wageSetting_jobAssignments[1]->getAnnualRate()->setAmount(58);
-$body_wageSetting_jobAssignments[1]->getAnnualRate()->setCurrency(Models\Currency::DZD);
-$body_wageSetting_jobAssignments[1]->setWeeklyHours(226);
 $body_wageSetting->setJobAssignments($body_wageSetting_jobAssignments);
 
 $body_wageSetting->setIsOvertimeExempt(true);
-$body_wageSetting->setVersion(122);
-$body_wageSetting->setCreatedAt('created_at0');
 $body = new Models\UpdateWageSettingRequest(
     $body_wageSetting
 );

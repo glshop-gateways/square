@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Represents a physical address.
+ * Represents a postal address in a country.
+ * For more information, see [Working with Addresses](https://developer.squareup.com/docs/build-
+ * basics/working-with-addresses).
  */
 class Address implements \JsonSerializable
 {
@@ -80,13 +84,7 @@ class Address implements \JsonSerializable
     private $lastName;
 
     /**
-     * @var string|null
-     */
-    private $organization;
-
-    /**
      * Returns Address Line 1.
-     *
      * The first line of the address.
      *
      * Fields that start with `address_line` provide the address's most specific
@@ -101,7 +99,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Address Line 1.
-     *
      * The first line of the address.
      *
      * Fields that start with `address_line` provide the address's most specific
@@ -118,7 +115,6 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Address Line 2.
-     *
      * The second line of the address, if any.
      */
     public function getAddressLine2(): ?string
@@ -128,7 +124,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Address Line 2.
-     *
      * The second line of the address, if any.
      *
      * @maps address_line_2
@@ -140,7 +135,6 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Address Line 3.
-     *
      * The third line of the address, if any.
      */
     public function getAddressLine3(): ?string
@@ -150,7 +144,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Address Line 3.
-     *
      * The third line of the address, if any.
      *
      * @maps address_line_3
@@ -162,8 +155,8 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Locality.
-     *
-     * The city or town of the address.
+     * The city or town of the address. For a full list of field meanings by country, see [Working with
+     * Addresses](https://developer.squareup.com/docs/build-basics/working-with-addresses).
      */
     public function getLocality(): ?string
     {
@@ -172,8 +165,8 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Locality.
-     *
-     * The city or town of the address.
+     * The city or town of the address. For a full list of field meanings by country, see [Working with
+     * Addresses](https://developer.squareup.com/docs/build-basics/working-with-addresses).
      *
      * @maps locality
      */
@@ -184,7 +177,6 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Sublocality.
-     *
      * A civil region within the address's `locality`, if any.
      */
     public function getSublocality(): ?string
@@ -194,7 +186,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Sublocality.
-     *
      * A civil region within the address's `locality`, if any.
      *
      * @maps sublocality
@@ -206,7 +197,6 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Sublocality 2.
-     *
      * A civil region within the address's `sublocality`, if any.
      */
     public function getSublocality2(): ?string
@@ -216,7 +206,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Sublocality 2.
-     *
      * A civil region within the address's `sublocality`, if any.
      *
      * @maps sublocality_2
@@ -228,7 +217,6 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Sublocality 3.
-     *
      * A civil region within the address's `sublocality_2`, if any.
      */
     public function getSublocality3(): ?string
@@ -238,7 +226,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Sublocality 3.
-     *
      * A civil region within the address's `sublocality_2`, if any.
      *
      * @maps sublocality_3
@@ -250,9 +237,9 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Administrative District Level 1.
-     *
      * A civil entity within the address's country. In the US, this
-     * is the state.
+     * is the state. For a full list of field meanings by country, see [Working with Addresses](https:
+     * //developer.squareup.com/docs/build-basics/working-with-addresses).
      */
     public function getAdministrativeDistrictLevel1(): ?string
     {
@@ -261,9 +248,9 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Administrative District Level 1.
-     *
      * A civil entity within the address's country. In the US, this
-     * is the state.
+     * is the state. For a full list of field meanings by country, see [Working with Addresses](https:
+     * //developer.squareup.com/docs/build-basics/working-with-addresses).
      *
      * @maps administrative_district_level_1
      */
@@ -274,7 +261,6 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Administrative District Level 2.
-     *
      * A civil entity within the address's `administrative_district_level_1`.
      * In the US, this is the county.
      */
@@ -285,7 +271,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Administrative District Level 2.
-     *
      * A civil entity within the address's `administrative_district_level_1`.
      * In the US, this is the county.
      *
@@ -298,7 +283,6 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Administrative District Level 3.
-     *
      * A civil entity within the address's `administrative_district_level_2`,
      * if any.
      */
@@ -309,7 +293,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Administrative District Level 3.
-     *
      * A civil entity within the address's `administrative_district_level_2`,
      * if any.
      *
@@ -322,8 +305,8 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Postal Code.
-     *
-     * The address's postal code.
+     * The address's postal code. For a full list of field meanings by country, see [Working with
+     * Addresses](https://developer.squareup.com/docs/build-basics/working-with-addresses).
      */
     public function getPostalCode(): ?string
     {
@@ -332,8 +315,8 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Postal Code.
-     *
-     * The address's postal code.
+     * The address's postal code. For a full list of field meanings by country, see [Working with
+     * Addresses](https://developer.squareup.com/docs/build-basics/working-with-addresses).
      *
      * @maps postal_code
      */
@@ -344,7 +327,6 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Country.
-     *
      * Indicates the country associated with another entity, such as a business.
      * Values are in [ISO 3166-1-alpha-2 format](http://www.iso.org/iso/home/standards/country_codes.htm).
      */
@@ -355,7 +337,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Country.
-     *
      * Indicates the country associated with another entity, such as a business.
      * Values are in [ISO 3166-1-alpha-2 format](http://www.iso.org/iso/home/standards/country_codes.htm).
      *
@@ -368,7 +349,6 @@ class Address implements \JsonSerializable
 
     /**
      * Returns First Name.
-     *
      * Optional first name when it's representing recipient.
      */
     public function getFirstName(): ?string
@@ -378,7 +358,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets First Name.
-     *
      * Optional first name when it's representing recipient.
      *
      * @maps first_name
@@ -390,7 +369,6 @@ class Address implements \JsonSerializable
 
     /**
      * Returns Last Name.
-     *
      * Optional last name when it's representing recipient.
      */
     public function getLastName(): ?string
@@ -400,7 +378,6 @@ class Address implements \JsonSerializable
 
     /**
      * Sets Last Name.
-     *
      * Optional last name when it's representing recipient.
      *
      * @maps last_name
@@ -411,53 +388,63 @@ class Address implements \JsonSerializable
     }
 
     /**
-     * Returns Organization.
-     *
-     * Optional organization name when it's representing recipient.
-     */
-    public function getOrganization(): ?string
-    {
-        return $this->organization;
-    }
-
-    /**
-     * Sets Organization.
-     *
-     * Optional organization name when it's representing recipient.
-     *
-     * @maps organization
-     */
-    public function setOrganization(?string $organization): void
-    {
-        $this->organization = $organization;
-    }
-
-    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['address_line_1']               = $this->addressLine1;
-        $json['address_line_2']               = $this->addressLine2;
-        $json['address_line_3']               = $this->addressLine3;
-        $json['locality']                     = $this->locality;
-        $json['sublocality']                  = $this->sublocality;
-        $json['sublocality_2']                = $this->sublocality2;
-        $json['sublocality_3']                = $this->sublocality3;
-        $json['administrative_district_level_1'] = $this->administrativeDistrictLevel1;
-        $json['administrative_district_level_2'] = $this->administrativeDistrictLevel2;
-        $json['administrative_district_level_3'] = $this->administrativeDistrictLevel3;
-        $json['postal_code']                  = $this->postalCode;
-        $json['country']                      = $this->country;
-        $json['first_name']                   = $this->firstName;
-        $json['last_name']                    = $this->lastName;
-        $json['organization']                 = $this->organization;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->addressLine1)) {
+            $json['address_line_1']                  = $this->addressLine1;
+        }
+        if (isset($this->addressLine2)) {
+            $json['address_line_2']                  = $this->addressLine2;
+        }
+        if (isset($this->addressLine3)) {
+            $json['address_line_3']                  = $this->addressLine3;
+        }
+        if (isset($this->locality)) {
+            $json['locality']                        = $this->locality;
+        }
+        if (isset($this->sublocality)) {
+            $json['sublocality']                     = $this->sublocality;
+        }
+        if (isset($this->sublocality2)) {
+            $json['sublocality_2']                   = $this->sublocality2;
+        }
+        if (isset($this->sublocality3)) {
+            $json['sublocality_3']                   = $this->sublocality3;
+        }
+        if (isset($this->administrativeDistrictLevel1)) {
+            $json['administrative_district_level_1'] = $this->administrativeDistrictLevel1;
+        }
+        if (isset($this->administrativeDistrictLevel2)) {
+            $json['administrative_district_level_2'] = $this->administrativeDistrictLevel2;
+        }
+        if (isset($this->administrativeDistrictLevel3)) {
+            $json['administrative_district_level_3'] = $this->administrativeDistrictLevel3;
+        }
+        if (isset($this->postalCode)) {
+            $json['postal_code']                     = $this->postalCode;
+        }
+        if (isset($this->country)) {
+            $json['country']                         = $this->country;
+        }
+        if (isset($this->firstName)) {
+            $json['first_name']                      = $this->firstName;
+        }
+        if (isset($this->lastName)) {
+            $json['last_name']                       = $this->lastName;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields in a `ListDisputeEvidence` response.
  */
@@ -20,8 +22,12 @@ class ListDisputeEvidenceResponse implements \JsonSerializable
     private $errors;
 
     /**
+     * @var string|null
+     */
+    private $cursor;
+
+    /**
      * Returns Evidence.
-     *
      * The list of evidence previously uploaded to the specified dispute.
      *
      * @return DisputeEvidence[]|null
@@ -33,7 +39,6 @@ class ListDisputeEvidenceResponse implements \JsonSerializable
 
     /**
      * Sets Evidence.
-     *
      * The list of evidence previously uploaded to the specified dispute.
      *
      * @maps evidence
@@ -47,7 +52,6 @@ class ListDisputeEvidenceResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Information about errors encountered during the request.
      *
      * @return Error[]|null
@@ -59,7 +63,6 @@ class ListDisputeEvidenceResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Information about errors encountered during the request.
      *
      * @maps errors
@@ -72,18 +75,54 @@ class ListDisputeEvidenceResponse implements \JsonSerializable
     }
 
     /**
+     * Returns Cursor.
+     * The pagination cursor to be used in a subsequent request.
+     * If unset, this is the final response. For more information, see [Pagination](https://developer.
+     * squareup.com/docs/build-basics/common-api-patterns/pagination).
+     */
+    public function getCursor(): ?string
+    {
+        return $this->cursor;
+    }
+
+    /**
+     * Sets Cursor.
+     * The pagination cursor to be used in a subsequent request.
+     * If unset, this is the final response. For more information, see [Pagination](https://developer.
+     * squareup.com/docs/build-basics/common-api-patterns/pagination).
+     *
+     * @maps cursor
+     */
+    public function setCursor(?string $cursor): void
+    {
+        $this->cursor = $cursor;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['evidence'] = $this->evidence;
-        $json['errors']   = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->evidence)) {
+            $json['evidence'] = $this->evidence;
+        }
+        if (isset($this->errors)) {
+            $json['errors']   = $this->errors;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']   = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the response returned by [ListPayments]($e/Payments/ListPayments).
  */
@@ -26,7 +28,6 @@ class ListPaymentsResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Information about errors encountered during the request.
      *
      * @return Error[]|null
@@ -38,7 +39,6 @@ class ListPaymentsResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Information about errors encountered during the request.
      *
      * @maps errors
@@ -52,7 +52,6 @@ class ListPaymentsResponse implements \JsonSerializable
 
     /**
      * Returns Payments.
-     *
      * The requested list of payments.
      *
      * @return Payment[]|null
@@ -64,7 +63,6 @@ class ListPaymentsResponse implements \JsonSerializable
 
     /**
      * Sets Payments.
-     *
      * The requested list of payments.
      *
      * @maps payments
@@ -78,7 +76,6 @@ class ListPaymentsResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If empty,
      * this is the final response.
      *
@@ -91,7 +88,6 @@ class ListPaymentsResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If empty,
      * this is the final response.
      *
@@ -107,17 +103,28 @@ class ListPaymentsResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']   = $this->errors;
-        $json['payments'] = $this->payments;
-        $json['cursor']   = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']   = $this->errors;
+        }
+        if (isset($this->payments)) {
+            $json['payments'] = $this->payments;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']   = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

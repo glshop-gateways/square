@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a filter used in a search for `TeamMember` objects. `AND` logic is applied
  * between the individual fields, and `OR` logic is applied within list-based fields.
- * For example, setting this filter value,
+ * For example, setting this filter value:
  * ```
  * filter = (locations_ids = ["A", "B"], status = ACTIVE)
  * ```
@@ -26,10 +28,14 @@ class SearchTeamMembersFilter implements \JsonSerializable
     private $status;
 
     /**
+     * @var bool|null
+     */
+    private $isOwner;
+
+    /**
      * Returns Location Ids.
-     *
-     * When present, filter by team members assigned to the specified locations.
-     * When empty, include team members assigned to any location.
+     * When present, filters by team members assigned to the specified locations.
+     * When empty, includes team members assigned to any location.
      *
      * @return string[]|null
      */
@@ -40,9 +46,8 @@ class SearchTeamMembersFilter implements \JsonSerializable
 
     /**
      * Sets Location Ids.
-     *
-     * When present, filter by team members assigned to the specified locations.
-     * When empty, include team members assigned to any location.
+     * When present, filters by team members assigned to the specified locations.
+     * When empty, includes team members assigned to any location.
      *
      * @maps location_ids
      *
@@ -55,7 +60,6 @@ class SearchTeamMembersFilter implements \JsonSerializable
 
     /**
      * Returns Status.
-     *
      * Enumerates the possible statuses the team member can have within a business.
      */
     public function getStatus(): ?string
@@ -65,7 +69,6 @@ class SearchTeamMembersFilter implements \JsonSerializable
 
     /**
      * Sets Status.
-     *
      * Enumerates the possible statuses the team member can have within a business.
      *
      * @maps status
@@ -76,18 +79,50 @@ class SearchTeamMembersFilter implements \JsonSerializable
     }
 
     /**
+     * Returns Is Owner.
+     * When present and set to true, returns the team member who is the owner of the Square account.
+     */
+    public function getIsOwner(): ?bool
+    {
+        return $this->isOwner;
+    }
+
+    /**
+     * Sets Is Owner.
+     * When present and set to true, returns the team member who is the owner of the Square account.
+     *
+     * @maps is_owner
+     */
+    public function setIsOwner(?bool $isOwner): void
+    {
+        $this->isOwner = $isOwner;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['location_ids'] = $this->locationIds;
-        $json['status']      = $this->status;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->locationIds)) {
+            $json['location_ids'] = $this->locationIds;
+        }
+        if (isset($this->status)) {
+            $json['status']       = $this->status;
+        }
+        if (isset($this->isOwner)) {
+            $json['is_owner']     = $this->isOwner;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

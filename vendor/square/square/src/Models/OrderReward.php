@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Represents a reward that may be applied to an order if the necessary
+ * Represents a reward that can be applied to an order if the necessary
  * reward tier criteria are met. Rewards are created through the Loyalty API.
  */
 class OrderReward implements \JsonSerializable
@@ -32,7 +34,6 @@ class OrderReward implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The identifier of the reward.
      */
     public function getId(): string
@@ -42,7 +43,6 @@ class OrderReward implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The identifier of the reward.
      *
      * @required
@@ -55,7 +55,6 @@ class OrderReward implements \JsonSerializable
 
     /**
      * Returns Reward Tier Id.
-     *
      * The identifier of the reward tier corresponding to this reward.
      */
     public function getRewardTierId(): string
@@ -65,7 +64,6 @@ class OrderReward implements \JsonSerializable
 
     /**
      * Sets Reward Tier Id.
-     *
      * The identifier of the reward tier corresponding to this reward.
      *
      * @required
@@ -79,16 +77,21 @@ class OrderReward implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']           = $this->id;
+        $json['id']             = $this->id;
         $json['reward_tier_id'] = $this->rewardTierId;
-
-        return array_filter($json, function ($val) {
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

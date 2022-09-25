@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Request object for the [CreateLocation]($e/Locations/CreateLocation) endpoint.
+ * The request object for the [CreateLocation]($e/Locations/CreateLocation) endpoint.
  */
 class CreateLocationRequest implements \JsonSerializable
 {
@@ -16,6 +18,7 @@ class CreateLocationRequest implements \JsonSerializable
 
     /**
      * Returns Location.
+     * Represents one of a business' [locations](https://developer.squareup.com/docs/locations-api).
      */
     public function getLocation(): ?Location
     {
@@ -24,6 +27,7 @@ class CreateLocationRequest implements \JsonSerializable
 
     /**
      * Sets Location.
+     * Represents one of a business' [locations](https://developer.squareup.com/docs/locations-api).
      *
      * @maps location
      */
@@ -35,15 +39,22 @@ class CreateLocationRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['location'] = $this->location;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->location)) {
+            $json['location'] = $this->location;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

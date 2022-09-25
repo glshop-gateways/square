@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class UpsertCatalogObjectResponse implements \JsonSerializable
 {
     /**
@@ -23,7 +25,6 @@ class UpsertCatalogObjectResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -35,7 +36,6 @@ class UpsertCatalogObjectResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -49,41 +49,17 @@ class UpsertCatalogObjectResponse implements \JsonSerializable
 
     /**
      * Returns Catalog Object.
+     * The wrapper object for the catalog entries of a given object type.
      *
-     * The wrapper object for the Catalog entries of a given object type.
+     * Depending on the `type` attribute value, a `CatalogObject` instance assumes a type-specific data to
+     * yield the corresponding type of catalog object.
      *
-     * The type of a particular `CatalogObject` is determined by the value of the
-     * `type` attribute and only the corresponding data attribute can be set on the `CatalogObject`
-     * instance.
-     * For example, the following list shows some instances of `CatalogObject` of a given `type` and
-     * their corresponding data attribute that can be set:
-     * - For a `CatalogObject` of the `ITEM` type, set the `item_data` attribute to yield the `CatalogItem`
-     * object.
-     * - For a `CatalogObject` of the `ITEM_VARIATION` type, set the `item_variation_data` attribute to
-     * yield the `CatalogItemVariation` object.
-     * - For a `CatalogObject` of the `MODIFIER` type, set the `modifier_data` attribute to yield the
-     * `CatalogModifier` object.
-     * - For a `CatalogObject` of the `MODIFIER_LIST` type, set the `modifier_list_data` attribute to yield
-     * the `CatalogModifierList` object.
-     * - For a `CatalogObject` of the `CATEGORY` type, set the `category_data` attribute to yield the
-     * `CatalogCategory` object.
-     * - For a `CatalogObject` of the `DISCOUNT` type, set the `discount_data` attribute to yield the
-     * `CatalogDiscount` object.
-     * - For a `CatalogObject` of the `TAX` type, set the `tax_data` attribute to yield the `CatalogTax`
-     * object.
-     * - For a `CatalogObject` of the `IMAGE` type, set the `image_data` attribute to yield the
-     * `CatalogImageData`  object.
-     * - For a `CatalogObject` of the `QUICK_AMOUNTS_SETTINGS` type, set the `quick_amounts_settings_data`
-     * attribute to yield the `CatalogQuickAmountsSettings` object.
-     * - For a `CatalogObject` of the `PRICING_RULE` type, set the `pricing_rule_data` attribute to yield
-     * the `CatalogPricingRule` object.
-     * - For a `CatalogObject` of the `TIME_PERIOD` type, set the `time_period_data` attribute to yield the
-     * `CatalogTimePeriod` object.
-     * - For a `CatalogObject` of the `PRODUCT_SET` type, set the `product_set_data` attribute to yield the
-     * `CatalogProductSet`  object.
-     * - For a `CatalogObject` of the `SUBSCRIPTION_PLAN` type, set the `subscription_plan_data` attribute
-     * to yield the `CatalogSubscriptionPlan` object.
+     * For example, if `type=ITEM`, the `CatalogObject` instance must have the ITEM-specific data set on
+     * the `item_data` attribute. The resulting `CatalogObject` instance is also a `CatalogItem` instance.
      *
+     * In general, if `type=<OBJECT_TYPE>`, the `CatalogObject` instance must have the `<OBJECT_TYPE>`-
+     * specific data set on the `<object_type>_data` attribute. The resulting `CatalogObject` instance is
+     * also a `Catalog<ObjectType>` instance.
      *
      * For a more detailed discussion of the Catalog data model, please see the
      * [Design a Catalog](https://developer.squareup.com/docs/catalog-api/design-a-catalog) guide.
@@ -95,41 +71,17 @@ class UpsertCatalogObjectResponse implements \JsonSerializable
 
     /**
      * Sets Catalog Object.
+     * The wrapper object for the catalog entries of a given object type.
      *
-     * The wrapper object for the Catalog entries of a given object type.
+     * Depending on the `type` attribute value, a `CatalogObject` instance assumes a type-specific data to
+     * yield the corresponding type of catalog object.
      *
-     * The type of a particular `CatalogObject` is determined by the value of the
-     * `type` attribute and only the corresponding data attribute can be set on the `CatalogObject`
-     * instance.
-     * For example, the following list shows some instances of `CatalogObject` of a given `type` and
-     * their corresponding data attribute that can be set:
-     * - For a `CatalogObject` of the `ITEM` type, set the `item_data` attribute to yield the `CatalogItem`
-     * object.
-     * - For a `CatalogObject` of the `ITEM_VARIATION` type, set the `item_variation_data` attribute to
-     * yield the `CatalogItemVariation` object.
-     * - For a `CatalogObject` of the `MODIFIER` type, set the `modifier_data` attribute to yield the
-     * `CatalogModifier` object.
-     * - For a `CatalogObject` of the `MODIFIER_LIST` type, set the `modifier_list_data` attribute to yield
-     * the `CatalogModifierList` object.
-     * - For a `CatalogObject` of the `CATEGORY` type, set the `category_data` attribute to yield the
-     * `CatalogCategory` object.
-     * - For a `CatalogObject` of the `DISCOUNT` type, set the `discount_data` attribute to yield the
-     * `CatalogDiscount` object.
-     * - For a `CatalogObject` of the `TAX` type, set the `tax_data` attribute to yield the `CatalogTax`
-     * object.
-     * - For a `CatalogObject` of the `IMAGE` type, set the `image_data` attribute to yield the
-     * `CatalogImageData`  object.
-     * - For a `CatalogObject` of the `QUICK_AMOUNTS_SETTINGS` type, set the `quick_amounts_settings_data`
-     * attribute to yield the `CatalogQuickAmountsSettings` object.
-     * - For a `CatalogObject` of the `PRICING_RULE` type, set the `pricing_rule_data` attribute to yield
-     * the `CatalogPricingRule` object.
-     * - For a `CatalogObject` of the `TIME_PERIOD` type, set the `time_period_data` attribute to yield the
-     * `CatalogTimePeriod` object.
-     * - For a `CatalogObject` of the `PRODUCT_SET` type, set the `product_set_data` attribute to yield the
-     * `CatalogProductSet`  object.
-     * - For a `CatalogObject` of the `SUBSCRIPTION_PLAN` type, set the `subscription_plan_data` attribute
-     * to yield the `CatalogSubscriptionPlan` object.
+     * For example, if `type=ITEM`, the `CatalogObject` instance must have the ITEM-specific data set on
+     * the `item_data` attribute. The resulting `CatalogObject` instance is also a `CatalogItem` instance.
      *
+     * In general, if `type=<OBJECT_TYPE>`, the `CatalogObject` instance must have the `<OBJECT_TYPE>`-
+     * specific data set on the `<object_type>_data` attribute. The resulting `CatalogObject` instance is
+     * also a `Catalog<ObjectType>` instance.
      *
      * For a more detailed discussion of the Catalog data model, please see the
      * [Design a Catalog](https://developer.squareup.com/docs/catalog-api/design-a-catalog) guide.
@@ -143,7 +95,6 @@ class UpsertCatalogObjectResponse implements \JsonSerializable
 
     /**
      * Returns Id Mappings.
-     *
      * The mapping between client and server IDs for this upsert.
      *
      * @return CatalogIdMapping[]|null
@@ -155,7 +106,6 @@ class UpsertCatalogObjectResponse implements \JsonSerializable
 
     /**
      * Sets Id Mappings.
-     *
      * The mapping between client and server IDs for this upsert.
      *
      * @maps id_mappings
@@ -170,17 +120,28 @@ class UpsertCatalogObjectResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']        = $this->errors;
-        $json['catalog_object'] = $this->catalogObject;
-        $json['id_mappings']   = $this->idMappings;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']         = $this->errors;
+        }
+        if (isset($this->catalogObject)) {
+            $json['catalog_object'] = $this->catalogObject;
+        }
+        if (isset($this->idMappings)) {
+            $json['id_mappings']    = $this->idMappings;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

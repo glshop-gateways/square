@@ -17,7 +17,9 @@ gives you, but for JSON.
 Note that it does not rely on any schema, only your class definitions.
 
 Type detection works by parsing ``@var`` docblock annotations of
-class properties, as well as type hints in setter methods.
+class properties, as well as type hints in setter methods. If docblock comments,
+or comments in general are discarded through some configuration setting like ``opcache.save_comments=0``,
+or any other similar configuration, an exception is thrown, blocking any further operation.
 
 You do not have to modify your model classes by adding JSON specific code;
 it works automatically by parsing already-existing docblocks.
@@ -166,6 +168,13 @@ Map an array of objects (works similarly to ``mapArray``):
 
     $mapper = new JsonMapper();
     $contactsArray = $mapper->mapClassArray($jsonContacts, 'Contact');
+
+Map a value with any combination of types e.g oneOf(string,int) or anyOf(string,Contact):
+
+.. code:: php
+
+    $mapper = new JsonMapper();
+    $contactObject = $mapper->mapFor($value, 'oneOf(string,Contact)');
 
 Property type documentation
 ===========================

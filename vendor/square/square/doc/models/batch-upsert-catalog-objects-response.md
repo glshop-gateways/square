@@ -9,10 +9,10 @@
 
 | Name | Type | Tags | Description | Getter | Setter |
 |  --- | --- | --- | --- | --- | --- |
-| `errors` | [`?(Error[])`](/doc/models/error.md) | Optional | Any errors that occurred during the request. | getErrors(): ?array | setErrors(?array errors): void |
-| `objects` | [`?(CatalogObject[])`](/doc/models/catalog-object.md) | Optional | The created successfully created CatalogObjects. | getObjects(): ?array | setObjects(?array objects): void |
+| `errors` | [`?(Error[])`](../../doc/models/error.md) | Optional | Any errors that occurred during the request. | getErrors(): ?array | setErrors(?array errors): void |
+| `objects` | [`?(CatalogObject[])`](../../doc/models/catalog-object.md) | Optional | The created successfully created CatalogObjects. | getObjects(): ?array | setObjects(?array objects): void |
 | `updatedAt` | `?string` | Optional | The database [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates) of this update in RFC 3339 format, e.g., "2016-09-04T23:59:33.123Z". | getUpdatedAt(): ?string | setUpdatedAt(?string updatedAt): void |
-| `idMappings` | [`?(CatalogIdMapping[])`](/doc/models/catalog-id-mapping.md) | Optional | The mapping between client and server IDs for this upsert. | getIdMappings(): ?array | setIdMappings(?array idMappings): void |
+| `idMappings` | [`?(CatalogIdMapping[])`](../../doc/models/catalog-id-mapping.md) | Optional | The mapping between client and server IDs for this upsert. | getIdMappings(): ?array | setIdMappings(?array idMappings): void |
 
 ## Example (as JSON)
 
@@ -55,6 +55,8 @@
       "item_data": {
         "category_id": "LYT72K3WGJFFCIMB63XARP3I",
         "description": "Hot Leaf Juice",
+        "description_html": "<p><strong>Hot</strong> Leaf Juice</p>",
+        "description_plaintext": "Hot Leaf Juice",
         "name": "Tea",
         "tax_ids": [
           "XHSHLHNWSI3HVI4BW5ZUZXI3"
@@ -91,6 +93,8 @@
       "item_data": {
         "category_id": "LYT72K3WGJFFCIMB63XARP3I",
         "description": "Hot Bean Juice",
+        "description_html": "<p>Hot <em>Bean Juice</em></p>",
+        "description_plaintext": "Hot Bean Juice",
         "name": "Coffee",
         "tax_ids": [
           "XHSHLHNWSI3HVI4BW5ZUZXI3"

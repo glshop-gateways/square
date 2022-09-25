@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * A parent Catalog Object model represents a set of Quick Amounts and the settings control the
- * amounts.
+ * A parent Catalog Object model represents a set of Quick Amounts and the settings control the amounts.
  */
 class CatalogQuickAmountsSettings implements \JsonSerializable
 {
@@ -35,7 +36,6 @@ class CatalogQuickAmountsSettings implements \JsonSerializable
 
     /**
      * Returns Option.
-     *
      * Determines a seller's option on Quick Amounts feature.
      */
     public function getOption(): string
@@ -45,7 +45,6 @@ class CatalogQuickAmountsSettings implements \JsonSerializable
 
     /**
      * Sets Option.
-     *
      * Determines a seller's option on Quick Amounts feature.
      *
      * @required
@@ -58,7 +57,6 @@ class CatalogQuickAmountsSettings implements \JsonSerializable
 
     /**
      * Returns Eligible for Auto Amounts.
-     *
      * Represents location's eligibility for auto amounts
      * The boolean should be consistent with whether there are AUTO amounts in the `amounts`.
      */
@@ -69,7 +67,6 @@ class CatalogQuickAmountsSettings implements \JsonSerializable
 
     /**
      * Sets Eligible for Auto Amounts.
-     *
      * Represents location's eligibility for auto amounts
      * The boolean should be consistent with whether there are AUTO amounts in the `amounts`.
      *
@@ -82,7 +79,6 @@ class CatalogQuickAmountsSettings implements \JsonSerializable
 
     /**
      * Returns Amounts.
-     *
      * Represents a set of Quick Amounts at this location.
      *
      * @return CatalogQuickAmount[]|null
@@ -94,7 +90,6 @@ class CatalogQuickAmountsSettings implements \JsonSerializable
 
     /**
      * Sets Amounts.
-     *
      * Represents a set of Quick Amounts at this location.
      *
      * @maps amounts
@@ -109,17 +104,26 @@ class CatalogQuickAmountsSettings implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['option']                 = $this->option;
-        $json['eligible_for_auto_amounts'] = $this->eligibleForAutoAmounts;
-        $json['amounts']                = $this->amounts;
-
-        return array_filter($json, function ($val) {
+        $json['option']                        = $this->option;
+        if (isset($this->eligibleForAutoAmounts)) {
+            $json['eligible_for_auto_amounts'] = $this->eligibleForAutoAmounts;
+        }
+        if (isset($this->amounts)) {
+            $json['amounts']                   = $this->amounts;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * The timeline for card payments.
  */
@@ -26,7 +28,6 @@ class CardPaymentTimeline implements \JsonSerializable
 
     /**
      * Returns Authorized At.
-     *
      * The timestamp when the payment was authorized, in RFC 3339 format.
      */
     public function getAuthorizedAt(): ?string
@@ -36,7 +37,6 @@ class CardPaymentTimeline implements \JsonSerializable
 
     /**
      * Sets Authorized At.
-     *
      * The timestamp when the payment was authorized, in RFC 3339 format.
      *
      * @maps authorized_at
@@ -48,7 +48,6 @@ class CardPaymentTimeline implements \JsonSerializable
 
     /**
      * Returns Captured At.
-     *
      * The timestamp when the payment was captured, in RFC 3339 format.
      */
     public function getCapturedAt(): ?string
@@ -58,7 +57,6 @@ class CardPaymentTimeline implements \JsonSerializable
 
     /**
      * Sets Captured At.
-     *
      * The timestamp when the payment was captured, in RFC 3339 format.
      *
      * @maps captured_at
@@ -70,7 +68,6 @@ class CardPaymentTimeline implements \JsonSerializable
 
     /**
      * Returns Voided At.
-     *
      * The timestamp when the payment was voided, in RFC 3339 format.
      */
     public function getVoidedAt(): ?string
@@ -80,7 +77,6 @@ class CardPaymentTimeline implements \JsonSerializable
 
     /**
      * Sets Voided At.
-     *
      * The timestamp when the payment was voided, in RFC 3339 format.
      *
      * @maps voided_at
@@ -93,17 +89,28 @@ class CardPaymentTimeline implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['authorized_at'] = $this->authorizedAt;
-        $json['captured_at']  = $this->capturedAt;
-        $json['voided_at']    = $this->voidedAt;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->authorizedAt)) {
+            $json['authorized_at'] = $this->authorizedAt;
+        }
+        if (isset($this->capturedAt)) {
+            $json['captured_at']   = $this->capturedAt;
+        }
+        if (isset($this->voidedAt)) {
+            $json['voided_at']     = $this->voidedAt;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

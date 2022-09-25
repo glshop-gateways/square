@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class RenewTokenResponse implements \JsonSerializable
 {
     /**
@@ -37,8 +39,12 @@ class RenewTokenResponse implements \JsonSerializable
     private $planId;
 
     /**
+     * @var Error[]|null
+     */
+    private $errors;
+
+    /**
      * Returns Access Token.
-     *
      * The renewed access token.
      * This value might be different from the `access_token` you provided in your request.
      * You provide this token in a header with every request to Connect API endpoints.
@@ -52,7 +58,6 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Sets Access Token.
-     *
      * The renewed access token.
      * This value might be different from the `access_token` you provided in your request.
      * You provide this token in a header with every request to Connect API endpoints.
@@ -68,7 +73,6 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Returns Token Type.
-     *
      * This value is always _bearer_.
      */
     public function getTokenType(): ?string
@@ -78,7 +82,6 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Sets Token Type.
-     *
      * This value is always _bearer_.
      *
      * @maps token_type
@@ -90,9 +93,8 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Returns Expires At.
-     *
-     * The date when access_token expires, in [ISO 8601](http://www.iso.org/iso/home/standards/iso8601.htm)
-     * format.
+     * The date when the `access_token` expires, in [ISO 8601](http://www.iso.
+     * org/iso/home/standards/iso8601.htm) format.
      */
     public function getExpiresAt(): ?string
     {
@@ -101,9 +103,8 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Sets Expires At.
-     *
-     * The date when access_token expires, in [ISO 8601](http://www.iso.org/iso/home/standards/iso8601.htm)
-     * format.
+     * The date when the `access_token` expires, in [ISO 8601](http://www.iso.
+     * org/iso/home/standards/iso8601.htm) format.
      *
      * @maps expires_at
      */
@@ -114,7 +115,6 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Returns Merchant Id.
-     *
      * The ID of the authorizing merchant's business.
      */
     public function getMerchantId(): ?string
@@ -124,7 +124,6 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Sets Merchant Id.
-     *
      * The ID of the authorizing merchant's business.
      *
      * @maps merchant_id
@@ -136,10 +135,9 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Returns Subscription Id.
-     *
      * __LEGACY FIELD__. The ID of the merchant subscription associated with
-     * the authorization. Only present if the merchant signed up for a subscription
-     * during authorization..
+     * the authorization. The ID is only present if the merchant signed up for a subscription
+     * during authorization.
      */
     public function getSubscriptionId(): ?string
     {
@@ -148,10 +146,9 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Sets Subscription Id.
-     *
      * __LEGACY FIELD__. The ID of the merchant subscription associated with
-     * the authorization. Only present if the merchant signed up for a subscription
-     * during authorization..
+     * the authorization. The ID is only present if the merchant signed up for a subscription
+     * during authorization.
      *
      * @maps subscription_id
      */
@@ -162,9 +159,8 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Returns Plan Id.
-     *
      * __LEGACY FIELD__. The ID of the subscription plan the merchant signed
-     * up for. Only present if the merchant signed up for a subscription during
+     * up for. The ID is only present if the merchant signed up for a subscription plan during
      * authorization.
      */
     public function getPlanId(): ?string
@@ -174,9 +170,8 @@ class RenewTokenResponse implements \JsonSerializable
 
     /**
      * Sets Plan Id.
-     *
      * __LEGACY FIELD__. The ID of the subscription plan the merchant signed
-     * up for. Only present if the merchant signed up for a subscription during
+     * up for. The ID is only present if the merchant signed up for a subscription plan during
      * authorization.
      *
      * @maps plan_id
@@ -187,22 +182,66 @@ class RenewTokenResponse implements \JsonSerializable
     }
 
     /**
+     * Returns Errors.
+     * Any errors that occurred during the request.
+     *
+     * @return Error[]|null
+     */
+    public function getErrors(): ?array
+    {
+        return $this->errors;
+    }
+
+    /**
+     * Sets Errors.
+     * Any errors that occurred during the request.
+     *
+     * @maps errors
+     *
+     * @param Error[]|null $errors
+     */
+    public function setErrors(?array $errors): void
+    {
+        $this->errors = $errors;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['access_token']   = $this->accessToken;
-        $json['token_type']     = $this->tokenType;
-        $json['expires_at']     = $this->expiresAt;
-        $json['merchant_id']    = $this->merchantId;
-        $json['subscription_id'] = $this->subscriptionId;
-        $json['plan_id']        = $this->planId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->accessToken)) {
+            $json['access_token']    = $this->accessToken;
+        }
+        if (isset($this->tokenType)) {
+            $json['token_type']      = $this->tokenType;
+        }
+        if (isset($this->expiresAt)) {
+            $json['expires_at']      = $this->expiresAt;
+        }
+        if (isset($this->merchantId)) {
+            $json['merchant_id']     = $this->merchantId;
+        }
+        if (isset($this->subscriptionId)) {
+            $json['subscription_id'] = $this->subscriptionId;
+        }
+        if (isset($this->planId)) {
+            $json['plan_id']         = $this->planId;
+        }
+        if (isset($this->errors)) {
+            $json['errors']          = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

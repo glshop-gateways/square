@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a transaction processed with Square, either with the
  * Connect API or with Square Point of Sale.
@@ -65,7 +67,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The transaction's unique ID, issued by Square payments servers.
      */
     public function getId(): ?string
@@ -75,7 +76,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The transaction's unique ID, issued by Square payments servers.
      *
      * @maps id
@@ -87,7 +87,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * The ID of the transaction's associated location.
      */
     public function getLocationId(): ?string
@@ -97,7 +96,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * The ID of the transaction's associated location.
      *
      * @maps location_id
@@ -109,7 +107,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * The timestamp for when the transaction was created, in RFC 3339 format.
      */
     public function getCreatedAt(): ?string
@@ -119,7 +116,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * The timestamp for when the transaction was created, in RFC 3339 format.
      *
      * @maps created_at
@@ -131,7 +127,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Returns Tenders.
-     *
      * The tenders used to pay in the transaction.
      *
      * @return Tender[]|null
@@ -143,7 +138,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Sets Tenders.
-     *
      * The tenders used to pay in the transaction.
      *
      * @maps tenders
@@ -157,7 +151,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Returns Refunds.
-     *
      * Refunds that have been applied to any tender in the transaction.
      *
      * @return Refund[]|null
@@ -169,7 +162,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Sets Refunds.
-     *
      * Refunds that have been applied to any tender in the transaction.
      *
      * @maps refunds
@@ -183,7 +175,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Returns Reference Id.
-     *
      * If the transaction was created with the [Charge]($e/Transactions/Charge)
      * endpoint, this value is the same as the value provided for the `reference_id`
      * parameter in the request to that endpoint. Otherwise, it is not set.
@@ -195,7 +186,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Sets Reference Id.
-     *
      * If the transaction was created with the [Charge]($e/Transactions/Charge)
      * endpoint, this value is the same as the value provided for the `reference_id`
      * parameter in the request to that endpoint. Otherwise, it is not set.
@@ -209,7 +199,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Returns Product.
-     *
      * Indicates the Square product used to process a transaction.
      */
     public function getProduct(): ?string
@@ -219,7 +208,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Sets Product.
-     *
      * Indicates the Square product used to process a transaction.
      *
      * @maps product
@@ -231,7 +219,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Returns Client Id.
-     *
      * If the transaction was created in the Square Point of Sale app, this value
      * is the ID generated for the transaction by Square Point of Sale.
      *
@@ -250,7 +237,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Sets Client Id.
-     *
      * If the transaction was created in the Square Point of Sale app, this value
      * is the ID generated for the transaction by Square Point of Sale.
      *
@@ -271,8 +257,9 @@ class Transaction implements \JsonSerializable
 
     /**
      * Returns Shipping Address.
-     *
-     * Represents a physical address.
+     * Represents a postal address in a country.
+     * For more information, see [Working with Addresses](https://developer.squareup.com/docs/build-
+     * basics/working-with-addresses).
      */
     public function getShippingAddress(): ?Address
     {
@@ -281,8 +268,9 @@ class Transaction implements \JsonSerializable
 
     /**
      * Sets Shipping Address.
-     *
-     * Represents a physical address.
+     * Represents a postal address in a country.
+     * For more information, see [Working with Addresses](https://developer.squareup.com/docs/build-
+     * basics/working-with-addresses).
      *
      * @maps shipping_address
      */
@@ -293,7 +281,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Returns Order Id.
-     *
      * The order_id is an identifier for the order associated with this transaction, if any.
      */
     public function getOrderId(): ?string
@@ -303,7 +290,6 @@ class Transaction implements \JsonSerializable
 
     /**
      * Sets Order Id.
-     *
      * The order_id is an identifier for the order associated with this transaction, if any.
      *
      * @maps order_id
@@ -316,24 +302,49 @@ class Transaction implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']              = $this->id;
-        $json['location_id']     = $this->locationId;
-        $json['created_at']      = $this->createdAt;
-        $json['tenders']         = $this->tenders;
-        $json['refunds']         = $this->refunds;
-        $json['reference_id']    = $this->referenceId;
-        $json['product']         = $this->product;
-        $json['client_id']       = $this->clientId;
-        $json['shipping_address'] = $this->shippingAddress;
-        $json['order_id']        = $this->orderId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']               = $this->id;
+        }
+        if (isset($this->locationId)) {
+            $json['location_id']      = $this->locationId;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']       = $this->createdAt;
+        }
+        if (isset($this->tenders)) {
+            $json['tenders']          = $this->tenders;
+        }
+        if (isset($this->refunds)) {
+            $json['refunds']          = $this->refunds;
+        }
+        if (isset($this->referenceId)) {
+            $json['reference_id']     = $this->referenceId;
+        }
+        if (isset($this->product)) {
+            $json['product']          = $this->product;
+        }
+        if (isset($this->clientId)) {
+            $json['client_id']        = $this->clientId;
+        }
+        if (isset($this->shippingAddress)) {
+            $json['shipping_address'] = $this->shippingAddress;
+        }
+        if (isset($this->orderId)) {
+            $json['order_id']         = $this->orderId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

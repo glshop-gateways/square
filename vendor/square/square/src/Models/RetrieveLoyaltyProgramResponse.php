@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A response that contains the loyalty program.
  */
@@ -21,7 +23,6 @@ class RetrieveLoyaltyProgramResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -33,7 +34,6 @@ class RetrieveLoyaltyProgramResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -47,6 +47,12 @@ class RetrieveLoyaltyProgramResponse implements \JsonSerializable
 
     /**
      * Returns Program.
+     * Represents a Square loyalty program. Loyalty programs define how buyers can earn points and redeem
+     * points for rewards.
+     * Square sellers can have only one loyalty program, which is created and managed from the Seller
+     * Dashboard.
+     * For more information, see [Loyalty Program Overview](https://developer.squareup.
+     * com/docs/loyalty/overview).
      */
     public function getProgram(): ?LoyaltyProgram
     {
@@ -55,6 +61,12 @@ class RetrieveLoyaltyProgramResponse implements \JsonSerializable
 
     /**
      * Sets Program.
+     * Represents a Square loyalty program. Loyalty programs define how buyers can earn points and redeem
+     * points for rewards.
+     * Square sellers can have only one loyalty program, which is created and managed from the Seller
+     * Dashboard.
+     * For more information, see [Loyalty Program Overview](https://developer.squareup.
+     * com/docs/loyalty/overview).
      *
      * @maps program
      */
@@ -66,16 +78,25 @@ class RetrieveLoyaltyProgramResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']  = $this->errors;
-        $json['program'] = $this->program;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']  = $this->errors;
+        }
+        if (isset($this->program)) {
+            $json['program'] = $this->program;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a phone number.
  */
@@ -31,7 +33,6 @@ class V1PhoneNumber implements \JsonSerializable
 
     /**
      * Returns Calling Code.
-     *
      * The phone number's international calling code. For US phone numbers, this value is +1.
      */
     public function getCallingCode(): string
@@ -41,7 +42,6 @@ class V1PhoneNumber implements \JsonSerializable
 
     /**
      * Sets Calling Code.
-     *
      * The phone number's international calling code. For US phone numbers, this value is +1.
      *
      * @required
@@ -54,7 +54,6 @@ class V1PhoneNumber implements \JsonSerializable
 
     /**
      * Returns Number.
-     *
      * The phone number.
      */
     public function getNumber(): string
@@ -64,7 +63,6 @@ class V1PhoneNumber implements \JsonSerializable
 
     /**
      * Sets Number.
-     *
      * The phone number.
      *
      * @required
@@ -78,16 +76,21 @@ class V1PhoneNumber implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['calling_code'] = $this->callingCode;
-        $json['number']      = $this->number;
-
-        return array_filter($json, function ($val) {
+        $json['number']       = $this->number;
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

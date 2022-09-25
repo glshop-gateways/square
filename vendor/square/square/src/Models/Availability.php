@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Describes a slot available for booking, encapsulating appointment segments, the location and
- * starting time.
+ * Defines an appointment slot that encapsulates the appointment segments, location and starting time
+ * available for booking.
  */
 class Availability implements \JsonSerializable
 {
@@ -27,7 +29,6 @@ class Availability implements \JsonSerializable
 
     /**
      * Returns Start At.
-     *
      * The RFC 3339 timestamp specifying the beginning time of the slot available for booking.
      */
     public function getStartAt(): ?string
@@ -37,7 +38,6 @@ class Availability implements \JsonSerializable
 
     /**
      * Sets Start At.
-     *
      * The RFC 3339 timestamp specifying the beginning time of the slot available for booking.
      *
      * @maps start_at
@@ -49,7 +49,6 @@ class Availability implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * The ID of the location available for booking.
      */
     public function getLocationId(): ?string
@@ -59,7 +58,6 @@ class Availability implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * The ID of the location available for booking.
      *
      * @maps location_id
@@ -71,7 +69,6 @@ class Availability implements \JsonSerializable
 
     /**
      * Returns Appointment Segments.
-     *
      * The list of appointment segments available for booking
      *
      * @return AppointmentSegment[]|null
@@ -83,7 +80,6 @@ class Availability implements \JsonSerializable
 
     /**
      * Sets Appointment Segments.
-     *
      * The list of appointment segments available for booking
      *
      * @maps appointment_segments
@@ -98,17 +94,28 @@ class Availability implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['start_at']            = $this->startAt;
-        $json['location_id']         = $this->locationId;
-        $json['appointment_segments'] = $this->appointmentSegments;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->startAt)) {
+            $json['start_at']             = $this->startAt;
+        }
+        if (isset($this->locationId)) {
+            $json['location_id']          = $this->locationId;
+        }
+        if (isset($this->appointmentSegments)) {
+            $json['appointment_segments'] = $this->appointmentSegments;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

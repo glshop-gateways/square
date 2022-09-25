@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * A request for a set of `EmployeeWage` objects
+ * A request for a set of `EmployeeWage` objects.
  */
 class ListEmployeeWagesRequest implements \JsonSerializable
 {
@@ -26,8 +28,7 @@ class ListEmployeeWagesRequest implements \JsonSerializable
 
     /**
      * Returns Employee Id.
-     *
-     * Filter wages returned to only those that are associated with the specified employee.
+     * Filter the returned wages to only those that are associated with the specified employee.
      */
     public function getEmployeeId(): ?string
     {
@@ -36,8 +37,7 @@ class ListEmployeeWagesRequest implements \JsonSerializable
 
     /**
      * Sets Employee Id.
-     *
-     * Filter wages returned to only those that are associated with the specified employee.
+     * Filter the returned wages to only those that are associated with the specified employee.
      *
      * @maps employee_id
      */
@@ -48,9 +48,8 @@ class ListEmployeeWagesRequest implements \JsonSerializable
 
     /**
      * Returns Limit.
-     *
-     * Maximum number of Employee Wages to return per page. Can range between
-     * 1 and 200. The default is the maximum at 200.
+     * The maximum number of `EmployeeWage` results to return per page. The number can range between
+     * 1 and 200. The default is 200.
      */
     public function getLimit(): ?int
     {
@@ -59,9 +58,8 @@ class ListEmployeeWagesRequest implements \JsonSerializable
 
     /**
      * Sets Limit.
-     *
-     * Maximum number of Employee Wages to return per page. Can range between
-     * 1 and 200. The default is the maximum at 200.
+     * The maximum number of `EmployeeWage` results to return per page. The number can range between
+     * 1 and 200. The default is 200.
      *
      * @maps limit
      */
@@ -72,8 +70,7 @@ class ListEmployeeWagesRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
-     * Pointer to the next page of Employee Wage results to fetch.
+     * A pointer to the next page of `EmployeeWage` results to fetch.
      */
     public function getCursor(): ?string
     {
@@ -82,8 +79,7 @@ class ListEmployeeWagesRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
-     * Pointer to the next page of Employee Wage results to fetch.
+     * A pointer to the next page of `EmployeeWage` results to fetch.
      *
      * @maps cursor
      */
@@ -95,17 +91,28 @@ class ListEmployeeWagesRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['employee_id'] = $this->employeeId;
-        $json['limit']      = $this->limit;
-        $json['cursor']     = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->employeeId)) {
+            $json['employee_id'] = $this->employeeId;
+        }
+        if (isset($this->limit)) {
+            $json['limit']       = $this->limit;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']      = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

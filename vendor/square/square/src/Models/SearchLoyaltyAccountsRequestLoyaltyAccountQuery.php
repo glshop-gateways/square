@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * The search criteria for the loyalty accounts.
  */
@@ -21,7 +23,6 @@ class SearchLoyaltyAccountsRequestLoyaltyAccountQuery implements \JsonSerializab
 
     /**
      * Returns Mappings.
-     *
      * The set of mappings to use in the loyalty account search.
      *
      * This cannot be combined with `customer_ids`.
@@ -37,7 +38,6 @@ class SearchLoyaltyAccountsRequestLoyaltyAccountQuery implements \JsonSerializab
 
     /**
      * Sets Mappings.
-     *
      * The set of mappings to use in the loyalty account search.
      *
      * This cannot be combined with `customer_ids`.
@@ -55,7 +55,6 @@ class SearchLoyaltyAccountsRequestLoyaltyAccountQuery implements \JsonSerializab
 
     /**
      * Returns Customer Ids.
-     *
      * The set of customer IDs to use in the loyalty account search.
      *
      * This cannot be combined with `mappings`.
@@ -71,7 +70,6 @@ class SearchLoyaltyAccountsRequestLoyaltyAccountQuery implements \JsonSerializab
 
     /**
      * Sets Customer Ids.
-     *
      * The set of customer IDs to use in the loyalty account search.
      *
      * This cannot be combined with `mappings`.
@@ -90,16 +88,25 @@ class SearchLoyaltyAccountsRequestLoyaltyAccountQuery implements \JsonSerializab
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['mappings']    = $this->mappings;
-        $json['customer_ids'] = $this->customerIds;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->mappings)) {
+            $json['mappings']     = $this->mappings;
+        }
+        if (isset($this->customerIds)) {
+            $json['customer_ids'] = $this->customerIds;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

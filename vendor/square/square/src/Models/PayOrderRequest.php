@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields that are included in requests to the
  * [PayOrder]($e/Orders/PayOrder) endpoint.
@@ -35,13 +37,12 @@ class PayOrderRequest implements \JsonSerializable
 
     /**
      * Returns Idempotency Key.
-     *
-     * A value you specify that uniquely identifies this request among requests you've sent. If
-     * you're unsure whether a particular payment request was completed successfully, you can reattempt
+     * A value you specify that uniquely identifies this request among requests you have sent. If
+     * you are unsure whether a particular payment request was completed successfully, you can reattempt
      * it with the same idempotency key without worrying about duplicate payments.
      *
-     * See [Idempotency](https://developer.squareup.com/docs/working-with-apis/idempotency) for more
-     * information.
+     * For more information, see [Idempotency](https://developer.squareup.com/docs/working-with-
+     * apis/idempotency).
      */
     public function getIdempotencyKey(): string
     {
@@ -50,13 +51,12 @@ class PayOrderRequest implements \JsonSerializable
 
     /**
      * Sets Idempotency Key.
-     *
-     * A value you specify that uniquely identifies this request among requests you've sent. If
-     * you're unsure whether a particular payment request was completed successfully, you can reattempt
+     * A value you specify that uniquely identifies this request among requests you have sent. If
+     * you are unsure whether a particular payment request was completed successfully, you can reattempt
      * it with the same idempotency key without worrying about duplicate payments.
      *
-     * See [Idempotency](https://developer.squareup.com/docs/working-with-apis/idempotency) for more
-     * information.
+     * For more information, see [Idempotency](https://developer.squareup.com/docs/working-with-
+     * apis/idempotency).
      *
      * @required
      * @maps idempotency_key
@@ -68,7 +68,6 @@ class PayOrderRequest implements \JsonSerializable
 
     /**
      * Returns Order Version.
-     *
      * The version of the order being paid. If not supplied, the latest version will be paid.
      */
     public function getOrderVersion(): ?int
@@ -78,7 +77,6 @@ class PayOrderRequest implements \JsonSerializable
 
     /**
      * Sets Order Version.
-     *
      * The version of the order being paid. If not supplied, the latest version will be paid.
      *
      * @maps order_version
@@ -90,7 +88,6 @@ class PayOrderRequest implements \JsonSerializable
 
     /**
      * Returns Payment Ids.
-     *
      * The IDs of the [payments]($m/Payment) to collect.
      * The payment total must match the order total.
      *
@@ -103,7 +100,6 @@ class PayOrderRequest implements \JsonSerializable
 
     /**
      * Sets Payment Ids.
-     *
      * The IDs of the [payments]($m/Payment) to collect.
      * The payment total must match the order total.
      *
@@ -119,17 +115,26 @@ class PayOrderRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['idempotency_key'] = $this->idempotencyKey;
-        $json['order_version']  = $this->orderVersion;
-        $json['payment_ids']    = $this->paymentIds;
-
-        return array_filter($json, function ($val) {
+        $json['idempotency_key']   = $this->idempotencyKey;
+        if (isset($this->orderVersion)) {
+            $json['order_version'] = $this->orderVersion;
+        }
+        if (isset($this->paymentIds)) {
+            $json['payment_ids']   = $this->paymentIds;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

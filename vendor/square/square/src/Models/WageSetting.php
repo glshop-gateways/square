@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * An object representing a team member's wage information.
  */
@@ -41,7 +43,6 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Returns Team Member Id.
-     *
      * The unique ID of the `TeamMember` whom this wage setting describes.
      */
     public function getTeamMemberId(): ?string
@@ -51,7 +52,6 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Sets Team Member Id.
-     *
      * The unique ID of the `TeamMember` whom this wage setting describes.
      *
      * @maps team_member_id
@@ -63,11 +63,10 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Returns Job Assignments.
+     * Required. The ordered list of jobs that the team member is assigned to.
+     * The first job assignment is considered the team member's primary job.
      *
-     * <b>Required</b> The ordered list of jobs that the team member is assigned to.
-     * The first job assignment is considered the team member's "Primary Job".
-     * <br>
-     * <b>Min Length 1    Max Length 12</b>
+     * The minimum length is 1 and the maximum length is 12.
      *
      * @return JobAssignment[]|null
      */
@@ -78,11 +77,10 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Sets Job Assignments.
+     * Required. The ordered list of jobs that the team member is assigned to.
+     * The first job assignment is considered the team member's primary job.
      *
-     * <b>Required</b> The ordered list of jobs that the team member is assigned to.
-     * The first job assignment is considered the team member's "Primary Job".
-     * <br>
-     * <b>Min Length 1    Max Length 12</b>
+     * The minimum length is 1 and the maximum length is 12.
      *
      * @maps job_assignments
      *
@@ -95,8 +93,7 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Returns Is Overtime Exempt.
-     *
-     * Whether the team member is exempt from the overtime rules of the seller country.
+     * Whether the team member is exempt from the overtime rules of the seller's country.
      */
     public function getIsOvertimeExempt(): ?bool
     {
@@ -105,8 +102,7 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Sets Is Overtime Exempt.
-     *
-     * Whether the team member is exempt from the overtime rules of the seller country.
+     * Whether the team member is exempt from the overtime rules of the seller's country.
      *
      * @maps is_overtime_exempt
      */
@@ -117,13 +113,11 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Returns Version.
-     *
-     * Used for resolving concurrency issues; request will fail if version
-     * provided does not match server version at time of request. If not provided,
-     * Square executes a blind write, potentially overwriting data from another write. Read
-     * about [optimistic concurrency](https://developer.squareup.com/docs/working-with-apis/optimistic-
-     * concurrency)
-     * in Square APIs for more information.
+     * Used for resolving concurrency issues. The request fails if the version
+     * provided does not match the server version at the time of the request. If not provided,
+     * Square executes a blind write, potentially overwriting data from another write. For more information,
+     * see [optimistic concurrency](https://developer.squareup.com/docs/working-with-apis/optimistic-
+     * concurrency).
      */
     public function getVersion(): ?int
     {
@@ -132,13 +126,11 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Sets Version.
-     *
-     * Used for resolving concurrency issues; request will fail if version
-     * provided does not match server version at time of request. If not provided,
-     * Square executes a blind write, potentially overwriting data from another write. Read
-     * about [optimistic concurrency](https://developer.squareup.com/docs/working-with-apis/optimistic-
-     * concurrency)
-     * in Square APIs for more information.
+     * Used for resolving concurrency issues. The request fails if the version
+     * provided does not match the server version at the time of the request. If not provided,
+     * Square executes a blind write, potentially overwriting data from another write. For more information,
+     * see [optimistic concurrency](https://developer.squareup.com/docs/working-with-apis/optimistic-
+     * concurrency).
      *
      * @maps version
      */
@@ -149,9 +141,8 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
-     * The timestamp in RFC 3339 format describing when the wage setting object was created.
-     * Ex: "2018-10-04T04:00:00-07:00" or "2019-02-05T12:00:00Z"
+     * The timestamp, in RFC 3339 format, describing when the wage setting object was created.
+     * For example, "2018-10-04T04:00:00-07:00" or "2019-02-05T12:00:00Z".
      */
     public function getCreatedAt(): ?string
     {
@@ -160,9 +151,8 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
-     * The timestamp in RFC 3339 format describing when the wage setting object was created.
-     * Ex: "2018-10-04T04:00:00-07:00" or "2019-02-05T12:00:00Z"
+     * The timestamp, in RFC 3339 format, describing when the wage setting object was created.
+     * For example, "2018-10-04T04:00:00-07:00" or "2019-02-05T12:00:00Z".
      *
      * @maps created_at
      */
@@ -173,9 +163,8 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Returns Updated At.
-     *
-     * The timestamp in RFC 3339 format describing when the wage setting object was last updated.
-     * Ex: "2018-10-04T04:00:00-07:00" or "2019-02-05T12:00:00Z"
+     * The timestamp, in RFC 3339 format, describing when the wage setting object was last updated.
+     * For example, "2018-10-04T04:00:00-07:00" or "2019-02-05T12:00:00Z".
      */
     public function getUpdatedAt(): ?string
     {
@@ -184,9 +173,8 @@ class WageSetting implements \JsonSerializable
 
     /**
      * Sets Updated At.
-     *
-     * The timestamp in RFC 3339 format describing when the wage setting object was last updated.
-     * Ex: "2018-10-04T04:00:00-07:00" or "2019-02-05T12:00:00Z"
+     * The timestamp, in RFC 3339 format, describing when the wage setting object was last updated.
+     * For example, "2018-10-04T04:00:00-07:00" or "2019-02-05T12:00:00Z".
      *
      * @maps updated_at
      */
@@ -198,20 +186,37 @@ class WageSetting implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['team_member_id']   = $this->teamMemberId;
-        $json['job_assignments']  = $this->jobAssignments;
-        $json['is_overtime_exempt'] = $this->isOvertimeExempt;
-        $json['version']          = $this->version;
-        $json['created_at']       = $this->createdAt;
-        $json['updated_at']       = $this->updatedAt;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->teamMemberId)) {
+            $json['team_member_id']     = $this->teamMemberId;
+        }
+        if (isset($this->jobAssignments)) {
+            $json['job_assignments']    = $this->jobAssignments;
+        }
+        if (isset($this->isOvertimeExempt)) {
+            $json['is_overtime_exempt'] = $this->isOvertimeExempt;
+        }
+        if (isset($this->version)) {
+            $json['version']            = $this->version;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']         = $this->createdAt;
+        }
+        if (isset($this->updatedAt)) {
+            $json['updated_at']         = $this->updatedAt;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

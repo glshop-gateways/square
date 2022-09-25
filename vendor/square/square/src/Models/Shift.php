@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A record of the hourly rate, start, and end times for a single work shift
- * for an employee. May include a record of the start and end times for breaks
+ * for an employee. This might include a record of the start and end times for breaks
  * taken during the shift.
  */
 class Shift implements \JsonSerializable
@@ -86,8 +88,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
-     * UUID for this object
+     * The UUID for this object.
      */
     public function getId(): ?string
     {
@@ -96,8 +97,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
-     * UUID for this object
+     * The UUID for this object.
      *
      * @maps id
      */
@@ -108,9 +108,8 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Employee Id.
-     *
      * The ID of the employee this shift belongs to. DEPRECATED at version 2020-08-26. Use `team_member_id`
-     * instead
+     * instead.
      */
     public function getEmployeeId(): ?string
     {
@@ -119,9 +118,8 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Employee Id.
-     *
      * The ID of the employee this shift belongs to. DEPRECATED at version 2020-08-26. Use `team_member_id`
-     * instead
+     * instead.
      *
      * @maps employee_id
      */
@@ -132,8 +130,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
-     * The ID of the location this shift occurred at. Should be based on
+     * The ID of the location this shift occurred at. The location should be based on
      * where the employee clocked in.
      */
     public function getLocationId(): ?string
@@ -143,8 +140,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
-     * The ID of the location this shift occurred at. Should be based on
+     * The ID of the location this shift occurred at. The location should be based on
      * where the employee clocked in.
      *
      * @maps location_id
@@ -156,9 +152,8 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Timezone.
-     *
-     * Read-only convenience value that is calculated from the location based
-     * on `location_id`. Format: the IANA Timezone Database identifier for the
+     * The read-only convenience value that is calculated from the location based
+     * on the `location_id`. Format: the IANA timezone database identifier for the
      * location timezone.
      */
     public function getTimezone(): ?string
@@ -168,9 +163,8 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Timezone.
-     *
-     * Read-only convenience value that is calculated from the location based
-     * on `location_id`. Format: the IANA Timezone Database identifier for the
+     * The read-only convenience value that is calculated from the location based
+     * on the `location_id`. Format: the IANA timezone database identifier for the
      * location timezone.
      *
      * @maps timezone
@@ -182,8 +176,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Start At.
-     *
-     * RFC 3339; shifted to location timezone + offset. Precision up to the
+     * RFC 3339; shifted to the location timezone + offset. Precision up to the
      * minute is respected; seconds are truncated.
      */
     public function getStartAt(): string
@@ -193,8 +186,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Start At.
-     *
-     * RFC 3339; shifted to location timezone + offset. Precision up to the
+     * RFC 3339; shifted to the location timezone + offset. Precision up to the
      * minute is respected; seconds are truncated.
      *
      * @required
@@ -207,8 +199,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns End At.
-     *
-     * RFC 3339; shifted to timezone + offset. Precision up to the minute is
+     * RFC 3339; shifted to the timezone + offset. Precision up to the minute is
      * respected; seconds are truncated.
      */
     public function getEndAt(): ?string
@@ -218,8 +209,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets End At.
-     *
-     * RFC 3339; shifted to timezone + offset. Precision up to the minute is
+     * RFC 3339; shifted to the timezone + offset. Precision up to the minute is
      * respected; seconds are truncated.
      *
      * @maps end_at
@@ -231,7 +221,6 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Wage.
-     *
      * The hourly wage rate used to compensate an employee for this shift.
      */
     public function getWage(): ?ShiftWage
@@ -241,7 +230,6 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Wage.
-     *
      * The hourly wage rate used to compensate an employee for this shift.
      *
      * @maps wage
@@ -253,8 +241,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Breaks.
-     *
-     * A list of any paid or unpaid breaks that were taken during this shift.
+     * A list of all the paid or unpaid breaks that were taken during this shift.
      *
      * @return MBreak[]|null
      */
@@ -265,8 +252,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Breaks.
-     *
-     * A list of any paid or unpaid breaks that were taken during this shift.
+     * A list of all the paid or unpaid breaks that were taken during this shift.
      *
      * @maps breaks
      *
@@ -279,8 +265,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Status.
-     *
-     * Enumerates the possible status of a `Shift`
+     * Enumerates the possible status of a `Shift`.
      */
     public function getStatus(): ?string
     {
@@ -289,8 +274,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Status.
-     *
-     * Enumerates the possible status of a `Shift`
+     * Enumerates the possible status of a `Shift`.
      *
      * @maps status
      */
@@ -301,9 +285,8 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Version.
-     *
-     * Used for resolving concurrency issues; request will fail if version
-     * provided does not match server version at time of request. If not provided,
+     * Used for resolving concurrency issues. The request fails if the version
+     * provided does not match the server version at the time of the request. If not provided,
      * Square executes a blind write; potentially overwriting data from another
      * write.
      */
@@ -314,9 +297,8 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Version.
-     *
-     * Used for resolving concurrency issues; request will fail if version
-     * provided does not match server version at time of request. If not provided,
+     * Used for resolving concurrency issues. The request fails if the version
+     * provided does not match the server version at the time of the request. If not provided,
      * Square executes a blind write; potentially overwriting data from another
      * write.
      *
@@ -329,7 +311,6 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * A read-only timestamp in RFC 3339 format; presented in UTC.
      */
     public function getCreatedAt(): ?string
@@ -339,7 +320,6 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * A read-only timestamp in RFC 3339 format; presented in UTC.
      *
      * @maps created_at
@@ -351,7 +331,6 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Updated At.
-     *
      * A read-only timestamp in RFC 3339 format; presented in UTC.
      */
     public function getUpdatedAt(): ?string
@@ -361,7 +340,6 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Updated At.
-     *
      * A read-only timestamp in RFC 3339 format; presented in UTC.
      *
      * @maps updated_at
@@ -373,8 +351,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Returns Team Member Id.
-     *
-     * The ID of the team member this shift belongs to. Replaced `employee_id` at version "2020-08-26"
+     * The ID of the team member this shift belongs to. Replaced `employee_id` at version "2020-08-26".
      */
     public function getTeamMemberId(): ?string
     {
@@ -383,8 +360,7 @@ class Shift implements \JsonSerializable
 
     /**
      * Sets Team Member Id.
-     *
-     * The ID of the team member this shift belongs to. Replaced `employee_id` at version "2020-08-26"
+     * The ID of the team member this shift belongs to. Replaced `employee_id` at version "2020-08-26".
      *
      * @maps team_member_id
      */
@@ -396,27 +372,56 @@ class Shift implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']           = $this->id;
-        $json['employee_id']  = $this->employeeId;
-        $json['location_id']  = $this->locationId;
-        $json['timezone']     = $this->timezone;
-        $json['start_at']     = $this->startAt;
-        $json['end_at']       = $this->endAt;
-        $json['wage']         = $this->wage;
-        $json['breaks']       = $this->breaks;
-        $json['status']       = $this->status;
-        $json['version']      = $this->version;
-        $json['created_at']   = $this->createdAt;
-        $json['updated_at']   = $this->updatedAt;
-        $json['team_member_id'] = $this->teamMemberId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']             = $this->id;
+        }
+        if (isset($this->employeeId)) {
+            $json['employee_id']    = $this->employeeId;
+        }
+        if (isset($this->locationId)) {
+            $json['location_id']    = $this->locationId;
+        }
+        if (isset($this->timezone)) {
+            $json['timezone']       = $this->timezone;
+        }
+        $json['start_at']           = $this->startAt;
+        if (isset($this->endAt)) {
+            $json['end_at']         = $this->endAt;
+        }
+        if (isset($this->wage)) {
+            $json['wage']           = $this->wage;
+        }
+        if (isset($this->breaks)) {
+            $json['breaks']         = $this->breaks;
+        }
+        if (isset($this->status)) {
+            $json['status']         = $this->status;
+        }
+        if (isset($this->version)) {
+            $json['version']        = $this->version;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']     = $this->createdAt;
+        }
+        if (isset($this->updatedAt)) {
+            $json['updated_at']     = $this->updatedAt;
+        }
+        if (isset($this->teamMemberId)) {
+            $json['team_member_id'] = $this->teamMemberId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

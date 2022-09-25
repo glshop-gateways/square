@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * V1PaymentSurcharge
  */
@@ -51,7 +53,6 @@ class V1PaymentSurcharge implements \JsonSerializable
 
     /**
      * Returns Name.
-     *
      * The name of the surcharge.
      */
     public function getName(): ?string
@@ -61,7 +62,6 @@ class V1PaymentSurcharge implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * The name of the surcharge.
      *
      * @maps name
@@ -91,7 +91,6 @@ class V1PaymentSurcharge implements \JsonSerializable
 
     /**
      * Returns Rate.
-     *
      * The amount of the surcharge as a percentage. The percentage is provided as a string representing the
      * decimal equivalent of the percentage. For example, "0.7" corresponds to a 7% surcharge. Exactly one
      * of rate or amount_money should be set.
@@ -103,7 +102,6 @@ class V1PaymentSurcharge implements \JsonSerializable
 
     /**
      * Sets Rate.
-     *
      * The amount of the surcharge as a percentage. The percentage is provided as a string representing the
      * decimal equivalent of the percentage. For example, "0.7" corresponds to a 7% surcharge. Exactly one
      * of rate or amount_money should be set.
@@ -153,7 +151,6 @@ class V1PaymentSurcharge implements \JsonSerializable
 
     /**
      * Returns Taxable.
-     *
      * Indicates whether the surcharge is taxable.
      */
     public function getTaxable(): ?bool
@@ -163,7 +160,6 @@ class V1PaymentSurcharge implements \JsonSerializable
 
     /**
      * Sets Taxable.
-     *
      * Indicates whether the surcharge is taxable.
      *
      * @maps taxable
@@ -175,7 +171,6 @@ class V1PaymentSurcharge implements \JsonSerializable
 
     /**
      * Returns Taxes.
-     *
      * The list of taxes that should be applied to the surcharge.
      *
      * @return V1PaymentTax[]|null
@@ -187,7 +182,6 @@ class V1PaymentSurcharge implements \JsonSerializable
 
     /**
      * Sets Taxes.
-     *
      * The list of taxes that should be applied to the surcharge.
      *
      * @maps taxes
@@ -201,7 +195,6 @@ class V1PaymentSurcharge implements \JsonSerializable
 
     /**
      * Returns Surcharge Id.
-     *
      * A Square-issued unique identifier associated with the surcharge.
      */
     public function getSurchargeId(): ?string
@@ -211,7 +204,6 @@ class V1PaymentSurcharge implements \JsonSerializable
 
     /**
      * Sets Surcharge Id.
-     *
      * A Square-issued unique identifier associated with the surcharge.
      *
      * @maps surcharge_id
@@ -224,22 +216,43 @@ class V1PaymentSurcharge implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['name']         = $this->name;
-        $json['applied_money'] = $this->appliedMoney;
-        $json['rate']         = $this->rate;
-        $json['amount_money'] = $this->amountMoney;
-        $json['type']         = $this->type;
-        $json['taxable']      = $this->taxable;
-        $json['taxes']        = $this->taxes;
-        $json['surcharge_id'] = $this->surchargeId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->name)) {
+            $json['name']          = $this->name;
+        }
+        if (isset($this->appliedMoney)) {
+            $json['applied_money'] = $this->appliedMoney;
+        }
+        if (isset($this->rate)) {
+            $json['rate']          = $this->rate;
+        }
+        if (isset($this->amountMoney)) {
+            $json['amount_money']  = $this->amountMoney;
+        }
+        if (isset($this->type)) {
+            $json['type']          = $this->type;
+        }
+        if (isset($this->taxable)) {
+            $json['taxable']       = $this->taxable;
+        }
+        if (isset($this->taxes)) {
+            $json['taxes']         = $this->taxes;
+        }
+        if (isset($this->surchargeId)) {
+            $json['surcharge_id']  = $this->surchargeId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

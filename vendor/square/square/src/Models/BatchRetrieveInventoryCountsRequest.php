@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
 {
     /**
@@ -32,8 +34,12 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
     private $states;
 
     /**
+     * @var int|null
+     */
+    private $limit;
+
+    /**
      * Returns Catalog Object Ids.
-     *
      * The filter to return results by `CatalogObject` ID.
      * The filter is applicable only when set.  The default is null.
      *
@@ -46,7 +52,6 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
 
     /**
      * Sets Catalog Object Ids.
-     *
      * The filter to return results by `CatalogObject` ID.
      * The filter is applicable only when set.  The default is null.
      *
@@ -61,7 +66,6 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
 
     /**
      * Returns Location Ids.
-     *
      * The filter to return results by `Location` ID.
      * This filter is applicable only when set. The default is null.
      *
@@ -74,7 +78,6 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
 
     /**
      * Sets Location Ids.
-     *
      * The filter to return results by `Location` ID.
      * This filter is applicable only when set. The default is null.
      *
@@ -89,7 +92,6 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
 
     /**
      * Returns Updated After.
-     *
      * The filter to return results with their `calculated_at` value
      * after the given time as specified in an RFC 3339 timestamp.
      * The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
@@ -101,7 +103,6 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
 
     /**
      * Sets Updated After.
-     *
      * The filter to return results with their `calculated_at` value
      * after the given time as specified in an RFC 3339 timestamp.
      * The default value is the UNIX epoch of (`1970-01-01T00:00:00Z`).
@@ -115,7 +116,6 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * A pagination cursor returned by a previous call to this endpoint.
      * Provide this to retrieve the next set of results for the original query.
      *
@@ -129,7 +129,6 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * A pagination cursor returned by a previous call to this endpoint.
      * Provide this to retrieve the next set of results for the original query.
      *
@@ -145,7 +144,6 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
 
     /**
      * Returns States.
-     *
      * The filter to return results by `InventoryState`. The filter is only applicable when set.
      * Ignored are untracked states of `NONE`, `SOLD`, and `UNLINKED_RETURN`.
      * The default is null.
@@ -159,7 +157,6 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
 
     /**
      * Sets States.
-     *
      * The filter to return results by `InventoryState`. The filter is only applicable when set.
      * Ignored are untracked states of `NONE`, `SOLD`, and `UNLINKED_RETURN`.
      * The default is null.
@@ -174,21 +171,59 @@ class BatchRetrieveInventoryCountsRequest implements \JsonSerializable
     }
 
     /**
+     * Returns Limit.
+     * The number of [records]($m/InventoryCount) to return.
+     */
+    public function getLimit(): ?int
+    {
+        return $this->limit;
+    }
+
+    /**
+     * Sets Limit.
+     * The number of [records]($m/InventoryCount) to return.
+     *
+     * @maps limit
+     */
+    public function setLimit(?int $limit): void
+    {
+        $this->limit = $limit;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['catalog_object_ids'] = $this->catalogObjectIds;
-        $json['location_ids']     = $this->locationIds;
-        $json['updated_after']    = $this->updatedAfter;
-        $json['cursor']           = $this->cursor;
-        $json['states']           = $this->states;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->catalogObjectIds)) {
+            $json['catalog_object_ids'] = $this->catalogObjectIds;
+        }
+        if (isset($this->locationIds)) {
+            $json['location_ids']       = $this->locationIds;
+        }
+        if (isset($this->updatedAfter)) {
+            $json['updated_after']      = $this->updatedAfter;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']             = $this->cursor;
+        }
+        if (isset($this->states)) {
+            $json['states']             = $this->states;
+        }
+        if (isset($this->limit)) {
+            $json['limit']              = $this->limit;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

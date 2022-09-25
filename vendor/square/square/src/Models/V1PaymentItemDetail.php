@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * V1PaymentItemDetail
  */
@@ -31,7 +33,6 @@ class V1PaymentItemDetail implements \JsonSerializable
 
     /**
      * Returns Category Name.
-     *
      * The name of the item's merchant-defined category, if any.
      */
     public function getCategoryName(): ?string
@@ -41,7 +42,6 @@ class V1PaymentItemDetail implements \JsonSerializable
 
     /**
      * Sets Category Name.
-     *
      * The name of the item's merchant-defined category, if any.
      *
      * @maps category_name
@@ -53,7 +53,6 @@ class V1PaymentItemDetail implements \JsonSerializable
 
     /**
      * Returns Sku.
-     *
      * The item's merchant-defined SKU, if any.
      */
     public function getSku(): ?string
@@ -63,7 +62,6 @@ class V1PaymentItemDetail implements \JsonSerializable
 
     /**
      * Sets Sku.
-     *
      * The item's merchant-defined SKU, if any.
      *
      * @maps sku
@@ -75,7 +73,6 @@ class V1PaymentItemDetail implements \JsonSerializable
 
     /**
      * Returns Item Id.
-     *
      * The unique ID of the item purchased, if any.
      */
     public function getItemId(): ?string
@@ -85,7 +82,6 @@ class V1PaymentItemDetail implements \JsonSerializable
 
     /**
      * Sets Item Id.
-     *
      * The unique ID of the item purchased, if any.
      *
      * @maps item_id
@@ -97,7 +93,6 @@ class V1PaymentItemDetail implements \JsonSerializable
 
     /**
      * Returns Item Variation Id.
-     *
      * The unique ID of the item variation purchased, if any.
      */
     public function getItemVariationId(): ?string
@@ -107,7 +102,6 @@ class V1PaymentItemDetail implements \JsonSerializable
 
     /**
      * Sets Item Variation Id.
-     *
      * The unique ID of the item variation purchased, if any.
      *
      * @maps item_variation_id
@@ -120,18 +114,31 @@ class V1PaymentItemDetail implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['category_name']   = $this->categoryName;
-        $json['sku']             = $this->sku;
-        $json['item_id']         = $this->itemId;
-        $json['item_variation_id'] = $this->itemVariationId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->categoryName)) {
+            $json['category_name']     = $this->categoryName;
+        }
+        if (isset($this->sku)) {
+            $json['sku']               = $this->sku;
+        }
+        if (isset($this->itemId)) {
+            $json['item_id']           = $this->itemId;
+        }
+        if (isset($this->itemVariationId)) {
+            $json['item_variation_id'] = $this->itemVariationId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

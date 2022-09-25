@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a discount that applies to one or more line items in an
  * order.
@@ -23,6 +25,11 @@ class OrderLineItemDiscount implements \JsonSerializable
      * @var string|null
      */
     private $catalogObjectId;
+
+    /**
+     * @var int|null
+     */
+    private $catalogVersion;
 
     /**
      * @var string|null
@@ -50,7 +57,7 @@ class OrderLineItemDiscount implements \JsonSerializable
     private $appliedMoney;
 
     /**
-     * @var array|null
+     * @var array<string,string>|null
      */
     private $metadata;
 
@@ -71,8 +78,7 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Returns Uid.
-     *
-     * Unique ID that identifies the discount only within this order.
+     * A unique ID that identifies the discount only within this order.
      */
     public function getUid(): ?string
     {
@@ -81,8 +87,7 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Uid.
-     *
-     * Unique ID that identifies the discount only within this order.
+     * A unique ID that identifies the discount only within this order.
      *
      * @maps uid
      */
@@ -93,8 +98,7 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Returns Catalog Object Id.
-     *
-     * The catalog object id referencing [CatalogDiscount]($m/CatalogDiscount).
+     * The catalog object ID referencing [CatalogDiscount]($m/CatalogDiscount).
      */
     public function getCatalogObjectId(): ?string
     {
@@ -103,8 +107,7 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Catalog Object Id.
-     *
-     * The catalog object id referencing [CatalogDiscount]($m/CatalogDiscount).
+     * The catalog object ID referencing [CatalogDiscount]($m/CatalogDiscount).
      *
      * @maps catalog_object_id
      */
@@ -114,8 +117,27 @@ class OrderLineItemDiscount implements \JsonSerializable
     }
 
     /**
-     * Returns Name.
+     * Returns Catalog Version.
+     * The version of the catalog object that this discount references.
+     */
+    public function getCatalogVersion(): ?int
+    {
+        return $this->catalogVersion;
+    }
+
+    /**
+     * Sets Catalog Version.
+     * The version of the catalog object that this discount references.
      *
+     * @maps catalog_version
+     */
+    public function setCatalogVersion(?int $catalogVersion): void
+    {
+        $this->catalogVersion = $catalogVersion;
+    }
+
+    /**
+     * Returns Name.
      * The discount's name.
      */
     public function getName(): ?string
@@ -125,7 +147,6 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * The discount's name.
      *
      * @maps name
@@ -137,7 +158,6 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Returns Type.
-     *
      * Indicates how the discount is applied to the associated line item or order.
      */
     public function getType(): ?string
@@ -147,7 +167,6 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Type.
-     *
      * Indicates how the discount is applied to the associated line item or order.
      *
      * @maps type
@@ -159,7 +178,6 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Returns Percentage.
-     *
      * The percentage of the discount, as a string representation of a decimal number.
      * A value of `7.25` corresponds to a percentage of 7.25%.
      *
@@ -172,7 +190,6 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Percentage.
-     *
      * The percentage of the discount, as a string representation of a decimal number.
      * A value of `7.25` corresponds to a percentage of 7.25%.
      *
@@ -187,7 +204,6 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Returns Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -203,7 +219,6 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -221,7 +236,6 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Returns Applied Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -237,7 +251,6 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Applied Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -255,26 +268,26 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Returns Metadata.
-     *
      * Application-defined data attached to this discount. Metadata fields are intended
      * to store descriptive references or associations with an entity in another system or store brief
      * information about the object. Square does not process this field; it only stores and returns it
-     * in relevant API calls. Do not use metadata to store any sensitive information (personally
-     * identifiable information, card details, etc.).
+     * in relevant API calls. Do not use metadata to store any sensitive information (such as personally
+     * identifiable information or card details).
      *
      * Keys written by applications must be 60 characters or less and must be in the character set
-     * `[a-zA-Z0-9_-]`. Entries may also include metadata generated by Square. These keys are prefixed
+     * `[a-zA-Z0-9_-]`. Entries can also include metadata generated by Square. These keys are prefixed
      * with a namespace, separated from the key with a ':' character.
      *
-     * Values have a max length of 255 characters.
+     * Values have a maximum length of 255 characters.
      *
-     * An application may have up to 10 entries per metadata field.
+     * An application can have up to 10 entries per metadata field.
      *
      * Entries written by applications are private and can only be read or modified by the same
      * application.
      *
-     * See [Metadata](https://developer.squareup.com/docs/build-basics/metadata) for more
-     * information.
+     * For more information, see [Metadata](https://developer.squareup.com/docs/build-basics/metadata).
+     *
+     * @return array<string,string>|null
      */
     public function getMetadata(): ?array
     {
@@ -283,28 +296,28 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Metadata.
-     *
      * Application-defined data attached to this discount. Metadata fields are intended
      * to store descriptive references or associations with an entity in another system or store brief
      * information about the object. Square does not process this field; it only stores and returns it
-     * in relevant API calls. Do not use metadata to store any sensitive information (personally
-     * identifiable information, card details, etc.).
+     * in relevant API calls. Do not use metadata to store any sensitive information (such as personally
+     * identifiable information or card details).
      *
      * Keys written by applications must be 60 characters or less and must be in the character set
-     * `[a-zA-Z0-9_-]`. Entries may also include metadata generated by Square. These keys are prefixed
+     * `[a-zA-Z0-9_-]`. Entries can also include metadata generated by Square. These keys are prefixed
      * with a namespace, separated from the key with a ':' character.
      *
-     * Values have a max length of 255 characters.
+     * Values have a maximum length of 255 characters.
      *
-     * An application may have up to 10 entries per metadata field.
+     * An application can have up to 10 entries per metadata field.
      *
      * Entries written by applications are private and can only be read or modified by the same
      * application.
      *
-     * See [Metadata](https://developer.squareup.com/docs/build-basics/metadata) for more
-     * information.
+     * For more information, see [Metadata](https://developer.squareup.com/docs/build-basics/metadata).
      *
      * @maps metadata
+     *
+     * @param array<string,string>|null $metadata
      */
     public function setMetadata(?array $metadata): void
     {
@@ -313,8 +326,7 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Returns Scope.
-     *
-     * Indicates whether this is a line item or order level discount.
+     * Indicates whether this is a line-item or order-level discount.
      */
     public function getScope(): ?string
     {
@@ -323,8 +335,7 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Scope.
-     *
-     * Indicates whether this is a line item or order level discount.
+     * Indicates whether this is a line-item or order-level discount.
      *
      * @maps scope
      */
@@ -335,8 +346,7 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Returns Reward Ids.
-     *
-     * The reward identifiers corresponding to this discount. The application and
+     * The reward IDs corresponding to this discount. The application and
      * specification of discounts that have `reward_ids` are completely controlled by the backing
      * criteria corresponding to the reward tiers of the rewards that are added to the order
      * through the Loyalty API. To manually unapply discounts that are the result of added rewards,
@@ -351,8 +361,7 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Reward Ids.
-     *
-     * The reward identifiers corresponding to this discount. The application and
+     * The reward IDs corresponding to this discount. The application and
      * specification of discounts that have `reward_ids` are completely controlled by the backing
      * criteria corresponding to the reward tiers of the rewards that are added to the order
      * through the Loyalty API. To manually unapply discounts that are the result of added rewards,
@@ -369,8 +378,7 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Returns Pricing Rule Id.
-     *
-     * The object identifier of a [pricing rule]($m/CatalogPricingRule) to be applied
+     * The object ID of a [pricing rule]($m/CatalogPricingRule) to be applied
      * automatically to this discount. The specification and application of the discounts, to
      * which a `pricing_rule_id` is assigned, are completely controlled by the corresponding
      * pricing rule.
@@ -382,8 +390,7 @@ class OrderLineItemDiscount implements \JsonSerializable
 
     /**
      * Sets Pricing Rule Id.
-     *
-     * The object identifier of a [pricing rule]($m/CatalogPricingRule) to be applied
+     * The object ID of a [pricing rule]($m/CatalogPricingRule) to be applied
      * automatically to this discount. The specification and application of the discounts, to
      * which a `pricing_rule_id` is assigned, are completely controlled by the corresponding
      * pricing rule.
@@ -398,25 +405,55 @@ class OrderLineItemDiscount implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['uid']             = $this->uid;
-        $json['catalog_object_id'] = $this->catalogObjectId;
-        $json['name']            = $this->name;
-        $json['type']            = $this->type;
-        $json['percentage']      = $this->percentage;
-        $json['amount_money']    = $this->amountMoney;
-        $json['applied_money']   = $this->appliedMoney;
-        $json['metadata']        = $this->metadata;
-        $json['scope']           = $this->scope;
-        $json['reward_ids']      = $this->rewardIds;
-        $json['pricing_rule_id'] = $this->pricingRuleId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->uid)) {
+            $json['uid']               = $this->uid;
+        }
+        if (isset($this->catalogObjectId)) {
+            $json['catalog_object_id'] = $this->catalogObjectId;
+        }
+        if (isset($this->catalogVersion)) {
+            $json['catalog_version']   = $this->catalogVersion;
+        }
+        if (isset($this->name)) {
+            $json['name']              = $this->name;
+        }
+        if (isset($this->type)) {
+            $json['type']              = $this->type;
+        }
+        if (isset($this->percentage)) {
+            $json['percentage']        = $this->percentage;
+        }
+        if (isset($this->amountMoney)) {
+            $json['amount_money']      = $this->amountMoney;
+        }
+        if (isset($this->appliedMoney)) {
+            $json['applied_money']     = $this->appliedMoney;
+        }
+        if (isset($this->metadata)) {
+            $json['metadata']          = $this->metadata;
+        }
+        if (isset($this->scope)) {
+            $json['scope']             = $this->scope;
+        }
+        if (isset($this->rewardIds)) {
+            $json['reward_ids']        = $this->rewardIds;
+        }
+        if (isset($this->pricingRuleId)) {
+            $json['pricing_rule_id']   = $this->pricingRuleId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

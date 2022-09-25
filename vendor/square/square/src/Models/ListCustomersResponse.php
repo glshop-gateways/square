@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields that are included in the response body of
  * a request to the `ListCustomers` endpoint.
@@ -29,7 +31,6 @@ class ListCustomersResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -41,7 +42,6 @@ class ListCustomersResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -55,7 +55,6 @@ class ListCustomersResponse implements \JsonSerializable
 
     /**
      * Returns Customers.
-     *
      * An array of `Customer` objects that match the provided query.
      *
      * @return Customer[]|null
@@ -67,7 +66,6 @@ class ListCustomersResponse implements \JsonSerializable
 
     /**
      * Sets Customers.
-     *
      * An array of `Customer` objects that match the provided query.
      *
      * @maps customers
@@ -81,13 +79,12 @@ class ListCustomersResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * A pagination cursor to retrieve the next set of results for the
      * original query. A cursor is only present if the request succeeded and additional results
      * are available.
      *
-     * For more information, see [Pagination](https://developer.squareup.com/docs/working-with-
-     * apis/pagination).
+     * For more information, see [Pagination](https://developer.squareup.com/docs/build-basics/common-api-
+     * patterns/pagination).
      */
     public function getCursor(): ?string
     {
@@ -96,13 +93,12 @@ class ListCustomersResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * A pagination cursor to retrieve the next set of results for the
      * original query. A cursor is only present if the request succeeded and additional results
      * are available.
      *
-     * For more information, see [Pagination](https://developer.squareup.com/docs/working-with-
-     * apis/pagination).
+     * For more information, see [Pagination](https://developer.squareup.com/docs/build-basics/common-api-
+     * patterns/pagination).
      *
      * @maps cursor
      */
@@ -114,17 +110,28 @@ class ListCustomersResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']    = $this->errors;
-        $json['customers'] = $this->customers;
-        $json['cursor']    = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']    = $this->errors;
+        }
+        if (isset($this->customers)) {
+            $json['customers'] = $this->customers;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']    = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

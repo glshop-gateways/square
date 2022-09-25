@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class SearchCatalogObjectsResponse implements \JsonSerializable
 {
     /**
@@ -33,7 +35,6 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -45,7 +46,6 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -59,7 +59,6 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If unset, this is the final response.
      * See [Pagination](https://developer.squareup.com/docs/basics/api101/pagination) for more information.
      */
@@ -70,7 +69,6 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If unset, this is the final response.
      * See [Pagination](https://developer.squareup.com/docs/basics/api101/pagination) for more information.
      *
@@ -83,7 +81,6 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Returns Objects.
-     *
      * The CatalogObjects returned.
      *
      * @return CatalogObject[]|null
@@ -95,7 +92,6 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Sets Objects.
-     *
      * The CatalogObjects returned.
      *
      * @maps objects
@@ -109,7 +105,6 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Returns Related Objects.
-     *
      * A list of CatalogObjects referenced by the objects in the `objects` field.
      *
      * @return CatalogObject[]|null
@@ -121,7 +116,6 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Sets Related Objects.
-     *
      * A list of CatalogObjects referenced by the objects in the `objects` field.
      *
      * @maps related_objects
@@ -135,7 +129,6 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Returns Latest Time.
-     *
      * When the associated product catalog was last updated. Will
      * match the value for `end_time` or `cursor` if either field is included in the `SearchCatalog`
      * request.
@@ -147,7 +140,6 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Sets Latest Time.
-     *
      * When the associated product catalog was last updated. Will
      * match the value for `end_time` or `cursor` if either field is included in the `SearchCatalog`
      * request.
@@ -162,19 +154,34 @@ class SearchCatalogObjectsResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']         = $this->errors;
-        $json['cursor']         = $this->cursor;
-        $json['objects']        = $this->objects;
-        $json['related_objects'] = $this->relatedObjects;
-        $json['latest_time']    = $this->latestTime;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']          = $this->errors;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']          = $this->cursor;
+        }
+        if (isset($this->objects)) {
+            $json['objects']         = $this->objects;
+        }
+        if (isset($this->relatedObjects)) {
+            $json['related_objects'] = $this->relatedObjects;
+        }
+        if (isset($this->latestTime)) {
+            $json['latest_time']     = $this->latestTime;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

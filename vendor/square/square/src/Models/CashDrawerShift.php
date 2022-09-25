@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * This model gives the details of a cash drawer shift.
  * The cash_payment_money, cash_refund_money, cash_paid_in_money,
@@ -104,7 +106,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The shift unique ID.
      */
     public function getId(): ?string
@@ -114,7 +115,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The shift unique ID.
      *
      * @maps id
@@ -126,7 +126,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns State.
-     *
      * The current state of a cash drawer shift.
      */
     public function getState(): ?string
@@ -136,7 +135,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets State.
-     *
      * The current state of a cash drawer shift.
      *
      * @maps state
@@ -148,7 +146,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Opened At.
-     *
      * The time when the shift began, in ISO 8601 format.
      */
     public function getOpenedAt(): ?string
@@ -158,7 +155,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Opened At.
-     *
      * The time when the shift began, in ISO 8601 format.
      *
      * @maps opened_at
@@ -170,7 +166,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Ended At.
-     *
      * The time when the shift ended, in ISO 8601 format.
      */
     public function getEndedAt(): ?string
@@ -180,7 +175,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Ended At.
-     *
      * The time when the shift ended, in ISO 8601 format.
      *
      * @maps ended_at
@@ -192,7 +186,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Closed At.
-     *
      * The time when the shift was closed, in ISO 8601 format.
      */
     public function getClosedAt(): ?string
@@ -202,7 +195,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Closed At.
-     *
      * The time when the shift was closed, in ISO 8601 format.
      *
      * @maps closed_at
@@ -214,7 +206,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Employee Ids.
-     *
      * The IDs of all employees that were logged into Square Point of Sale at any
      * point while the cash drawer shift was open.
      *
@@ -227,7 +218,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Employee Ids.
-     *
      * The IDs of all employees that were logged into Square Point of Sale at any
      * point while the cash drawer shift was open.
      *
@@ -242,7 +232,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Opening Employee Id.
-     *
      * The ID of the employee that started the cash drawer shift.
      */
     public function getOpeningEmployeeId(): ?string
@@ -252,7 +241,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Opening Employee Id.
-     *
      * The ID of the employee that started the cash drawer shift.
      *
      * @maps opening_employee_id
@@ -264,7 +252,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Ending Employee Id.
-     *
      * The ID of the employee that ended the cash drawer shift.
      */
     public function getEndingEmployeeId(): ?string
@@ -274,7 +261,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Ending Employee Id.
-     *
      * The ID of the employee that ended the cash drawer shift.
      *
      * @maps ending_employee_id
@@ -286,7 +272,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Closing Employee Id.
-     *
      * The ID of the employee that closed the cash drawer shift by auditing
      * the cash drawer contents.
      */
@@ -297,7 +282,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Closing Employee Id.
-     *
      * The ID of the employee that closed the cash drawer shift by auditing
      * the cash drawer contents.
      *
@@ -310,7 +294,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Description.
-     *
      * The free-form text description of a cash drawer by an employee.
      */
     public function getDescription(): ?string
@@ -320,7 +303,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Description.
-     *
      * The free-form text description of a cash drawer by an employee.
      *
      * @maps description
@@ -332,7 +314,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Opened Cash Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -348,7 +329,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Opened Cash Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -366,7 +346,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Cash Payment Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -382,7 +361,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Cash Payment Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -400,7 +378,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Cash Refunds Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -416,7 +393,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Cash Refunds Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -434,7 +410,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Cash Paid in Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -450,7 +425,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Cash Paid in Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -468,7 +442,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Cash Paid Out Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -484,7 +457,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Cash Paid Out Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -502,7 +474,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Expected Cash Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -518,7 +489,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Expected Cash Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -536,7 +506,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Returns Closed Cash Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -552,7 +521,6 @@ class CashDrawerShift implements \JsonSerializable
 
     /**
      * Sets Closed Cash Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -589,32 +557,73 @@ class CashDrawerShift implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']                = $this->id;
-        $json['state']             = $this->state;
-        $json['opened_at']         = $this->openedAt;
-        $json['ended_at']          = $this->endedAt;
-        $json['closed_at']         = $this->closedAt;
-        $json['employee_ids']      = $this->employeeIds;
-        $json['opening_employee_id'] = $this->openingEmployeeId;
-        $json['ending_employee_id'] = $this->endingEmployeeId;
-        $json['closing_employee_id'] = $this->closingEmployeeId;
-        $json['description']       = $this->description;
-        $json['opened_cash_money'] = $this->openedCashMoney;
-        $json['cash_payment_money'] = $this->cashPaymentMoney;
-        $json['cash_refunds_money'] = $this->cashRefundsMoney;
-        $json['cash_paid_in_money'] = $this->cashPaidInMoney;
-        $json['cash_paid_out_money'] = $this->cashPaidOutMoney;
-        $json['expected_cash_money'] = $this->expectedCashMoney;
-        $json['closed_cash_money'] = $this->closedCashMoney;
-        $json['device']            = $this->device;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']                  = $this->id;
+        }
+        if (isset($this->state)) {
+            $json['state']               = $this->state;
+        }
+        if (isset($this->openedAt)) {
+            $json['opened_at']           = $this->openedAt;
+        }
+        if (isset($this->endedAt)) {
+            $json['ended_at']            = $this->endedAt;
+        }
+        if (isset($this->closedAt)) {
+            $json['closed_at']           = $this->closedAt;
+        }
+        if (isset($this->employeeIds)) {
+            $json['employee_ids']        = $this->employeeIds;
+        }
+        if (isset($this->openingEmployeeId)) {
+            $json['opening_employee_id'] = $this->openingEmployeeId;
+        }
+        if (isset($this->endingEmployeeId)) {
+            $json['ending_employee_id']  = $this->endingEmployeeId;
+        }
+        if (isset($this->closingEmployeeId)) {
+            $json['closing_employee_id'] = $this->closingEmployeeId;
+        }
+        if (isset($this->description)) {
+            $json['description']         = $this->description;
+        }
+        if (isset($this->openedCashMoney)) {
+            $json['opened_cash_money']   = $this->openedCashMoney;
+        }
+        if (isset($this->cashPaymentMoney)) {
+            $json['cash_payment_money']  = $this->cashPaymentMoney;
+        }
+        if (isset($this->cashRefundsMoney)) {
+            $json['cash_refunds_money']  = $this->cashRefundsMoney;
+        }
+        if (isset($this->cashPaidInMoney)) {
+            $json['cash_paid_in_money']  = $this->cashPaidInMoney;
+        }
+        if (isset($this->cashPaidOutMoney)) {
+            $json['cash_paid_out_money'] = $this->cashPaidOutMoney;
+        }
+        if (isset($this->expectedCashMoney)) {
+            $json['expected_cash_money'] = $this->expectedCashMoney;
+        }
+        if (isset($this->closedCashMoney)) {
+            $json['closed_cash_money']   = $this->closedCashMoney;
+        }
+        if (isset($this->device)) {
+            $json['device']              = $this->device;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

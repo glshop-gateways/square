@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class CreateTerminalCheckoutRequest implements \JsonSerializable
 {
     /**
@@ -28,7 +30,6 @@ class CreateTerminalCheckoutRequest implements \JsonSerializable
 
     /**
      * Returns Idempotency Key.
-     *
      * A unique string that identifies this `CreateCheckout` request. Keys can be any valid string but
      * must be unique for every `CreateCheckout` request.
      *
@@ -42,7 +43,6 @@ class CreateTerminalCheckoutRequest implements \JsonSerializable
 
     /**
      * Sets Idempotency Key.
-     *
      * A unique string that identifies this `CreateCheckout` request. Keys can be any valid string but
      * must be unique for every `CreateCheckout` request.
      *
@@ -59,6 +59,7 @@ class CreateTerminalCheckoutRequest implements \JsonSerializable
 
     /**
      * Returns Checkout.
+     * Represents a checkout processed by the Square Terminal.
      */
     public function getCheckout(): TerminalCheckout
     {
@@ -67,6 +68,7 @@ class CreateTerminalCheckoutRequest implements \JsonSerializable
 
     /**
      * Sets Checkout.
+     * Represents a checkout processed by the Square Terminal.
      *
      * @required
      * @maps checkout
@@ -79,16 +81,21 @@ class CreateTerminalCheckoutRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['idempotency_key'] = $this->idempotencyKey;
-        $json['checkout']       = $this->checkout;
-
-        return array_filter($json, function ($val) {
+        $json['checkout']        = $this->checkout;
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

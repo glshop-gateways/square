@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Describes query criteria for searching invoices.
  */
@@ -29,7 +31,6 @@ class InvoiceQuery implements \JsonSerializable
 
     /**
      * Returns Filter.
-     *
      * Describes query filters to apply.
      */
     public function getFilter(): InvoiceFilter
@@ -39,7 +40,6 @@ class InvoiceQuery implements \JsonSerializable
 
     /**
      * Sets Filter.
-     *
      * Describes query filters to apply.
      *
      * @required
@@ -52,7 +52,6 @@ class InvoiceQuery implements \JsonSerializable
 
     /**
      * Returns Sort.
-     *
      * Identifies the sort field and sort order.
      */
     public function getSort(): ?InvoiceSort
@@ -62,7 +61,6 @@ class InvoiceQuery implements \JsonSerializable
 
     /**
      * Sets Sort.
-     *
      * Identifies the sort field and sort order.
      *
      * @maps sort
@@ -75,16 +73,23 @@ class InvoiceQuery implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['filter'] = $this->filter;
-        $json['sort']   = $this->sort;
-
-        return array_filter($json, function ($val) {
+        $json['filter']   = $this->filter;
+        if (isset($this->sort)) {
+            $json['sort'] = $this->sort;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

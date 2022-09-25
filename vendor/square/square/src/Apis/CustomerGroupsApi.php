@@ -5,74 +5,79 @@ declare(strict_types=1);
 namespace Square\Apis;
 
 use Square\Exceptions\ApiException;
-use Square\ApiHelper;
 use Square\ConfigurationInterface;
+use Square\ApiHelper;
+use Square\Models;
 use Square\Http\ApiResponse;
 use Square\Http\HttpRequest;
 use Square\Http\HttpResponse;
 use Square\Http\HttpMethod;
 use Square\Http\HttpContext;
 use Square\Http\HttpCallBack;
-use Unirest\Request;
 
 class CustomerGroupsApi extends BaseApi
 {
-    public function __construct(ConfigurationInterface $config, ?HttpCallBack $httpCallBack = null)
+    public function __construct(ConfigurationInterface $config, array $authManagers, ?HttpCallBack $httpCallBack)
     {
-        parent::__construct($config, $httpCallBack);
+        parent::__construct($config, $authManagers, $httpCallBack);
     }
 
     /**
      * Retrieves the list of customer groups of a business.
      *
      * @param string|null $cursor A pagination cursor returned by a previous call to this endpoint.
-     *                            Provide this cursor to retrieve the next set of results for your
-     *                            original query.
+     *        Provide this cursor to retrieve the next set of results for your original query.
      *
-     *                            For more information, see [Pagination](https://developer.
-     *                            squareup.com/docs/working-with-apis/pagination).
+     *        For more information, see [Pagination](https://developer.squareup.com/docs/build-
+     *        basics/common-api-patterns/pagination).
+     * @param int|null $limit The maximum number of results to return in a single page. This limit
+     *        is advisory. The response might contain more or fewer results.
+     *        If the limit is less than 1 or greater than 50, Square returns a `400 VALUE_TOO_LOW`
+     *        or `400 VALUE_TOO_HIGH` error. The default value is 50.
+     *
+     *        For more information, see [Pagination](https://developer.squareup.com/docs/build-
+     *        basics/common-api-patterns/pagination).
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function listCustomerGroups(?string $cursor = null): ApiResponse
+    public function listCustomerGroups(?string $cursor = null, ?int $limit = null): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/groups';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/groups';
 
-        //process optional query parameters
-        ApiHelper::appendUrlWithQueryParameters($_queryBuilder, [
+        //process query parameters
+        ApiHelper::appendUrlWithQueryParameters($_queryUrl, [
             'cursor' => $cursor,
+            'limit'  => $limit,
         ]);
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -86,8 +91,12 @@ class CustomerGroupsApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\ListCustomerGroupsResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'ListCustomerGroupsResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -96,52 +105,49 @@ class CustomerGroupsApi extends BaseApi
      *
      * The request must include the `name` value of the group.
      *
-     * @param \Square\Models\CreateCustomerGroupRequest $body An object containing the fields to
-     *                                                        POST for the request.
+     * @param Models\CreateCustomerGroupRequest $body An object containing the fields to POST for
+     *        the request.
      *
-     *                                                        See the corresponding object
-     *                                                        definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function createCustomerGroup(\Square\Models\CreateCustomerGroupRequest $body): ApiResponse
+    public function createCustomerGroup(Models\CreateCustomerGroupRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/groups';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/groups';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -155,8 +161,12 @@ class CustomerGroupsApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\CreateCustomerGroupResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'CreateCustomerGroupResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -172,40 +182,38 @@ class CustomerGroupsApi extends BaseApi
     public function deleteCustomerGroup(string $groupId): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/groups/{group_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/groups/{group_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'group_id' => $groupId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::DELETE, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::delete($_queryUrl, $_headers);
+            $response = self::$request->delete($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -219,8 +227,12 @@ class CustomerGroupsApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\DeleteCustomerGroupResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'DeleteCustomerGroupResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -236,40 +248,38 @@ class CustomerGroupsApi extends BaseApi
     public function retrieveCustomerGroup(string $groupId): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/groups/{group_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/groups/{group_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'group_id' => $groupId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -283,8 +293,12 @@ class CustomerGroupsApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\RetrieveCustomerGroupResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'RetrieveCustomerGroupResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -292,57 +306,54 @@ class CustomerGroupsApi extends BaseApi
      * Updates a customer group as identified by the `group_id` value.
      *
      * @param string $groupId The ID of the customer group to update.
-     * @param \Square\Models\UpdateCustomerGroupRequest $body An object containing the fields to
-     *                                                        POST for the request.
+     * @param Models\UpdateCustomerGroupRequest $body An object containing the fields to POST for
+     *        the request.
      *
-     *                                                        See the corresponding object
-     *                                                        definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function updateCustomerGroup(string $groupId, \Square\Models\UpdateCustomerGroupRequest $body): ApiResponse
+    public function updateCustomerGroup(string $groupId, Models\UpdateCustomerGroupRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/groups/{group_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/groups/{group_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
-            'group_id' => $groupId,
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
+            'group_id'     => $groupId,
         ]);
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::PUT, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::put($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->put($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -356,8 +367,12 @@ class CustomerGroupsApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\UpdateCustomerGroupResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'UpdateCustomerGroupResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class SearchTerminalCheckoutsResponse implements \JsonSerializable
 {
     /**
@@ -23,7 +25,6 @@ class SearchTerminalCheckoutsResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Information about errors encountered during the request.
      *
      * @return Error[]|null
@@ -35,7 +36,6 @@ class SearchTerminalCheckoutsResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Information about errors encountered during the request.
      *
      * @maps errors
@@ -49,7 +49,6 @@ class SearchTerminalCheckoutsResponse implements \JsonSerializable
 
     /**
      * Returns Checkouts.
-     *
      * The requested search result of `TerminalCheckout` objects.
      *
      * @return TerminalCheckout[]|null
@@ -61,7 +60,6 @@ class SearchTerminalCheckoutsResponse implements \JsonSerializable
 
     /**
      * Sets Checkouts.
-     *
      * The requested search result of `TerminalCheckout` objects.
      *
      * @maps checkouts
@@ -75,7 +73,6 @@ class SearchTerminalCheckoutsResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If empty,
      * this is the final response.
      *
@@ -88,7 +85,6 @@ class SearchTerminalCheckoutsResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If empty,
      * this is the final response.
      *
@@ -104,17 +100,28 @@ class SearchTerminalCheckoutsResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']    = $this->errors;
-        $json['checkouts'] = $this->checkouts;
-        $json['cursor']    = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']    = $this->errors;
+        }
+        if (isset($this->checkouts)) {
+            $json['checkouts'] = $this->checkouts;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']    = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

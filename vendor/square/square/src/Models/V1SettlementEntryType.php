@@ -22,9 +22,9 @@ class V1SettlementEntryType
     public const CHARGE = 'CHARGE';
 
     /**
-     * Square offers Free Payments Processing for a variety of business scenarios including seller
-     * referral or when we want to apologize for a bug, customer service, repricing complication, etc. This
-     * entry represents a credit to the merchant for the purposes of Free Processing.
+     * Square offers Free Payments Processing for a variety of business scenarios including seller referral
+     * or when we want to apologize for a bug, customer service, repricing complication, etc. This entry
+     * represents a credit to the merchant for the purposes of Free Processing.
      */
     public const FREE_PROCESSING = 'FREE_PROCESSING';
 
@@ -65,8 +65,8 @@ class V1SettlementEntryType
     public const SQUARE_CAPITAL_ADVANCE = 'SQUARE_CAPITAL_ADVANCE';
 
     /**
-     * Capital merchant cash advance (MCA) assessment. These are, generally, proportional to the
-     * merchant's sales but may be issued for other reasons related to the MCA.
+     * Capital merchant cash advance (MCA) assessment. These are, generally, proportional to the merchant's
+     * sales but may be issued for other reasons related to the MCA.
      */
     public const SQUARE_CAPITAL_PAYMENT = 'SQUARE_CAPITAL_PAYMENT';
 

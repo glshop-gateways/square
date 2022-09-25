@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields that are included in the request body of a request to the
  * `SearchCustomers` endpoint.
@@ -27,12 +29,11 @@ class SearchCustomersRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * Include the pagination cursor in subsequent calls to this endpoint to retrieve
      * the next set of results associated with the original query.
      *
-     * For more information, see [Pagination](https://developer.squareup.com/docs/working-with-
-     * apis/pagination).
+     * For more information, see [Pagination](https://developer.squareup.com/docs/build-basics/common-api-
+     * patterns/pagination).
      */
     public function getCursor(): ?string
     {
@@ -41,12 +42,11 @@ class SearchCustomersRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * Include the pagination cursor in subsequent calls to this endpoint to retrieve
      * the next set of results associated with the original query.
      *
-     * For more information, see [Pagination](https://developer.squareup.com/docs/working-with-
-     * apis/pagination).
+     * For more information, see [Pagination](https://developer.squareup.com/docs/build-basics/common-api-
+     * patterns/pagination).
      *
      * @maps cursor
      */
@@ -57,11 +57,13 @@ class SearchCustomersRequest implements \JsonSerializable
 
     /**
      * Returns Limit.
+     * The maximum number of results to return in a single page. This limit is advisory. The response might
+     * contain more or fewer results.
+     * If the specified limit is invalid, Square returns a `400 VALUE_TOO_LOW` or `400 VALUE_TOO_HIGH`
+     * error. The default value is 100.
      *
-     * A limit on the number of results to be returned in a single page.
-     * The limit is advisory. The implementation might return more or fewer results.
-     * If the supplied limit is negative, zero, or higher than the maximum limit
-     * of 100, it is ignored.
+     * For more information, see [Pagination](https://developer.squareup.com/docs/build-basics/common-api-
+     * patterns/pagination).
      */
     public function getLimit(): ?int
     {
@@ -70,11 +72,13 @@ class SearchCustomersRequest implements \JsonSerializable
 
     /**
      * Sets Limit.
+     * The maximum number of results to return in a single page. This limit is advisory. The response might
+     * contain more or fewer results.
+     * If the specified limit is invalid, Square returns a `400 VALUE_TOO_LOW` or `400 VALUE_TOO_HIGH`
+     * error. The default value is 100.
      *
-     * A limit on the number of results to be returned in a single page.
-     * The limit is advisory. The implementation might return more or fewer results.
-     * If the supplied limit is negative, zero, or higher than the maximum limit
-     * of 100, it is ignored.
+     * For more information, see [Pagination](https://developer.squareup.com/docs/build-basics/common-api-
+     * patterns/pagination).
      *
      * @maps limit
      */
@@ -85,7 +89,6 @@ class SearchCustomersRequest implements \JsonSerializable
 
     /**
      * Returns Query.
-     *
      * Represents a query (including filtering criteria, sorting criteria, or both) used to search
      * for customer profiles.
      */
@@ -96,7 +99,6 @@ class SearchCustomersRequest implements \JsonSerializable
 
     /**
      * Sets Query.
-     *
      * Represents a query (including filtering criteria, sorting criteria, or both) used to search
      * for customer profiles.
      *
@@ -110,17 +112,28 @@ class SearchCustomersRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['cursor'] = $this->cursor;
-        $json['limit']  = $this->limit;
-        $json['query']  = $this->query;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->cursor)) {
+            $json['cursor'] = $this->cursor;
+        }
+        if (isset($this->limit)) {
+            $json['limit']  = $this->limit;
+        }
+        if (isset($this->query)) {
+            $json['query']  = $this->query;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

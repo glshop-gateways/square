@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Only one of `order_entries` or `orders` fields will be set, depending on whether
- * `return_entries` was set on the [SearchOrdersRequest]($e/Orders/SearchOrders).
+ * Either the `order_entries` or `orders` field is set, depending on whether
+ * `return_entries` is set on the [SearchOrdersRequest]($e/Orders/SearchOrders).
  */
 class SearchOrdersResponse implements \JsonSerializable
 {
@@ -32,9 +34,8 @@ class SearchOrdersResponse implements \JsonSerializable
 
     /**
      * Returns Order Entries.
-     *
-     * List of [OrderEntries]($m/OrderEntry) that fit the query
-     * conditions. Populated only if `return_entries` was set to `true` in the request.
+     * A list of [OrderEntries]($m/OrderEntry) that fit the query
+     * conditions. The list is populated only if `return_entries` is set to `true` in the request.
      *
      * @return OrderEntry[]|null
      */
@@ -45,9 +46,8 @@ class SearchOrdersResponse implements \JsonSerializable
 
     /**
      * Sets Order Entries.
-     *
-     * List of [OrderEntries]($m/OrderEntry) that fit the query
-     * conditions. Populated only if `return_entries` was set to `true` in the request.
+     * A list of [OrderEntries]($m/OrderEntry) that fit the query
+     * conditions. The list is populated only if `return_entries` is set to `true` in the request.
      *
      * @maps order_entries
      *
@@ -60,10 +60,9 @@ class SearchOrdersResponse implements \JsonSerializable
 
     /**
      * Returns Orders.
-     *
-     * List of
-     * [Order]($m/Order) objects that match query conditions. Populated only if
-     * `return_entries` in the request is set to `false`.
+     * A list of
+     * [Order]($m/Order) objects that match the query conditions. The list is populated only if
+     * `return_entries` is set to `false` in the request.
      *
      * @return Order[]|null
      */
@@ -74,10 +73,9 @@ class SearchOrdersResponse implements \JsonSerializable
 
     /**
      * Sets Orders.
-     *
-     * List of
-     * [Order]($m/Order) objects that match query conditions. Populated only if
-     * `return_entries` in the request is set to `false`.
+     * A list of
+     * [Order]($m/Order) objects that match the query conditions. The list is populated only if
+     * `return_entries` is set to `false` in the request.
      *
      * @maps orders
      *
@@ -90,11 +88,9 @@ class SearchOrdersResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If unset,
      * this is the final response.
-     * See [Pagination](https://developer.squareup.com/docs/basics/api101/pagination) for more
-     * information.
+     * For more information, see [Pagination](https://developer.squareup.com/docs/basics/api101/pagination).
      */
     public function getCursor(): ?string
     {
@@ -103,11 +99,9 @@ class SearchOrdersResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If unset,
      * this is the final response.
-     * See [Pagination](https://developer.squareup.com/docs/basics/api101/pagination) for more
-     * information.
+     * For more information, see [Pagination](https://developer.squareup.com/docs/basics/api101/pagination).
      *
      * @maps cursor
      */
@@ -118,7 +112,6 @@ class SearchOrdersResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * [Errors]($m/Error) encountered during the search.
      *
      * @return Error[]|null
@@ -130,7 +123,6 @@ class SearchOrdersResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * [Errors]($m/Error) encountered during the search.
      *
      * @maps errors
@@ -145,18 +137,31 @@ class SearchOrdersResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['order_entries'] = $this->orderEntries;
-        $json['orders']       = $this->orders;
-        $json['cursor']       = $this->cursor;
-        $json['errors']       = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->orderEntries)) {
+            $json['order_entries'] = $this->orderEntries;
+        }
+        if (isset($this->orders)) {
+            $json['orders']        = $this->orders;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']        = $this->cursor;
+        }
+        if (isset($this->errors)) {
+            $json['errors']        = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

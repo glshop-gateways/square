@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * A request to update a `BreakType`
+ * A request to update a `BreakType`.
  */
 class UpdateBreakTypeRequest implements \JsonSerializable
 {
@@ -24,7 +26,6 @@ class UpdateBreakTypeRequest implements \JsonSerializable
 
     /**
      * Returns Break Type.
-     *
      * A defined break template that sets an expectation for possible `Break`
      * instances on a `Shift`.
      */
@@ -35,7 +36,6 @@ class UpdateBreakTypeRequest implements \JsonSerializable
 
     /**
      * Sets Break Type.
-     *
      * A defined break template that sets an expectation for possible `Break`
      * instances on a `Shift`.
      *
@@ -50,15 +50,20 @@ class UpdateBreakTypeRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['break_type'] = $this->breakType;
-
-        return array_filter($json, function ($val) {
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

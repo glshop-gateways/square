@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the query parameters that can be included in
  * a request to the [ListTransactions]($e/Transactions/ListTransactions) endpoint.
@@ -34,7 +36,6 @@ class ListTransactionsRequest implements \JsonSerializable
 
     /**
      * Returns Begin Time.
-     *
      * The beginning of the requested reporting period, in RFC 3339 format.
      *
      * See [Date ranges](https://developer.squareup.com/docs/build-basics/working-with-dates) for details
@@ -49,7 +50,6 @@ class ListTransactionsRequest implements \JsonSerializable
 
     /**
      * Sets Begin Time.
-     *
      * The beginning of the requested reporting period, in RFC 3339 format.
      *
      * See [Date ranges](https://developer.squareup.com/docs/build-basics/working-with-dates) for details
@@ -66,7 +66,6 @@ class ListTransactionsRequest implements \JsonSerializable
 
     /**
      * Returns End Time.
-     *
      * The end of the requested reporting period, in RFC 3339 format.
      *
      * See [Date ranges](https://developer.squareup.com/docs/build-basics/working-with-dates) for details
@@ -81,7 +80,6 @@ class ListTransactionsRequest implements \JsonSerializable
 
     /**
      * Sets End Time.
-     *
      * The end of the requested reporting period, in RFC 3339 format.
      *
      * See [Date ranges](https://developer.squareup.com/docs/build-basics/working-with-dates) for details
@@ -98,7 +96,6 @@ class ListTransactionsRequest implements \JsonSerializable
 
     /**
      * Returns Sort Order.
-     *
      * The order (e.g., chronological or alphabetical) in which results from a request are returned.
      */
     public function getSortOrder(): ?string
@@ -108,7 +105,6 @@ class ListTransactionsRequest implements \JsonSerializable
 
     /**
      * Sets Sort Order.
-     *
      * The order (e.g., chronological or alphabetical) in which results from a request are returned.
      *
      * @maps sort_order
@@ -120,7 +116,6 @@ class ListTransactionsRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * A pagination cursor returned by a previous call to this endpoint.
      * Provide this to retrieve the next set of results for your original query.
      *
@@ -134,7 +129,6 @@ class ListTransactionsRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * A pagination cursor returned by a previous call to this endpoint.
      * Provide this to retrieve the next set of results for your original query.
      *
@@ -151,18 +145,31 @@ class ListTransactionsRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['begin_time'] = $this->beginTime;
-        $json['end_time']  = $this->endTime;
-        $json['sort_order'] = $this->sortOrder;
-        $json['cursor']    = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->beginTime)) {
+            $json['begin_time'] = $this->beginTime;
+        }
+        if (isset($this->endTime)) {
+            $json['end_time']   = $this->endTime;
+        }
+        if (isset($this->sortOrder)) {
+            $json['sort_order'] = $this->sortOrder;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']     = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

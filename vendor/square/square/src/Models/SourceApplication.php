@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Provides information about the application used to generate a change.
+ * Represents information about the application used to generate a change.
  */
 class SourceApplication implements \JsonSerializable
 {
@@ -26,8 +28,7 @@ class SourceApplication implements \JsonSerializable
 
     /**
      * Returns Product.
-     *
-     * Indicates the Square product used to generate an inventory change.
+     * Indicates the Square product used to generate a change.
      */
     public function getProduct(): ?string
     {
@@ -36,8 +37,7 @@ class SourceApplication implements \JsonSerializable
 
     /**
      * Sets Product.
-     *
-     * Indicates the Square product used to generate an inventory change.
+     * Indicates the Square product used to generate a change.
      *
      * @maps product
      */
@@ -48,9 +48,8 @@ class SourceApplication implements \JsonSerializable
 
     /**
      * Returns Application Id.
-     *
-     * Read-only Square ID assigned to the application. Only used for
-     * [Product]($m/Product) type `EXTERNAL_API`.
+     * __Read only__ The Square-assigned ID of the application. This field is used only if the
+     * [product]($m/Product) type is `EXTERNAL_API`.
      */
     public function getApplicationId(): ?string
     {
@@ -59,9 +58,8 @@ class SourceApplication implements \JsonSerializable
 
     /**
      * Sets Application Id.
-     *
-     * Read-only Square ID assigned to the application. Only used for
-     * [Product]($m/Product) type `EXTERNAL_API`.
+     * __Read only__ The Square-assigned ID of the application. This field is used only if the
+     * [product]($m/Product) type is `EXTERNAL_API`.
      *
      * @maps application_id
      */
@@ -72,9 +70,8 @@ class SourceApplication implements \JsonSerializable
 
     /**
      * Returns Name.
-     *
-     * Read-only display name assigned to the application
-     * (e.g. `"Custom Application"`, `"Square POS 4.74 for Android"`).
+     * __Read only__ The display name of the application
+     * (for example, `"Custom Application"` or `"Square POS 4.74 for Android"`).
      */
     public function getName(): ?string
     {
@@ -83,9 +80,8 @@ class SourceApplication implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
-     * Read-only display name assigned to the application
-     * (e.g. `"Custom Application"`, `"Square POS 4.74 for Android"`).
+     * __Read only__ The display name of the application
+     * (for example, `"Custom Application"` or `"Square POS 4.74 for Android"`).
      *
      * @maps name
      */
@@ -97,17 +93,28 @@ class SourceApplication implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['product']       = $this->product;
-        $json['application_id'] = $this->applicationId;
-        $json['name']          = $this->name;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->product)) {
+            $json['product']        = $this->product;
+        }
+        if (isset($this->applicationId)) {
+            $json['application_id'] = $this->applicationId;
+        }
+        if (isset($this->name)) {
+            $json['name']           = $this->name;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

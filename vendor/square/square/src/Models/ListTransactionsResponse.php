@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields that are included in the response body of
  * a request to the [ListTransactions]($e/Transactions/ListTransactions) endpoint.
@@ -29,7 +31,6 @@ class ListTransactionsResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -41,7 +42,6 @@ class ListTransactionsResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -55,7 +55,6 @@ class ListTransactionsResponse implements \JsonSerializable
 
     /**
      * Returns Transactions.
-     *
      * An array of transactions that match your query.
      *
      * @return Transaction[]|null
@@ -67,7 +66,6 @@ class ListTransactionsResponse implements \JsonSerializable
 
     /**
      * Sets Transactions.
-     *
      * An array of transactions that match your query.
      *
      * @maps transactions
@@ -81,7 +79,6 @@ class ListTransactionsResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * A pagination cursor for retrieving the next set of results,
      * if any remain. Provide this value as the `cursor` parameter in a subsequent
      * request to this endpoint.
@@ -96,7 +93,6 @@ class ListTransactionsResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * A pagination cursor for retrieving the next set of results,
      * if any remain. Provide this value as the `cursor` parameter in a subsequent
      * request to this endpoint.
@@ -114,17 +110,28 @@ class ListTransactionsResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']       = $this->errors;
-        $json['transactions'] = $this->transactions;
-        $json['cursor']       = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']       = $this->errors;
+        }
+        if (isset($this->transactions)) {
+            $json['transactions'] = $this->transactions;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']       = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

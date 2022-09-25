@@ -37,35 +37,51 @@ class TestHelper
     }
 
     /**
-     * Recursively check whether the leftTree is a proper subset of the right tree
-     * @param   array   $leftTree       Left tree
-     * @param   array   $rightTree      Right tree
-     * @param   boolean $checkValues    Check primitive values for equality?
-     * @param   boolean $allowExtra     Are extra elements allowed in right array?
-     * @param   boolean $isOrdered      Should elements in right be compared in order to left?
-     * @return  boolean                 True if leftTree is a subset of rightTree
+     * Recursively check whether the left value is a proper subset of the right value
+     *
+     * @param   mixed   $left        Left value
+     * @param   mixed   $right       Right value
+     * @param   boolean $checkValues Check primitive values for equality?
+     * @param   boolean $allowExtra  Are extra elements allowed in right array?
+     * @param   boolean $isOrdered   Should elements in right be compared in order to the left array?
+     *
+     * @return  boolean True if leftTree is a subset of rightTree
      */
     public static function isProperSubsetOf(
-        array $leftTree = null,
-        array $rightTree = null,
+        $left,
+        $right,
         $checkValues,
         $allowExtra,
         $isOrdered
     ) {
-    
-        if ($leftTree == null) {
+        if ($left === null) {
             return true;
         }
 
-        for ($iterator = new \ArrayIterator($leftTree); $iterator->valid(); $iterator->next()) {
+        if ($right === null) {
+            return false;
+        }
+
+        // If both values are primitive, check if they are equal
+        if (!is_array($left) && !is_array($right)) {
+            return $left === $right;
+        }
+
+        // Check if one of the values is primitive and the other is not
+        if (!is_array($left) || !is_array($right)) {
+            return false;
+        }
+
+        for ($iterator = new \ArrayIterator($left); $iterator->valid(); $iterator->next()) {
             $key = $iterator->key();
-            $leftVal = $leftTree[$key];
-            $rightVal = $rightTree[$key];
+            $leftVal = $left[$key];
+            $rightVal = $right[$key];
 
             // Check if key exists
-            if (!array_key_exists($key, $rightTree)) {
+            if (!array_key_exists($key, $right)) {
                 return false;
             }
+
             if (static::isAssoc($leftVal)) {
                 // If left value is tree, right value should be be tree too
                 if (static::isAssoc($rightVal)) {
@@ -81,47 +97,52 @@ class TestHelper
                 } else {
                     return false;
                 }
-            } else {
-                // Value comparison if checkValues
-                if ($checkValues) {
-                    // If left value is a primitive, check if it equals right value
-                    if (is_array($leftVal)) {
-                        if (!is_array($rightVal)) {
-                            return false;
-                        }
-                        if (count($leftVal) > 0 && static::isAssoc($leftVal[0])) {
-                            if (!static::isArrayOfJsonObjectsProperSubsetOf(
-                                $leftVal,
-                                $rightVal,
-                                $checkValues,
-                                $allowExtra,
-                                $isOrdered
-                            )) {
-                                return false;
-                            }
-                        } else {
-                            if (!static::isListProperSubsetOf(
-                                $leftVal,
-                                $rightVal,
-                                $allowExtra,
-                                $isOrdered
-                            )) {
-                                return false;
-                            }
-                        }
-                    } elseif (!$leftVal == $rightTree[$key] && !$leftVal == null) {
+            } elseif ($checkValues) {
+                if (is_array($leftVal)) {
+                    if (!is_array($rightVal)) {
                         return false;
                     }
+                    if (count($leftVal) > 0 && static::isAssoc($leftVal[0])) {
+                        if (!static::isArrayOfJsonObjectsProperSubsetOf(
+                            $leftVal,
+                            $rightVal,
+                            $checkValues,
+                            $allowExtra,
+                            $isOrdered
+                        )) {
+                            return false;
+                        }
+                    } else {
+                        if (!static::isListProperSubsetOf(
+                            $leftVal,
+                            $rightVal,
+                            $allowExtra,
+                            $isOrdered
+                        )) {
+                            return false;
+                        }
+                    }
+                } elseif (
+                    !static::isProperSubsetOf(
+                        $leftVal,
+                        $rightVal,
+                        $checkValues,
+                        $allowExtra,
+                        $isOrdered
+                    )
+                ) {
+                    return false;
                 }
             }
         }
+
         return true;
     }
     
     /**
      * Recursively check whether the left JSON object is a proper subset of the right JSON object
-     * @param   array   $leftObject     Left JSON object as string
-     * @param   array   $rightObject    Right JSON object as string
+     * @param   string  $leftObject     Left JSON object as string
+     * @param   string  $rightObject    Right JSON object as string
      * @param   boolean $checkValues    Check primitive values for equality?
      * @param   boolean $allowExtra     Are extra elements allowed in right array?
      * @param   boolean $isOrdered      Should elements in right be compared in order to left?
@@ -233,7 +254,7 @@ class TestHelper
         
         return true;
     }
-    
+
     /**
      * Check whether the a list is a subset of another list
      * @param   array   $leftList   Expected List
@@ -255,13 +276,35 @@ class TestHelper
             return array_slice($rightList, 0, count($leftList)) === $leftList;
         } elseif (!$isOrdered && !$allowExtra) {
             return count($leftList) == count($rightList) &&
-                array_intersect($leftList, $rightList) == $leftList;
+                self::intersectArrays($leftList, $rightList) == $leftList;
         } elseif (!$isOrdered && $allowExtra) {
-            return array_intersect($leftList, $rightList) == $leftList;
+            return self::intersectArrays($leftList, $rightList) == $leftList;
         }
         return true;
     }
-    
+
+    /**
+     * Computes the intersection of arrays, even for arrays of arrays
+     *
+     * @param array $leftList  The array with main values to check
+     * @param array $rightList An array to compare values against
+     *
+     * @return array An array containing all the values in leftList whose values exist
+     *               also exists in rightList
+     */
+    public static function intersectArrays(array $leftList, array $rightList): array
+    {
+        return array_map(
+            function ($param) {
+                return self::decode($param, true);
+            },
+            array_intersect(
+                array_map([ApiHelper::class, 'serialize'], $leftList),
+                array_map([ApiHelper::class, 'serialize'], $rightList)
+            )
+        );
+    }
+
     /**
      * Recursively check whether the left headers map is a proper subset of
      * the right headers map. Header keys & values are compared case-insensitive.
@@ -347,5 +390,18 @@ class TestHelper
     {
         $mapper = new JsonMapper();
         return $mapper;
+    }
+
+    /**
+     * Apply json_decode on the given value
+     *
+     * @param string $value       Value to be decoded
+     * @param bool   $associative Whether to decode as associative array when value is json, Default: false
+     *
+     * @return mixed decoded object from the given string
+     */
+    public static function decode(string $value, bool $associative = false)
+    {
+        return json_decode($value, $associative) ?? $value;
     }
 }

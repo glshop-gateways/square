@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A query composed of one or more different types of filters to narrow the scope of targeted objects
  * when calling the `SearchCatalogObjects` endpoint.
@@ -90,7 +92,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Returns Sorted Attribute Query.
-     *
      * The query expression to specify the key to sort search results.
      */
     public function getSortedAttributeQuery(): ?CatalogQuerySortedAttribute
@@ -100,7 +101,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Sets Sorted Attribute Query.
-     *
      * The query expression to specify the key to sort search results.
      *
      * @maps sorted_attribute_query
@@ -112,7 +112,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Returns Exact Query.
-     *
      * The query filter to return the search result by exact match of the specified attribute name and
      * value.
      */
@@ -123,7 +122,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Sets Exact Query.
-     *
      * The query filter to return the search result by exact match of the specified attribute name and
      * value.
      *
@@ -136,7 +134,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Returns Set Query.
-     *
      * The query filter to return the search result(s) by exact match of the specified `attribute_name` and
      * any of
      * the `attribute_values`.
@@ -148,7 +145,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Sets Set Query.
-     *
      * The query filter to return the search result(s) by exact match of the specified `attribute_name` and
      * any of
      * the `attribute_values`.
@@ -162,7 +158,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Returns Prefix Query.
-     *
      * The query filter to return the search result whose named attribute values are prefixed by the
      * specified attribute value.
      */
@@ -173,7 +168,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Sets Prefix Query.
-     *
      * The query filter to return the search result whose named attribute values are prefixed by the
      * specified attribute value.
      *
@@ -186,7 +180,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Returns Range Query.
-     *
      * The query filter to return the search result whose named attribute values fall between the specified
      * range.
      */
@@ -197,7 +190,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Sets Range Query.
-     *
      * The query filter to return the search result whose named attribute values fall between the specified
      * range.
      *
@@ -210,7 +202,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Returns Text Query.
-     *
      * The query filter to return the search result whose searchable attribute values contain all of the
      * specified keywords or tokens, independent of the token order or case.
      */
@@ -221,7 +212,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Sets Text Query.
-     *
      * The query filter to return the search result whose searchable attribute values contain all of the
      * specified keywords or tokens, independent of the token order or case.
      *
@@ -234,7 +224,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Returns Items for Tax Query.
-     *
      * The query filter to return the items containing the specified tax IDs.
      */
     public function getItemsForTaxQuery(): ?CatalogQueryItemsForTax
@@ -244,7 +233,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Sets Items for Tax Query.
-     *
      * The query filter to return the items containing the specified tax IDs.
      *
      * @maps items_for_tax_query
@@ -256,7 +244,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Returns Items for Modifier List Query.
-     *
      * The query filter to return the items containing the specified modifier list IDs.
      */
     public function getItemsForModifierListQuery(): ?CatalogQueryItemsForModifierList
@@ -266,7 +253,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Sets Items for Modifier List Query.
-     *
      * The query filter to return the items containing the specified modifier list IDs.
      *
      * @maps items_for_modifier_list_query
@@ -278,7 +264,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Returns Items for Item Options Query.
-     *
      * The query filter to return the items containing the specified item option IDs.
      */
     public function getItemsForItemOptionsQuery(): ?CatalogQueryItemsForItemOptions
@@ -288,7 +273,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Sets Items for Item Options Query.
-     *
      * The query filter to return the items containing the specified item option IDs.
      *
      * @maps items_for_item_options_query
@@ -300,7 +284,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Returns Item Variations for Item Option Values Query.
-     *
      * The query filter to return the item variations containing the specified item option value IDs.
      */
     public function getItemVariationsForItemOptionValuesQuery(): ?CatalogQueryItemVariationsForItemOptionValues
@@ -310,7 +293,6 @@ class CatalogQuery implements \JsonSerializable
 
     /**
      * Sets Item Variations for Item Option Values Query.
-     *
      * The query filter to return the item variations containing the specified item option value IDs.
      *
      * @maps item_variations_for_item_option_values_query
@@ -324,24 +306,49 @@ class CatalogQuery implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['sorted_attribute_query']                 = $this->sortedAttributeQuery;
-        $json['exact_query']                            = $this->exactQuery;
-        $json['set_query']                              = $this->setQuery;
-        $json['prefix_query']                           = $this->prefixQuery;
-        $json['range_query']                            = $this->rangeQuery;
-        $json['text_query']                             = $this->textQuery;
-        $json['items_for_tax_query']                    = $this->itemsForTaxQuery;
-        $json['items_for_modifier_list_query']          = $this->itemsForModifierListQuery;
-        $json['items_for_item_options_query']           = $this->itemsForItemOptionsQuery;
-        $json['item_variations_for_item_option_values_query'] = $this->itemVariationsForItemOptionValuesQuery;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->sortedAttributeQuery)) {
+            $json['sorted_attribute_query']                       = $this->sortedAttributeQuery;
+        }
+        if (isset($this->exactQuery)) {
+            $json['exact_query']                                  = $this->exactQuery;
+        }
+        if (isset($this->setQuery)) {
+            $json['set_query']                                    = $this->setQuery;
+        }
+        if (isset($this->prefixQuery)) {
+            $json['prefix_query']                                 = $this->prefixQuery;
+        }
+        if (isset($this->rangeQuery)) {
+            $json['range_query']                                  = $this->rangeQuery;
+        }
+        if (isset($this->textQuery)) {
+            $json['text_query']                                   = $this->textQuery;
+        }
+        if (isset($this->itemsForTaxQuery)) {
+            $json['items_for_tax_query']                          = $this->itemsForTaxQuery;
+        }
+        if (isset($this->itemsForModifierListQuery)) {
+            $json['items_for_modifier_list_query']                = $this->itemsForModifierListQuery;
+        }
+        if (isset($this->itemsForItemOptionsQuery)) {
+            $json['items_for_item_options_query']                 = $this->itemsForItemOptionsQuery;
+        }
+        if (isset($this->itemVariationsForItemOptionValuesQuery)) {
+            $json['item_variations_for_item_option_values_query'] = $this->itemVariationsForItemOptionValuesQuery;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

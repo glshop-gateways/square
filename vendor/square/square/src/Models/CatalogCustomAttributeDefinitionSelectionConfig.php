@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Configuration associated with `SELECTION`-type custom attribute definitions.
  */
@@ -21,7 +23,6 @@ class CatalogCustomAttributeDefinitionSelectionConfig implements \JsonSerializab
 
     /**
      * Returns Max Allowed Selections.
-     *
      * The maximum number of selections that can be set. The maximum value for this
      * attribute is 100. The default value is 1. The value can be modified, but changing the value will
      * not
@@ -35,7 +36,6 @@ class CatalogCustomAttributeDefinitionSelectionConfig implements \JsonSerializab
 
     /**
      * Sets Max Allowed Selections.
-     *
      * The maximum number of selections that can be set. The maximum value for this
      * attribute is 100. The default value is 1. The value can be modified, but changing the value will
      * not
@@ -51,7 +51,6 @@ class CatalogCustomAttributeDefinitionSelectionConfig implements \JsonSerializab
 
     /**
      * Returns Allowed Selections.
-     *
      * The set of valid `CatalogCustomAttributeSelections`. Up to a maximum of 100
      * selections can be defined. Can be modified.
      *
@@ -64,7 +63,6 @@ class CatalogCustomAttributeDefinitionSelectionConfig implements \JsonSerializab
 
     /**
      * Sets Allowed Selections.
-     *
      * The set of valid `CatalogCustomAttributeSelections`. Up to a maximum of 100
      * selections can be defined. Can be modified.
      *
@@ -80,16 +78,25 @@ class CatalogCustomAttributeDefinitionSelectionConfig implements \JsonSerializab
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['max_allowed_selections'] = $this->maxAllowedSelections;
-        $json['allowed_selections']   = $this->allowedSelections;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->maxAllowedSelections)) {
+            $json['max_allowed_selections'] = $this->maxAllowedSelections;
+        }
+        if (isset($this->allowedSelections)) {
+            $json['allowed_selections']     = $this->allowedSelections;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

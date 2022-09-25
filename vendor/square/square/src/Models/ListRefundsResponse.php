@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields that are included in the response body of
  * a request to the [ListRefunds]($e/Transactions/ListRefunds) endpoint.
@@ -29,7 +31,6 @@ class ListRefundsResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -41,7 +42,6 @@ class ListRefundsResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -55,7 +55,6 @@ class ListRefundsResponse implements \JsonSerializable
 
     /**
      * Returns Refunds.
-     *
      * An array of refunds that match your query.
      *
      * @return Refund[]|null
@@ -67,7 +66,6 @@ class ListRefundsResponse implements \JsonSerializable
 
     /**
      * Sets Refunds.
-     *
      * An array of refunds that match your query.
      *
      * @maps refunds
@@ -81,7 +79,6 @@ class ListRefundsResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * A pagination cursor for retrieving the next set of results,
      * if any remain. Provide this value as the `cursor` parameter in a subsequent
      * request to this endpoint.
@@ -96,7 +93,6 @@ class ListRefundsResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * A pagination cursor for retrieving the next set of results,
      * if any remain. Provide this value as the `cursor` parameter in a subsequent
      * request to this endpoint.
@@ -114,17 +110,28 @@ class ListRefundsResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']  = $this->errors;
-        $json['refunds'] = $this->refunds;
-        $json['cursor']  = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']  = $this->errors;
+        }
+        if (isset($this->refunds)) {
+            $json['refunds'] = $this->refunds;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']  = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

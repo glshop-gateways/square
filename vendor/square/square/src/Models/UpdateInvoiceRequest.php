@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Describes a `UpdateInvoice` request.
  */
@@ -34,10 +36,9 @@ class UpdateInvoiceRequest implements \JsonSerializable
 
     /**
      * Returns Invoice.
-     *
      * Stores information about an invoice. You use the Invoices API to create and manage
-     * invoices. For more information, see [Manage Invoices Using the Invoices API](https://developer.
-     * squareup.com/docs/invoices-api/overview).
+     * invoices. For more information, see [Invoices API Overview](https://developer.squareup.
+     * com/docs/invoices-api/overview).
      */
     public function getInvoice(): Invoice
     {
@@ -46,10 +47,9 @@ class UpdateInvoiceRequest implements \JsonSerializable
 
     /**
      * Sets Invoice.
-     *
      * Stores information about an invoice. You use the Invoices API to create and manage
-     * invoices. For more information, see [Manage Invoices Using the Invoices API](https://developer.
-     * squareup.com/docs/invoices-api/overview).
+     * invoices. For more information, see [Invoices API Overview](https://developer.squareup.
+     * com/docs/invoices-api/overview).
      *
      * @required
      * @maps invoice
@@ -61,7 +61,6 @@ class UpdateInvoiceRequest implements \JsonSerializable
 
     /**
      * Returns Idempotency Key.
-     *
      * A unique string that identifies the `UpdateInvoice` request. If you do not
      * provide `idempotency_key` (or provide an empty string as the value), the endpoint
      * treats each request as independent.
@@ -76,7 +75,6 @@ class UpdateInvoiceRequest implements \JsonSerializable
 
     /**
      * Sets Idempotency Key.
-     *
      * A unique string that identifies the `UpdateInvoice` request. If you do not
      * provide `idempotency_key` (or provide an empty string as the value), the endpoint
      * treats each request as independent.
@@ -93,10 +91,9 @@ class UpdateInvoiceRequest implements \JsonSerializable
 
     /**
      * Returns Fields to Clear.
-     *
      * The list of fields to clear.
-     * For examples, see [Update an invoice](https://developer.squareup.com/docs/invoices-
-     * api/overview#update-an-invoice).
+     * For examples, see [Update an Invoice](https://developer.squareup.com/docs/invoices-api/update-
+     * invoices).
      *
      * @return string[]|null
      */
@@ -107,10 +104,9 @@ class UpdateInvoiceRequest implements \JsonSerializable
 
     /**
      * Sets Fields to Clear.
-     *
      * The list of fields to clear.
-     * For examples, see [Update an invoice](https://developer.squareup.com/docs/invoices-
-     * api/overview#update-an-invoice).
+     * For examples, see [Update an Invoice](https://developer.squareup.com/docs/invoices-api/update-
+     * invoices).
      *
      * @maps fields_to_clear
      *
@@ -124,17 +120,26 @@ class UpdateInvoiceRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['invoice']        = $this->invoice;
-        $json['idempotency_key'] = $this->idempotencyKey;
-        $json['fields_to_clear'] = $this->fieldsToClear;
-
-        return array_filter($json, function ($val) {
+        $json['invoice']             = $this->invoice;
+        if (isset($this->idempotencyKey)) {
+            $json['idempotency_key'] = $this->idempotencyKey;
+        }
+        if (isset($this->fieldsToClear)) {
+            $json['fields_to_clear'] = $this->fieldsToClear;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

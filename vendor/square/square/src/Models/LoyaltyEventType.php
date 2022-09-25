@@ -10,14 +10,13 @@ namespace Square\Models;
 class LoyaltyEventType
 {
     /**
-     * Points are added to a loyalty account for a purchase.
+     * Points are added to a loyalty account for a purchase that
+     * qualified for points based on an [accrual rule]($m/LoyaltyProgramAccrualRule).
      */
     public const ACCUMULATE_POINTS = 'ACCUMULATE_POINTS';
 
     /**
-     * A loyalty reward is created. For more information, see
-     * [Loyalty rewards](https://developer.squareup.com/docs/loyalty-api/overview/#loyalty-overview-loyalty-
-     * rewards).
+     * A [loyalty reward]($m/LoyaltyReward) is created.
      */
     public const CREATE_REWARD = 'CREATE_REWARD';
 
@@ -46,4 +45,10 @@ class LoyaltyEventType
      * Some other loyalty event occurred.
      */
     public const OTHER = 'OTHER';
+
+    /**
+     * Points are added to a loyalty account for a purchase that
+     * qualified for a [loyalty promotion]($m/LoyaltyPromotion).
+     */
+    public const ACCUMULATE_PROMOTION_POINTS = 'ACCUMULATE_PROMOTION_POINTS';
 }

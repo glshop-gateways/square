@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Provides metadata when the event `type` is `ADJUST_POINTS`.
  */
@@ -34,7 +36,6 @@ class LoyaltyEventAdjustPoints implements \JsonSerializable
 
     /**
      * Returns Loyalty Program Id.
-     *
      * The Square-assigned ID of the [loyalty program]($m/LoyaltyProgram).
      */
     public function getLoyaltyProgramId(): ?string
@@ -44,7 +45,6 @@ class LoyaltyEventAdjustPoints implements \JsonSerializable
 
     /**
      * Sets Loyalty Program Id.
-     *
      * The Square-assigned ID of the [loyalty program]($m/LoyaltyProgram).
      *
      * @maps loyalty_program_id
@@ -56,7 +56,6 @@ class LoyaltyEventAdjustPoints implements \JsonSerializable
 
     /**
      * Returns Points.
-     *
      * The number of points added or removed.
      */
     public function getPoints(): int
@@ -66,7 +65,6 @@ class LoyaltyEventAdjustPoints implements \JsonSerializable
 
     /**
      * Sets Points.
-     *
      * The number of points added or removed.
      *
      * @required
@@ -79,7 +77,6 @@ class LoyaltyEventAdjustPoints implements \JsonSerializable
 
     /**
      * Returns Reason.
-     *
      * The reason for the adjustment of points.
      */
     public function getReason(): ?string
@@ -89,7 +86,6 @@ class LoyaltyEventAdjustPoints implements \JsonSerializable
 
     /**
      * Sets Reason.
-     *
      * The reason for the adjustment of points.
      *
      * @maps reason
@@ -102,17 +98,26 @@ class LoyaltyEventAdjustPoints implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['loyalty_program_id'] = $this->loyaltyProgramId;
-        $json['points']           = $this->points;
-        $json['reason']           = $this->reason;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->loyaltyProgramId)) {
+            $json['loyalty_program_id'] = $this->loyaltyProgramId;
+        }
+        $json['points']                 = $this->points;
+        if (isset($this->reason)) {
+            $json['reason']             = $this->reason;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

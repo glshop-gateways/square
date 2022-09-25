@@ -4,22 +4,24 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Filter for `Order` objects based on whether their `CREATED_AT`,
- * `CLOSED_AT` or `UPDATED_AT` timestamps fall within a specified time range.
+ * `CLOSED_AT`, or `UPDATED_AT` timestamps fall within a specified time range.
  * You can specify the time range and which timestamp to filter for. You can filter
  * for only one time range at a time.
  *
  * For each time range, the start time and end time are inclusive. If the end time
  * is absent, it defaults to the time of the first request for the cursor.
  *
- * __Important:__ If you use the DateTimeFilter in a SearchOrders query,
- * you must also set the `sort_field` in [OrdersSort]($m/SearchOrdersSort)
+ * __Important:__ If you use the `DateTimeFilter` in a `SearchOrders` query,
+ * you must set the `sort_field` in [OrdersSort]($m/SearchOrdersSort)
  * to the same field you filter for. For example, if you set the `CLOSED_AT` field
- * in DateTimeFilter, you must also set the `sort_field` in SearchOrdersSort to
- * `CLOSED_AT`. Otherwise, SearchOrders will throw an error.
- * [Learn more about filtering orders by time range](https://developer.squareup.com/docs/orders-
- * api/manage-orders#important-note-on-filtering-orders-by-time-range).
+ * in `DateTimeFilter`, you must set the `sort_field` in `SearchOrdersSort` to
+ * `CLOSED_AT`. Otherwise, `SearchOrders` throws an error.
+ * [Learn more about filtering orders by time range.](https://developer.squareup.com/docs/orders-
+ * api/manage-orders#important-note-on-filtering-orders-by-time-range)
  */
 class SearchOrdersDateTimeFilter implements \JsonSerializable
 {
@@ -40,7 +42,6 @@ class SearchOrdersDateTimeFilter implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * Represents a generic time range. The start and end values are
      * represented in RFC 3339 format. Time ranges are customized to be
      * inclusive or exclusive based on the needs of a particular endpoint.
@@ -54,7 +55,6 @@ class SearchOrdersDateTimeFilter implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * Represents a generic time range. The start and end values are
      * represented in RFC 3339 format. Time ranges are customized to be
      * inclusive or exclusive based on the needs of a particular endpoint.
@@ -70,7 +70,6 @@ class SearchOrdersDateTimeFilter implements \JsonSerializable
 
     /**
      * Returns Updated At.
-     *
      * Represents a generic time range. The start and end values are
      * represented in RFC 3339 format. Time ranges are customized to be
      * inclusive or exclusive based on the needs of a particular endpoint.
@@ -84,7 +83,6 @@ class SearchOrdersDateTimeFilter implements \JsonSerializable
 
     /**
      * Sets Updated At.
-     *
      * Represents a generic time range. The start and end values are
      * represented in RFC 3339 format. Time ranges are customized to be
      * inclusive or exclusive based on the needs of a particular endpoint.
@@ -100,7 +98,6 @@ class SearchOrdersDateTimeFilter implements \JsonSerializable
 
     /**
      * Returns Closed At.
-     *
      * Represents a generic time range. The start and end values are
      * represented in RFC 3339 format. Time ranges are customized to be
      * inclusive or exclusive based on the needs of a particular endpoint.
@@ -114,7 +111,6 @@ class SearchOrdersDateTimeFilter implements \JsonSerializable
 
     /**
      * Sets Closed At.
-     *
      * Represents a generic time range. The start and end values are
      * represented in RFC 3339 format. Time ranges are customized to be
      * inclusive or exclusive based on the needs of a particular endpoint.
@@ -131,17 +127,28 @@ class SearchOrdersDateTimeFilter implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['created_at'] = $this->createdAt;
-        $json['updated_at'] = $this->updatedAt;
-        $json['closed_at'] = $this->closedAt;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->createdAt)) {
+            $json['created_at'] = $this->createdAt;
+        }
+        if (isset($this->updatedAt)) {
+            $json['updated_at'] = $this->updatedAt;
+        }
+        if (isset($this->closedAt)) {
+            $json['closed_at']  = $this->closedAt;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

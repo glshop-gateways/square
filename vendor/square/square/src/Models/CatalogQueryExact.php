@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * The query filter to return the search result by exact match of the specified attribute name and
  * value.
@@ -32,7 +34,6 @@ class CatalogQueryExact implements \JsonSerializable
 
     /**
      * Returns Attribute Name.
-     *
      * The name of the attribute to be searched. Matching of the attribute name is exact.
      */
     public function getAttributeName(): string
@@ -42,7 +43,6 @@ class CatalogQueryExact implements \JsonSerializable
 
     /**
      * Sets Attribute Name.
-     *
      * The name of the attribute to be searched. Matching of the attribute name is exact.
      *
      * @required
@@ -55,7 +55,6 @@ class CatalogQueryExact implements \JsonSerializable
 
     /**
      * Returns Attribute Value.
-     *
      * The desired value of the search attribute. Matching of the attribute value is case insensitive and
      * can be partial.
      * For example, if a specified value of "sma", objects with the named attribute value of "Small",
@@ -68,7 +67,6 @@ class CatalogQueryExact implements \JsonSerializable
 
     /**
      * Sets Attribute Value.
-     *
      * The desired value of the search attribute. Matching of the attribute value is case insensitive and
      * can be partial.
      * For example, if a specified value of "sma", objects with the named attribute value of "Small",
@@ -85,16 +83,21 @@ class CatalogQueryExact implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['attribute_name'] = $this->attributeName;
+        $json['attribute_name']  = $this->attributeName;
         $json['attribute_value'] = $this->attributeValue;
-
-        return array_filter($json, function ($val) {
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

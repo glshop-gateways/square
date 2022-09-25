@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * The payment methods that customers can use to pay an invoice on the Square-hosted invoice page.
  */
@@ -26,7 +28,6 @@ class InvoiceAcceptedPaymentMethods implements \JsonSerializable
 
     /**
      * Returns Card.
-     *
      * Indicates whether credit card or debit card payments are accepted. The default value is `false`.
      */
     public function getCard(): ?bool
@@ -36,7 +37,6 @@ class InvoiceAcceptedPaymentMethods implements \JsonSerializable
 
     /**
      * Sets Card.
-     *
      * Indicates whether credit card or debit card payments are accepted. The default value is `false`.
      *
      * @maps card
@@ -48,7 +48,6 @@ class InvoiceAcceptedPaymentMethods implements \JsonSerializable
 
     /**
      * Returns Square Gift Card.
-     *
      * Indicates whether Square gift card payments are accepted. The default value is `false`.
      */
     public function getSquareGiftCard(): ?bool
@@ -58,7 +57,6 @@ class InvoiceAcceptedPaymentMethods implements \JsonSerializable
 
     /**
      * Sets Square Gift Card.
-     *
      * Indicates whether Square gift card payments are accepted. The default value is `false`.
      *
      * @maps square_gift_card
@@ -70,7 +68,6 @@ class InvoiceAcceptedPaymentMethods implements \JsonSerializable
 
     /**
      * Returns Bank Account.
-     *
      * Indicates whether bank transfer payments are accepted. The default value is `false`.
      *
      * This option is allowed only for invoices that have a single payment request of type `BALANCE`.
@@ -82,7 +79,6 @@ class InvoiceAcceptedPaymentMethods implements \JsonSerializable
 
     /**
      * Sets Bank Account.
-     *
      * Indicates whether bank transfer payments are accepted. The default value is `false`.
      *
      * This option is allowed only for invoices that have a single payment request of type `BALANCE`.
@@ -97,17 +93,28 @@ class InvoiceAcceptedPaymentMethods implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['card']           = $this->card;
-        $json['square_gift_card'] = $this->squareGiftCard;
-        $json['bank_account']   = $this->bankAccount;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->card)) {
+            $json['card']             = $this->card;
+        }
+        if (isset($this->squareGiftCard)) {
+            $json['square_gift_card'] = $this->squareGiftCard;
+        }
+        if (isset($this->bankAccount)) {
+            $json['bank_account']     = $this->bankAccount;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A batch of catalog objects.
  */
@@ -24,7 +26,6 @@ class CatalogObjectBatch implements \JsonSerializable
 
     /**
      * Returns Objects.
-     *
      * A list of CatalogObjects belonging to this batch.
      *
      * @return CatalogObject[]
@@ -36,7 +37,6 @@ class CatalogObjectBatch implements \JsonSerializable
 
     /**
      * Sets Objects.
-     *
      * A list of CatalogObjects belonging to this batch.
      *
      * @required
@@ -52,15 +52,20 @@ class CatalogObjectBatch implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['objects'] = $this->objects;
-
-        return array_filter($json, function ($val) {
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

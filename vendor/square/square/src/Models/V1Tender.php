@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A tender represents a discrete monetary exchange. Square represents this
  * exchange as a money object with a specific currency and amount, where the
@@ -112,7 +114,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The tender's unique ID.
      */
     public function getId(): ?string
@@ -122,7 +123,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The tender's unique ID.
      *
      * @maps id
@@ -152,7 +152,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Returns Name.
-     *
      * A human-readable description of the tender.
      */
     public function getName(): ?string
@@ -162,7 +161,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * A human-readable description of the tender.
      *
      * @maps name
@@ -174,7 +172,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Returns Employee Id.
-     *
      * The ID of the employee that processed the tender.
      */
     public function getEmployeeId(): ?string
@@ -184,7 +181,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Sets Employee Id.
-     *
      * The ID of the employee that processed the tender.
      *
      * @maps employee_id
@@ -196,7 +192,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Returns Receipt Url.
-     *
      * The URL of the receipt for the tender.
      */
     public function getReceiptUrl(): ?string
@@ -206,7 +201,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Sets Receipt Url.
-     *
      * The URL of the receipt for the tender.
      *
      * @maps receipt_url
@@ -218,7 +212,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Returns Card Brand.
-     *
      * The brand of a credit card.
      */
     public function getCardBrand(): ?string
@@ -228,7 +221,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Sets Card Brand.
-     *
      * The brand of a credit card.
      *
      * @maps card_brand
@@ -240,7 +232,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Returns Pan Suffix.
-     *
      * The last four digits of the provided credit card's account number.
      */
     public function getPanSuffix(): ?string
@@ -250,7 +241,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Sets Pan Suffix.
-     *
      * The last four digits of the provided credit card's account number.
      *
      * @maps pan_suffix
@@ -280,7 +270,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Returns Payment Note.
-     *
      * Notes entered by the merchant about the tender at the time of payment, if any. Typically only
      * present for tender with the type: OTHER.
      */
@@ -291,7 +280,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Sets Payment Note.
-     *
      * Notes entered by the merchant about the tender at the time of payment, if any. Typically only
      * present for tender with the type: OTHER.
      *
@@ -340,7 +328,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Returns Tendered At.
-     *
      * The time when the tender was created, in ISO 8601 format.
      */
     public function getTenderedAt(): ?string
@@ -350,7 +337,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Sets Tendered At.
-     *
      * The time when the tender was created, in ISO 8601 format.
      *
      * @maps tendered_at
@@ -362,7 +348,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Returns Settled At.
-     *
      * The time when the tender was settled, in ISO 8601 format.
      */
     public function getSettledAt(): ?string
@@ -372,7 +357,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Sets Settled At.
-     *
      * The time when the tender was settled, in ISO 8601 format.
      *
      * @maps settled_at
@@ -420,7 +404,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Returns Is Exchange.
-     *
      * Indicates whether or not the tender is associated with an exchange. If is_exchange is true, the
      * tender represents the value of goods returned in an exchange not the actual money paid. The exchange
      * value reduces the tender amounts needed to pay for items purchased in the exchange.
@@ -432,7 +415,6 @@ class V1Tender implements \JsonSerializable
 
     /**
      * Sets Is Exchange.
-     *
      * Indicates whether or not the tender is associated with an exchange. If is_exchange is true, the
      * tender represents the value of goods returned in an exchange not the actual money paid. The exchange
      * value reduces the tender amounts needed to pay for items purchased in the exchange.
@@ -447,30 +429,67 @@ class V1Tender implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']              = $this->id;
-        $json['type']            = $this->type;
-        $json['name']            = $this->name;
-        $json['employee_id']     = $this->employeeId;
-        $json['receipt_url']     = $this->receiptUrl;
-        $json['card_brand']      = $this->cardBrand;
-        $json['pan_suffix']      = $this->panSuffix;
-        $json['entry_method']    = $this->entryMethod;
-        $json['payment_note']    = $this->paymentNote;
-        $json['total_money']     = $this->totalMoney;
-        $json['tendered_money']  = $this->tenderedMoney;
-        $json['tendered_at']     = $this->tenderedAt;
-        $json['settled_at']      = $this->settledAt;
-        $json['change_back_money'] = $this->changeBackMoney;
-        $json['refunded_money']  = $this->refundedMoney;
-        $json['is_exchange']     = $this->isExchange;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']                = $this->id;
+        }
+        if (isset($this->type)) {
+            $json['type']              = $this->type;
+        }
+        if (isset($this->name)) {
+            $json['name']              = $this->name;
+        }
+        if (isset($this->employeeId)) {
+            $json['employee_id']       = $this->employeeId;
+        }
+        if (isset($this->receiptUrl)) {
+            $json['receipt_url']       = $this->receiptUrl;
+        }
+        if (isset($this->cardBrand)) {
+            $json['card_brand']        = $this->cardBrand;
+        }
+        if (isset($this->panSuffix)) {
+            $json['pan_suffix']        = $this->panSuffix;
+        }
+        if (isset($this->entryMethod)) {
+            $json['entry_method']      = $this->entryMethod;
+        }
+        if (isset($this->paymentNote)) {
+            $json['payment_note']      = $this->paymentNote;
+        }
+        if (isset($this->totalMoney)) {
+            $json['total_money']       = $this->totalMoney;
+        }
+        if (isset($this->tenderedMoney)) {
+            $json['tendered_money']    = $this->tenderedMoney;
+        }
+        if (isset($this->tenderedAt)) {
+            $json['tendered_at']       = $this->tenderedAt;
+        }
+        if (isset($this->settledAt)) {
+            $json['settled_at']        = $this->settledAt;
+        }
+        if (isset($this->changeBackMoney)) {
+            $json['change_back_money'] = $this->changeBackMoney;
+        }
+        if (isset($this->refundedMoney)) {
+            $json['refunded_money']    = $this->refundedMoney;
+        }
+        if (isset($this->isExchange)) {
+            $json['is_exchange']       = $this->isExchange;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

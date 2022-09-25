@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class CatalogInfoResponse implements \JsonSerializable
 {
     /**
@@ -23,7 +25,6 @@ class CatalogInfoResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -35,7 +36,6 @@ class CatalogInfoResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -67,7 +67,6 @@ class CatalogInfoResponse implements \JsonSerializable
 
     /**
      * Returns Standard Unit Description Group.
-     *
      * Group of standard measurement units.
      */
     public function getStandardUnitDescriptionGroup(): ?StandardUnitDescriptionGroup
@@ -77,7 +76,6 @@ class CatalogInfoResponse implements \JsonSerializable
 
     /**
      * Sets Standard Unit Description Group.
-     *
      * Group of standard measurement units.
      *
      * @maps standard_unit_description_group
@@ -90,17 +88,28 @@ class CatalogInfoResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']                       = $this->errors;
-        $json['limits']                       = $this->limits;
-        $json['standard_unit_description_group'] = $this->standardUnitDescriptionGroup;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']                          = $this->errors;
+        }
+        if (isset($this->limits)) {
+            $json['limits']                          = $this->limits;
+        }
+        if (isset($this->standardUnitDescriptionGroup)) {
+            $json['standard_unit_description_group'] = $this->standardUnitDescriptionGroup;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

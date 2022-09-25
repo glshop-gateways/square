@@ -23,6 +23,7 @@ Square API.
 | `V1_APPLICATION` | The calling application was created prior to<br>2016-03-30 and is not compatible with v2 Square API calls. |
 | `V1_ACCESS_TOKEN` | The calling application is using an access token<br>created prior to 2016-03-30 and is not compatible with v2 Square API<br>calls. |
 | `CARD_PROCESSING_NOT_ENABLED` | The location provided in the API call is not<br>enabled for credit card processing. |
+| `MERCHANT_SUBSCRIPTION_NOT_FOUND` | A required subscription was not found for the merchant |
 | `BAD_REQUEST` | A general error occurred with the request. |
 | `MISSING_REQUIRED_PARAMETER` | The request is missing a required path, query, or<br>body parameter. |
 | `INCORRECT_TYPE` | The value provided in the request is the wrong<br>type. For example, a string instead of an integer. |
@@ -61,6 +62,10 @@ Square API.
 | `TOO_MANY_MAP_ENTRIES` | Too many entries in the map field. |
 | `MAP_KEY_LENGTH_TOO_SHORT` | The length of one of the provided keys in the map is too short. |
 | `MAP_KEY_LENGTH_TOO_LONG` | The length of one of the provided keys in the map is too long. |
+| `CUSTOMER_MISSING_NAME` | The provided customer does not have a recorded name. |
+| `CUSTOMER_MISSING_EMAIL` | The provided customer does not have a recorded email. |
+| `INVALID_PAUSE_LENGTH` | The subscription cannot be paused longer than the duration of the current phase. |
+| `INVALID_DATE` | The subscription cannot be paused/resumed on the given date. |
 | `CARD_EXPIRED` | The card issuer declined the request because the card is expired. |
 | `INVALID_EXPIRATION` | The expiration date for the payment card is invalid. For example,<br>it indicates a date in the past. |
 | `INVALID_EXPIRATION_YEAR` | The expiration year for the payment card is invalid. For example,<br>it indicates a year in the past or contains invalid characters. |
@@ -69,6 +74,7 @@ Square API.
 | `UNSUPPORTED_ENTRY_METHOD` | The entry method for the credit card (swipe, dip, tap) is not supported. |
 | `INVALID_ENCRYPTED_CARD` | The encrypted card information is invalid. |
 | `INVALID_CARD` | The credit card cannot be validated based on the provided details. |
+| `PAYMENT_AMOUNT_MISMATCH` | The payment was declined because there was a payment amount mismatch.<br>The money amount Square was expecting does not match the amount provided. |
 | `GENERIC_DECLINE` | Square received a decline without any additional information.<br>If the payment information seems correct, the buyer can contact their<br>issuer to ask for more information. |
 | `CVV_FAILURE` | The card issuer declined the request because the CVV value is invalid. |
 | `ADDRESS_VERIFICATION_FAILURE` | The card issuer declined the request because the postal code is invalid. |
@@ -84,6 +90,8 @@ Square API.
 | `EXPIRATION_FAILURE` | The card expiration date is either invalid or indicates that the<br>card is expired. |
 | `CARD_NOT_SUPPORTED` | The card is not supported either in the geographic region or by<br>the [merchant category code](https://developer.squareup.com/docs/locations-api#initialize-a-merchant-category-code) (MCC). |
 | `INVALID_PIN` | The card issuer declined the request because the PIN is invalid. |
+| `MISSING_PIN` | The payment is missing a required PIN. |
+| `MISSING_ACCOUNT_TYPE` | The payment is missing a required ACCOUNT_TYPE parameter. |
 | `INVALID_POSTAL_CODE` | The postal code is incorrectly formatted. |
 | `INVALID_FEES` | The app_fee_money on a payment is too high. |
 | `MANUALLY_ENTERED_PAYMENT_NOT_SUPPORTED` | The card must be swiped, tapped, or dipped. Payments attempted by manually entering the card number are declined. |
@@ -96,12 +104,12 @@ Square API.
 | `DELAYED_TRANSACTION_CAPTURED` | The application tried to capture a delayed-capture payment that was already captured. |
 | `DELAYED_TRANSACTION_FAILED` | The application tried to update a delayed-capture payment that failed. |
 | `CARD_TOKEN_EXPIRED` | The provided card token (nonce) has expired. |
-| `CARD_TOKEN_USED` | The provided card token (nonce) was already used to process payment. |
+| `CARD_TOKEN_USED` | The provided card token (nonce) was already used to process the payment or refund. |
 | `AMOUNT_TOO_HIGH` | The requested payment amount is too high for the provided payment source. |
 | `UNSUPPORTED_INSTRUMENT_TYPE` | The API request references an unsupported instrument type/ |
 | `REFUND_AMOUNT_INVALID` | The requested refund amount exceeds the amount available to refund. |
 | `REFUND_ALREADY_PENDING` | The payment already has a pending refund. |
-| `PAYMENT_NOT_REFUNDABLE` | The payment is not refundable. For example, a previous refund has<br>already been rejected and no new refunds can be accepted. |
+| `PAYMENT_NOT_REFUNDABLE` | The payment is not refundable. For example, the payment has been disputed and is no longer eligible for<br>refunds. |
 | `REFUND_DECLINED` | Request failed - The card issuer declined the refund. |
 | `INVALID_CARD_DATA` | Generic error - the provided card data is invalid. |
 | `SOURCE_USED` | The provided source id was already used to create a card. |
@@ -126,6 +134,7 @@ Square API.
 | `CHIP_INSERTION_REQUIRED` | The card issuer requires that the card be read<br>using a chip reader. |
 | `ALLOWABLE_PIN_TRIES_EXCEEDED` | The card has exhausted its available pin entry<br>retries set by the card issuer. Resolving the error typically requires the<br>card holder to contact the card issuer. |
 | `RESERVATION_DECLINED` | The card issuer declined the refund. |
+| `UNKNOWN_BODY_PARAMETER` | The body parameter is not recognized by the requested endpoint. |
 | `NOT_FOUND` | Not Found - a general error occurred. |
 | `APPLE_PAYMENT_PROCESSING_CERTIFICATE_HASH_NOT_FOUND` | Square could not find the associated Apple Pay certificate. |
 | `METHOD_NOT_ALLOWED` | Method Not Allowed - a general error occurred. |

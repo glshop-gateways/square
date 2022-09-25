@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a payment request for an [invoice]($m/Invoice). Invoices can specify a maximum
- * of 13 payment requests, with up to 12 `INSTALLMENT` request types.
+ * of 13 payment requests, with up to 12 `INSTALLMENT` request types. For more information,
+ * see [Configuring payment requests](https://developer.squareup.com/docs/invoices-api/create-publish-
+ * invoices#payment-requests).
  *
- * For more information,
- * see [Payment requests](https://developer.squareup.com/docs/invoices-api/overview#payment-requests).
+ * Adding `INSTALLMENT` payment requests to an invoice requires an
+ * [Invoices Plus subscription](https://developer.squareup.com/docs/invoices-api/overview#invoices-plus-
+ * subscription).
  */
 class InvoicePaymentRequest implements \JsonSerializable
 {
@@ -80,7 +85,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Uid.
-     *
      * The Square-generated ID of the payment request in an [invoice]($m/Invoice).
      */
     public function getUid(): ?string
@@ -90,7 +94,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Uid.
-     *
      * The Square-generated ID of the payment request in an [invoice]($m/Invoice).
      *
      * @maps uid
@@ -102,7 +105,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Request Method.
-     *
      * Specifies the action for Square to take for processing the invoice. For example,
      * email the invoice, charge a customer's card on file, or do nothing. DEPRECATED at
      * version 2021-01-21. The corresponding `request_method` field is replaced by the
@@ -115,7 +117,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Request Method.
-     *
      * Specifies the action for Square to take for processing the invoice. For example,
      * email the invoice, charge a customer's card on file, or do nothing. DEPRECATED at
      * version 2021-01-21. The corresponding `request_method` field is replaced by the
@@ -130,16 +131,9 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Request Type.
-     *
-     * Indicates the type of the payment request. An invoice supports the following payment request
-     * combinations:
-     * - 1 balance
-     * - 1 deposit with 1 balance
-     * - 2 - 12 installments
-     * - 1 deposit with 2 - 12 installments
-     *
-     * For more information,
-     * see [Payment requests](https://developer.squareup.com/docs/invoices-api/overview#payment-requests).
+     * Indicates the type of the payment request. For more information, see
+     * [Configuring payment requests](https://developer.squareup.com/docs/invoices-api/create-publish-
+     * invoices#payment-requests).
      */
     public function getRequestType(): ?string
     {
@@ -148,16 +142,9 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Request Type.
-     *
-     * Indicates the type of the payment request. An invoice supports the following payment request
-     * combinations:
-     * - 1 balance
-     * - 1 deposit with 1 balance
-     * - 2 - 12 installments
-     * - 1 deposit with 2 - 12 installments
-     *
-     * For more information,
-     * see [Payment requests](https://developer.squareup.com/docs/invoices-api/overview#payment-requests).
+     * Indicates the type of the payment request. For more information, see
+     * [Configuring payment requests](https://developer.squareup.com/docs/invoices-api/create-publish-
+     * invoices#payment-requests).
      *
      * @maps request_type
      */
@@ -168,10 +155,11 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Due Date.
-     *
      * The due date (in the invoice's time zone) for the payment request, in `YYYY-MM-DD` format. This
      * field
-     * is required to create a payment request.
+     * is required to create a payment request. If an `automatic_payment_source` is defined for the request,
+     * Square
+     * charges the payment source on this date.
      *
      * After this date, the invoice becomes overdue. For example, a payment `due_date` of 2021-03-09 with a
      * `timezone`
@@ -186,10 +174,11 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Due Date.
-     *
      * The due date (in the invoice's time zone) for the payment request, in `YYYY-MM-DD` format. This
      * field
-     * is required to create a payment request.
+     * is required to create a payment request. If an `automatic_payment_source` is defined for the request,
+     * Square
+     * charges the payment source on this date.
      *
      * After this date, the invoice becomes overdue. For example, a payment `due_date` of 2021-03-09 with a
      * `timezone`
@@ -206,7 +195,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Fixed Amount Requested Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -222,7 +210,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Fixed Amount Requested Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -240,7 +227,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Percentage Requested.
-     *
      * Specifies the amount for the payment request in percentage:
      *
      * - When the payment `request_type` is `DEPOSIT`, it is the percentage of the order's total amount.
@@ -258,7 +244,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Percentage Requested.
-     *
      * Specifies the amount for the payment request in percentage:
      *
      * - When the payment `request_type` is `DEPOSIT`, it is the percentage of the order's total amount.
@@ -278,7 +263,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Tipping Enabled.
-     *
      * If set to true, the Square-hosted invoice page (the `public_url` field of the invoice)
      * provides a place for the customer to pay a tip.
      *
@@ -292,7 +276,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Tipping Enabled.
-     *
      * If set to true, the Square-hosted invoice page (the `public_url` field of the invoice)
      * provides a place for the customer to pay a tip.
      *
@@ -308,7 +291,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Automatic Payment Source.
-     *
      * Indicates the automatic payment method for an [invoice payment request]($m/InvoicePaymentRequest).
      */
     public function getAutomaticPaymentSource(): ?string
@@ -318,7 +300,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Automatic Payment Source.
-     *
      * Indicates the automatic payment method for an [invoice payment request]($m/InvoicePaymentRequest).
      *
      * @maps automatic_payment_source
@@ -330,11 +311,9 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Card Id.
-     *
-     * The ID of the card on file to charge for the payment request. To get the customer’s card on file,
-     * use the `customer_id` of the invoice recipient to call
-     * [RetrieveCustomer]($e/Customers/RetrieveCustomer)
-     * in the Customers API. Then, get the ID of the target card from the `cards` field in the response.
+     * The ID of the credit or debit card on file to charge for the payment request. To get the cards on
+     * file for a customer,
+     * call [ListCards]($e/Cards/ListCards) and include the `customer_id` of the invoice recipient.
      */
     public function getCardId(): ?string
     {
@@ -343,11 +322,9 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Card Id.
-     *
-     * The ID of the card on file to charge for the payment request. To get the customer’s card on file,
-     * use the `customer_id` of the invoice recipient to call
-     * [RetrieveCustomer]($e/Customers/RetrieveCustomer)
-     * in the Customers API. Then, get the ID of the target card from the `cards` field in the response.
+     * The ID of the credit or debit card on file to charge for the payment request. To get the cards on
+     * file for a customer,
+     * call [ListCards]($e/Cards/ListCards) and include the `customer_id` of the invoice recipient.
      *
      * @maps card_id
      */
@@ -358,7 +335,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Reminders.
-     *
      * A list of one or more reminders to send for the payment request.
      *
      * @return InvoicePaymentReminder[]|null
@@ -370,7 +346,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Reminders.
-     *
      * A list of one or more reminders to send for the payment request.
      *
      * @maps reminders
@@ -384,7 +359,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Computed Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -400,7 +374,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Computed Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -418,7 +391,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Total Completed Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -434,7 +406,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Total Completed Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -452,7 +423,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Returns Rounding Adjustment Included Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -468,7 +438,6 @@ class InvoicePaymentRequest implements \JsonSerializable
 
     /**
      * Sets Rounding Adjustment Included Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -487,27 +456,58 @@ class InvoicePaymentRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['uid']                             = $this->uid;
-        $json['request_method']                  = $this->requestMethod;
-        $json['request_type']                    = $this->requestType;
-        $json['due_date']                        = $this->dueDate;
-        $json['fixed_amount_requested_money']    = $this->fixedAmountRequestedMoney;
-        $json['percentage_requested']            = $this->percentageRequested;
-        $json['tipping_enabled']                 = $this->tippingEnabled;
-        $json['automatic_payment_source']        = $this->automaticPaymentSource;
-        $json['card_id']                         = $this->cardId;
-        $json['reminders']                       = $this->reminders;
-        $json['computed_amount_money']           = $this->computedAmountMoney;
-        $json['total_completed_amount_money']    = $this->totalCompletedAmountMoney;
-        $json['rounding_adjustment_included_money'] = $this->roundingAdjustmentIncludedMoney;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->uid)) {
+            $json['uid']                                = $this->uid;
+        }
+        if (isset($this->requestMethod)) {
+            $json['request_method']                     = $this->requestMethod;
+        }
+        if (isset($this->requestType)) {
+            $json['request_type']                       = $this->requestType;
+        }
+        if (isset($this->dueDate)) {
+            $json['due_date']                           = $this->dueDate;
+        }
+        if (isset($this->fixedAmountRequestedMoney)) {
+            $json['fixed_amount_requested_money']       = $this->fixedAmountRequestedMoney;
+        }
+        if (isset($this->percentageRequested)) {
+            $json['percentage_requested']               = $this->percentageRequested;
+        }
+        if (isset($this->tippingEnabled)) {
+            $json['tipping_enabled']                    = $this->tippingEnabled;
+        }
+        if (isset($this->automaticPaymentSource)) {
+            $json['automatic_payment_source']           = $this->automaticPaymentSource;
+        }
+        if (isset($this->cardId)) {
+            $json['card_id']                            = $this->cardId;
+        }
+        if (isset($this->reminders)) {
+            $json['reminders']                          = $this->reminders;
+        }
+        if (isset($this->computedAmountMoney)) {
+            $json['computed_amount_money']              = $this->computedAmountMoney;
+        }
+        if (isset($this->totalCompletedAmountMoney)) {
+            $json['total_completed_amount_money']       = $this->totalCompletedAmountMoney;
+        }
+        if (isset($this->roundingAdjustmentIncludedMoney)) {
+            $json['rounding_adjustment_included_money'] = $this->roundingAdjustmentIncludedMoney;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -5,21 +5,20 @@ declare(strict_types=1);
 namespace Square\Apis;
 
 use Square\Exceptions\ApiException;
-use Square\ApiHelper;
 use Square\ConfigurationInterface;
+use Square\ApiHelper;
 use Square\Http\ApiResponse;
 use Square\Http\HttpRequest;
 use Square\Http\HttpResponse;
 use Square\Http\HttpMethod;
 use Square\Http\HttpContext;
 use Square\Http\HttpCallBack;
-use Unirest\Request;
 
 class EmployeesApi extends BaseApi
 {
-    public function __construct(ConfigurationInterface $config, ?HttpCallBack $httpCallBack = null)
+    public function __construct(ConfigurationInterface $config, array $authManagers, ?HttpCallBack $httpCallBack)
     {
-        parent::__construct($config, $httpCallBack);
+        parent::__construct($config, $authManagers, $httpCallBack);
     }
 
     /**
@@ -45,43 +44,41 @@ class EmployeesApi extends BaseApi
         trigger_error('Method ' . __METHOD__ . ' is deprecated.', E_USER_DEPRECATED);
 
         //prepare query string for API call
-        $_queryBuilder = '/v2/employees';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/employees';
 
-        //process optional query parameters
-        ApiHelper::appendUrlWithQueryParameters($_queryBuilder, [
+        //process query parameters
+        ApiHelper::appendUrlWithQueryParameters($_queryUrl, [
             'location_id' => $locationId,
             'status'      => $status,
             'limit'       => $limit,
             'cursor'      => $cursor,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -95,8 +92,12 @@ class EmployeesApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\ListEmployeesResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'ListEmployeesResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -116,40 +117,38 @@ class EmployeesApi extends BaseApi
         trigger_error('Method ' . __METHOD__ . ' is deprecated.', E_USER_DEPRECATED);
 
         //prepare query string for API call
-        $_queryBuilder = '/v2/employees/{id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/employees/{id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'id' => $id,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -163,8 +162,12 @@ class EmployeesApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\RetrieveEmployeeResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'RetrieveEmployeeResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 }

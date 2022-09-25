@@ -1,8 +1,8 @@
 
 # Create Break Type Response
 
-The response to the request to create a `BreakType`. Contains
-the created `BreakType` object. May contain a set of `Error` objects if
+The response to the request to create a `BreakType`. The response contains
+the created `BreakType` object and might contain a set of `Error` objects if
 the request resulted in errors.
 
 ## Structure
@@ -13,8 +13,8 @@ the request resulted in errors.
 
 | Name | Type | Tags | Description | Getter | Setter |
 |  --- | --- | --- | --- | --- | --- |
-| `breakType` | [`?BreakType`](/doc/models/break-type.md) | Optional | A defined break template that sets an expectation for possible `Break`<br>instances on a `Shift`. | getBreakType(): ?BreakType | setBreakType(?BreakType breakType): void |
-| `errors` | [`?(Error[])`](/doc/models/error.md) | Optional | Any errors that occurred during the request. | getErrors(): ?array | setErrors(?array errors): void |
+| `breakType` | [`?BreakType`](../../doc/models/break-type.md) | Optional | A defined break template that sets an expectation for possible `Break`<br>instances on a `Shift`. | getBreakType(): ?BreakType | setBreakType(?BreakType breakType): void |
+| `errors` | [`?(Error[])`](../../doc/models/error.md) | Optional | Any errors that occurred during the request. | getErrors(): ?array | setErrors(?array errors): void |
 
 ## Example (as JSON)
 

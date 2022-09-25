@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a set of `CustomerQuery` filters used to limit the set of
- * `Customers` returned by `SearchCustomers`.
+ * customers returned by the [SearchCustomers]($e/Customers/SearchCustomers) endpoint.
  */
 class CustomerFilter implements \JsonSerializable
 {
@@ -46,8 +48,12 @@ class CustomerFilter implements \JsonSerializable
     private $groupIds;
 
     /**
+     * @var CustomerCustomAttributeFilters|null
+     */
+    private $customAttribute;
+
+    /**
      * Returns Creation Source.
-     *
      * The creation source filter.
      *
      * If one or more creation sources are set, customer profiles are included in,
@@ -60,7 +66,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Sets Creation Source.
-     *
      * The creation source filter.
      *
      * If one or more creation sources are set, customer profiles are included in,
@@ -75,7 +80,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * Represents a generic time range. The start and end values are
      * represented in RFC 3339 format. Time ranges are customized to be
      * inclusive or exclusive based on the needs of a particular endpoint.
@@ -89,7 +93,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * Represents a generic time range. The start and end values are
      * represented in RFC 3339 format. Time ranges are customized to be
      * inclusive or exclusive based on the needs of a particular endpoint.
@@ -105,7 +108,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Returns Updated At.
-     *
      * Represents a generic time range. The start and end values are
      * represented in RFC 3339 format. Time ranges are customized to be
      * inclusive or exclusive based on the needs of a particular endpoint.
@@ -119,7 +121,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Sets Updated At.
-     *
      * Represents a generic time range. The start and end values are
      * represented in RFC 3339 format. Time ranges are customized to be
      * inclusive or exclusive based on the needs of a particular endpoint.
@@ -135,7 +136,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Returns Email Address.
-     *
      * A filter to select customers based on exact or fuzzy matching of
      * customer attributes against a specified query. Depending on the customer attributes,
      * the filter can be case-sensitive. This filter can be exact or fuzzy, but it cannot be both.
@@ -147,7 +147,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Sets Email Address.
-     *
      * A filter to select customers based on exact or fuzzy matching of
      * customer attributes against a specified query. Depending on the customer attributes,
      * the filter can be case-sensitive. This filter can be exact or fuzzy, but it cannot be both.
@@ -161,7 +160,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Returns Phone Number.
-     *
      * A filter to select customers based on exact or fuzzy matching of
      * customer attributes against a specified query. Depending on the customer attributes,
      * the filter can be case-sensitive. This filter can be exact or fuzzy, but it cannot be both.
@@ -173,7 +171,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Sets Phone Number.
-     *
      * A filter to select customers based on exact or fuzzy matching of
      * customer attributes against a specified query. Depending on the customer attributes,
      * the filter can be case-sensitive. This filter can be exact or fuzzy, but it cannot be both.
@@ -187,7 +184,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Returns Reference Id.
-     *
      * A filter to select customers based on exact or fuzzy matching of
      * customer attributes against a specified query. Depending on the customer attributes,
      * the filter can be case-sensitive. This filter can be exact or fuzzy, but it cannot be both.
@@ -199,7 +195,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Sets Reference Id.
-     *
      * A filter to select customers based on exact or fuzzy matching of
      * customer attributes against a specified query. Depending on the customer attributes,
      * the filter can be case-sensitive. This filter can be exact or fuzzy, but it cannot be both.
@@ -213,7 +208,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Returns Group Ids.
-     *
      * A filter to select resources based on an exact field value. For any given
      * value, the value can only be in one property. Depending on the field, either
      * all properties can be set or only a subset will be available.
@@ -227,7 +221,6 @@ class CustomerFilter implements \JsonSerializable
 
     /**
      * Sets Group Ids.
-     *
      * A filter to select resources based on an exact field value. For any given
      * value, the value can only be in one property. Depending on the field, either
      * all properties can be set or only a subset will be available.
@@ -242,23 +235,75 @@ class CustomerFilter implements \JsonSerializable
     }
 
     /**
+     * Returns Custom Attribute.
+     * The custom attribute filters in a set of [customer filters]($m/CustomerFilter) used in a search
+     * query. Use this filter
+     * to search based on [custom attributes]($m/CustomAttribute) that are assigned to customer profiles.
+     * For more information, see
+     * [Search by custom attribute](https://developer.squareup.com/docs/customers-api/use-the-api/search-
+     * customers#search-by-custom-attribute).
+     */
+    public function getCustomAttribute(): ?CustomerCustomAttributeFilters
+    {
+        return $this->customAttribute;
+    }
+
+    /**
+     * Sets Custom Attribute.
+     * The custom attribute filters in a set of [customer filters]($m/CustomerFilter) used in a search
+     * query. Use this filter
+     * to search based on [custom attributes]($m/CustomAttribute) that are assigned to customer profiles.
+     * For more information, see
+     * [Search by custom attribute](https://developer.squareup.com/docs/customers-api/use-the-api/search-
+     * customers#search-by-custom-attribute).
+     *
+     * @maps custom_attribute
+     */
+    public function setCustomAttribute(?CustomerCustomAttributeFilters $customAttribute): void
+    {
+        $this->customAttribute = $customAttribute;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['creation_source'] = $this->creationSource;
-        $json['created_at']     = $this->createdAt;
-        $json['updated_at']     = $this->updatedAt;
-        $json['email_address']  = $this->emailAddress;
-        $json['phone_number']   = $this->phoneNumber;
-        $json['reference_id']   = $this->referenceId;
-        $json['group_ids']      = $this->groupIds;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->creationSource)) {
+            $json['creation_source']  = $this->creationSource;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']       = $this->createdAt;
+        }
+        if (isset($this->updatedAt)) {
+            $json['updated_at']       = $this->updatedAt;
+        }
+        if (isset($this->emailAddress)) {
+            $json['email_address']    = $this->emailAddress;
+        }
+        if (isset($this->phoneNumber)) {
+            $json['phone_number']     = $this->phoneNumber;
+        }
+        if (isset($this->referenceId)) {
+            $json['reference_id']     = $this->referenceId;
+        }
+        if (isset($this->groupIds)) {
+            $json['group_ids']        = $this->groupIds;
+        }
+        if (isset($this->customAttribute)) {
+            $json['custom_attribute'] = $this->customAttribute;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Details about the device that took the payment.
  */
@@ -26,7 +28,6 @@ class DeviceDetails implements \JsonSerializable
 
     /**
      * Returns Device Id.
-     *
      * The Square-issued ID of the device.
      */
     public function getDeviceId(): ?string
@@ -36,7 +37,6 @@ class DeviceDetails implements \JsonSerializable
 
     /**
      * Sets Device Id.
-     *
      * The Square-issued ID of the device.
      *
      * @maps device_id
@@ -48,7 +48,6 @@ class DeviceDetails implements \JsonSerializable
 
     /**
      * Returns Device Installation Id.
-     *
      * The Square-issued installation ID for the device.
      */
     public function getDeviceInstallationId(): ?string
@@ -58,7 +57,6 @@ class DeviceDetails implements \JsonSerializable
 
     /**
      * Sets Device Installation Id.
-     *
      * The Square-issued installation ID for the device.
      *
      * @maps device_installation_id
@@ -70,7 +68,6 @@ class DeviceDetails implements \JsonSerializable
 
     /**
      * Returns Device Name.
-     *
      * The name of the device set by the seller.
      */
     public function getDeviceName(): ?string
@@ -80,7 +77,6 @@ class DeviceDetails implements \JsonSerializable
 
     /**
      * Sets Device Name.
-     *
      * The name of the device set by the seller.
      *
      * @maps device_name
@@ -93,17 +89,28 @@ class DeviceDetails implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['device_id']            = $this->deviceId;
-        $json['device_installation_id'] = $this->deviceInstallationId;
-        $json['device_name']          = $this->deviceName;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->deviceId)) {
+            $json['device_id']              = $this->deviceId;
+        }
+        if (isset($this->deviceInstallationId)) {
+            $json['device_installation_id'] = $this->deviceInstallationId;
+        }
+        if (isset($this->deviceName)) {
+            $json['device_name']            = $this->deviceName;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

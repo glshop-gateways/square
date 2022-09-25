@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class RetrieveInventoryChangesResponse implements \JsonSerializable
 {
     /**
@@ -23,7 +25,6 @@ class RetrieveInventoryChangesResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -35,7 +36,6 @@ class RetrieveInventoryChangesResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -49,7 +49,6 @@ class RetrieveInventoryChangesResponse implements \JsonSerializable
 
     /**
      * Returns Changes.
-     *
      * The set of inventory changes for the requested object and locations.
      *
      * @return InventoryChange[]|null
@@ -61,7 +60,6 @@ class RetrieveInventoryChangesResponse implements \JsonSerializable
 
     /**
      * Sets Changes.
-     *
      * The set of inventory changes for the requested object and locations.
      *
      * @maps changes
@@ -75,7 +73,6 @@ class RetrieveInventoryChangesResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If unset,
      * this is the final response.
      *
@@ -89,7 +86,6 @@ class RetrieveInventoryChangesResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If unset,
      * this is the final response.
      *
@@ -106,17 +102,28 @@ class RetrieveInventoryChangesResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']  = $this->errors;
-        $json['changes'] = $this->changes;
-        $json['cursor']  = $this->cursor;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']  = $this->errors;
+        }
+        if (isset($this->changes)) {
+            $json['changes'] = $this->changes;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']  = $this->cursor;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

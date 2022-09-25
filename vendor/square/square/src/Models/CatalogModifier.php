@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A modifier applicable to items at the time of sale.
  */
@@ -30,8 +32,12 @@ class CatalogModifier implements \JsonSerializable
     private $modifierListId;
 
     /**
+     * @var string[]|null
+     */
+    private $imageIds;
+
+    /**
      * Returns Name.
-     *
      * The modifier name.  This is a searchable attribute for use in applicable query filters, and its
      * value length is of Unicode code points.
      */
@@ -42,7 +48,6 @@ class CatalogModifier implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * The modifier name.  This is a searchable attribute for use in applicable query filters, and its
      * value length is of Unicode code points.
      *
@@ -55,7 +60,6 @@ class CatalogModifier implements \JsonSerializable
 
     /**
      * Returns Price Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -71,7 +75,6 @@ class CatalogModifier implements \JsonSerializable
 
     /**
      * Sets Price Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -89,7 +92,6 @@ class CatalogModifier implements \JsonSerializable
 
     /**
      * Returns Ordinal.
-     *
      * Determines where this `CatalogModifier` appears in the `CatalogModifierList`.
      */
     public function getOrdinal(): ?int
@@ -99,7 +101,6 @@ class CatalogModifier implements \JsonSerializable
 
     /**
      * Sets Ordinal.
-     *
      * Determines where this `CatalogModifier` appears in the `CatalogModifierList`.
      *
      * @maps ordinal
@@ -111,7 +112,6 @@ class CatalogModifier implements \JsonSerializable
 
     /**
      * Returns Modifier List Id.
-     *
      * The ID of the `CatalogModifierList` associated with this modifier.
      */
     public function getModifierListId(): ?string
@@ -121,7 +121,6 @@ class CatalogModifier implements \JsonSerializable
 
     /**
      * Sets Modifier List Id.
-     *
      * The ID of the `CatalogModifierList` associated with this modifier.
      *
      * @maps modifier_list_id
@@ -132,20 +131,64 @@ class CatalogModifier implements \JsonSerializable
     }
 
     /**
+     * Returns Image Ids.
+     * The IDs of images associated with this `CatalogModifier` instance.
+     * Currently these images are not displayed by Square, but are free to be displayed in 3rd party
+     * applications.
+     *
+     * @return string[]|null
+     */
+    public function getImageIds(): ?array
+    {
+        return $this->imageIds;
+    }
+
+    /**
+     * Sets Image Ids.
+     * The IDs of images associated with this `CatalogModifier` instance.
+     * Currently these images are not displayed by Square, but are free to be displayed in 3rd party
+     * applications.
+     *
+     * @maps image_ids
+     *
+     * @param string[]|null $imageIds
+     */
+    public function setImageIds(?array $imageIds): void
+    {
+        $this->imageIds = $imageIds;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['name']           = $this->name;
-        $json['price_money']    = $this->priceMoney;
-        $json['ordinal']        = $this->ordinal;
-        $json['modifier_list_id'] = $this->modifierListId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->name)) {
+            $json['name']             = $this->name;
+        }
+        if (isset($this->priceMoney)) {
+            $json['price_money']      = $this->priceMoney;
+        }
+        if (isset($this->ordinal)) {
+            $json['ordinal']          = $this->ordinal;
+        }
+        if (isset($this->modifierListId)) {
+            $json['modifier_list_id'] = $this->modifierListId;
+        }
+        if (isset($this->imageIds)) {
+            $json['image_ids']        = $this->imageIds;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

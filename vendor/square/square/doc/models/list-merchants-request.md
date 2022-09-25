@@ -1,7 +1,7 @@
 
 # List Merchants Request
 
-Request object for the [ListMerchant](/doc/apis/merchants.md#list-merchants) endpoint.
+Request object for the [ListMerchant](../../doc/apis/merchants.md#list-merchants) endpoint.
 
 ## Structure
 
@@ -17,7 +17,7 @@ Request object for the [ListMerchant](/doc/apis/merchants.md#list-merchants) end
 
 ```json
 {
-  "cursor": 210
+  "cursor": null
 }
 ```
 

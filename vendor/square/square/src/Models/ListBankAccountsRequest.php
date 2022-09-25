@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Request object for fetching all `BankAccount`
  * objects linked to a account.
@@ -27,7 +29,6 @@ class ListBankAccountsRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * The pagination cursor returned by a previous call to this endpoint.
      * Use it in the next `ListBankAccounts` request to retrieve the next set
      * of results.
@@ -42,7 +43,6 @@ class ListBankAccountsRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * The pagination cursor returned by a previous call to this endpoint.
      * Use it in the next `ListBankAccounts` request to retrieve the next set
      * of results.
@@ -59,7 +59,6 @@ class ListBankAccountsRequest implements \JsonSerializable
 
     /**
      * Returns Limit.
-     *
      * Upper limit on the number of bank accounts to return in the response.
      * Currently, 1000 is the largest supported limit. You can specify a limit
      * of up to 1000 bank accounts. This is also the default limit.
@@ -71,7 +70,6 @@ class ListBankAccountsRequest implements \JsonSerializable
 
     /**
      * Sets Limit.
-     *
      * Upper limit on the number of bank accounts to return in the response.
      * Currently, 1000 is the largest supported limit. You can specify a limit
      * of up to 1000 bank accounts. This is also the default limit.
@@ -85,7 +83,6 @@ class ListBankAccountsRequest implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * Location ID. You can specify this optional filter
      * to retrieve only the linked bank accounts belonging to a specific location.
      */
@@ -96,7 +93,6 @@ class ListBankAccountsRequest implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * Location ID. You can specify this optional filter
      * to retrieve only the linked bank accounts belonging to a specific location.
      *
@@ -110,17 +106,28 @@ class ListBankAccountsRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['cursor']     = $this->cursor;
-        $json['limit']      = $this->limit;
-        $json['location_id'] = $this->locationId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->cursor)) {
+            $json['cursor']      = $this->cursor;
+        }
+        if (isset($this->limit)) {
+            $json['limit']       = $this->limit;
+        }
+        if (isset($this->locationId)) {
+            $json['location_id'] = $this->locationId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

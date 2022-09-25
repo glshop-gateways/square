@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * A response to a request to get a `TeamMemberWage`. Contains
- * the requested `TeamMemberWage` objects. May contain a set of `Error` objects if
+ * A response to a request to get a `TeamMemberWage`. The response contains
+ * the requested `TeamMemberWage` objects and might contain a set of `Error` objects if
  * the request resulted in errors.
  */
 class GetTeamMemberWageResponse implements \JsonSerializable
@@ -23,8 +25,7 @@ class GetTeamMemberWageResponse implements \JsonSerializable
 
     /**
      * Returns Team Member Wage.
-     *
-     * The hourly wage rate that a team member will earn on a `Shift` for doing the job
+     * The hourly wage rate that a team member earns on a `Shift` for doing the job
      * specified by the `title` property of this object.
      */
     public function getTeamMemberWage(): ?TeamMemberWage
@@ -34,8 +35,7 @@ class GetTeamMemberWageResponse implements \JsonSerializable
 
     /**
      * Sets Team Member Wage.
-     *
-     * The hourly wage rate that a team member will earn on a `Shift` for doing the job
+     * The hourly wage rate that a team member earns on a `Shift` for doing the job
      * specified by the `title` property of this object.
      *
      * @maps team_member_wage
@@ -47,7 +47,6 @@ class GetTeamMemberWageResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -59,7 +58,6 @@ class GetTeamMemberWageResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -74,16 +72,25 @@ class GetTeamMemberWageResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['team_member_wage'] = $this->teamMemberWage;
-        $json['errors']         = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->teamMemberWage)) {
+            $json['team_member_wage'] = $this->teamMemberWage;
+        }
+        if (isset($this->errors)) {
+            $json['errors']           = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

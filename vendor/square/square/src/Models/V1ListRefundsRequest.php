@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class V1ListRefundsRequest implements \JsonSerializable
 {
     /**
@@ -33,7 +35,6 @@ class V1ListRefundsRequest implements \JsonSerializable
 
     /**
      * Returns Order.
-     *
      * The order (e.g., chronological or alphabetical) in which results from a request are returned.
      */
     public function getOrder(): ?string
@@ -43,7 +44,6 @@ class V1ListRefundsRequest implements \JsonSerializable
 
     /**
      * Sets Order.
-     *
      * The order (e.g., chronological or alphabetical) in which results from a request are returned.
      *
      * @maps order
@@ -55,7 +55,6 @@ class V1ListRefundsRequest implements \JsonSerializable
 
     /**
      * Returns Begin Time.
-     *
      * The beginning of the requested reporting period, in ISO 8601 format. If this value is before January
      * 1, 2013 (2013-01-01T00:00:00Z), this endpoint returns an error. Default value: The current time
      * minus one year.
@@ -67,7 +66,6 @@ class V1ListRefundsRequest implements \JsonSerializable
 
     /**
      * Sets Begin Time.
-     *
      * The beginning of the requested reporting period, in ISO 8601 format. If this value is before January
      * 1, 2013 (2013-01-01T00:00:00Z), this endpoint returns an error. Default value: The current time
      * minus one year.
@@ -81,7 +79,6 @@ class V1ListRefundsRequest implements \JsonSerializable
 
     /**
      * Returns End Time.
-     *
      * The end of the requested reporting period, in ISO 8601 format. If this value is more than one year
      * greater than begin_time, this endpoint returns an error. Default value: The current time.
      */
@@ -92,7 +89,6 @@ class V1ListRefundsRequest implements \JsonSerializable
 
     /**
      * Sets End Time.
-     *
      * The end of the requested reporting period, in ISO 8601 format. If this value is more than one year
      * greater than begin_time, this endpoint returns an error. Default value: The current time.
      *
@@ -105,7 +101,6 @@ class V1ListRefundsRequest implements \JsonSerializable
 
     /**
      * Returns Limit.
-     *
      * The approximate number of refunds to return in a single response. Default: 100. Max: 200. Response
      * may contain more results than the prescribed limit when refunds are made simultaneously to multiple
      * tenders in a payment or when refunds are generated in an exchange to account for the value of
@@ -118,7 +113,6 @@ class V1ListRefundsRequest implements \JsonSerializable
 
     /**
      * Sets Limit.
-     *
      * The approximate number of refunds to return in a single response. Default: 100. Max: 200. Response
      * may contain more results than the prescribed limit when refunds are made simultaneously to multiple
      * tenders in a payment or when refunds are generated in an exchange to account for the value of
@@ -133,7 +127,6 @@ class V1ListRefundsRequest implements \JsonSerializable
 
     /**
      * Returns Batch Token.
-     *
      * A pagination cursor to retrieve the next set of results for your
      * original query to the endpoint.
      */
@@ -144,7 +137,6 @@ class V1ListRefundsRequest implements \JsonSerializable
 
     /**
      * Sets Batch Token.
-     *
      * A pagination cursor to retrieve the next set of results for your
      * original query to the endpoint.
      *
@@ -158,19 +150,34 @@ class V1ListRefundsRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['order']      = $this->order;
-        $json['begin_time'] = $this->beginTime;
-        $json['end_time']   = $this->endTime;
-        $json['limit']      = $this->limit;
-        $json['batch_token'] = $this->batchToken;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->order)) {
+            $json['order']       = $this->order;
+        }
+        if (isset($this->beginTime)) {
+            $json['begin_time']  = $this->beginTime;
+        }
+        if (isset($this->endTime)) {
+            $json['end_time']    = $this->endTime;
+        }
+        if (isset($this->limit)) {
+            $json['limit']       = $this->limit;
+        }
+        if (isset($this->batchToken)) {
+            $json['batch_token'] = $this->batchToken;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A range defined by two dates. Used for filtering a query for Connect v2
  * objects that have date properties.
@@ -22,10 +24,9 @@ class DateRange implements \JsonSerializable
 
     /**
      * Returns Start Date.
-     *
-     * String in `YYYY-MM-DD` format, e.g. `2017-10-31` per the ISO 8601
+     * A string in `YYYY-MM-DD` format, such as `2017-10-31`, per the ISO 8601
      * extended format for calendar dates.
-     * The beginning of a date range (inclusive)
+     * The beginning of a date range (inclusive).
      */
     public function getStartDate(): ?string
     {
@@ -34,10 +35,9 @@ class DateRange implements \JsonSerializable
 
     /**
      * Sets Start Date.
-     *
-     * String in `YYYY-MM-DD` format, e.g. `2017-10-31` per the ISO 8601
+     * A string in `YYYY-MM-DD` format, such as `2017-10-31`, per the ISO 8601
      * extended format for calendar dates.
-     * The beginning of a date range (inclusive)
+     * The beginning of a date range (inclusive).
      *
      * @maps start_date
      */
@@ -48,10 +48,9 @@ class DateRange implements \JsonSerializable
 
     /**
      * Returns End Date.
-     *
-     * String in `YYYY-MM-DD` format, e.g. `2017-10-31` per the ISO 8601
+     * A string in `YYYY-MM-DD` format, such as `2017-10-31`, per the ISO 8601
      * extended format for calendar dates.
-     * The end of a date range (inclusive)
+     * The end of a date range (inclusive).
      */
     public function getEndDate(): ?string
     {
@@ -60,10 +59,9 @@ class DateRange implements \JsonSerializable
 
     /**
      * Sets End Date.
-     *
-     * String in `YYYY-MM-DD` format, e.g. `2017-10-31` per the ISO 8601
+     * A string in `YYYY-MM-DD` format, such as `2017-10-31`, per the ISO 8601
      * extended format for calendar dates.
-     * The end of a date range (inclusive)
+     * The end of a date range (inclusive).
      *
      * @maps end_date
      */
@@ -75,16 +73,25 @@ class DateRange implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['start_date'] = $this->startDate;
-        $json['end_date']  = $this->endDate;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->startDate)) {
+            $json['start_date'] = $this->startDate;
+        }
+        if (isset($this->endDate)) {
+            $json['end_date']   = $this->endDate;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

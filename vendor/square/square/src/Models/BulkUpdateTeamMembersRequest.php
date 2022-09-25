@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a bulk update request for `TeamMember` objects.
  */
 class BulkUpdateTeamMembersRequest implements \JsonSerializable
 {
     /**
-     * @var array
+     * @var array<string,UpdateTeamMemberRequest>
      */
     private $teamMembers;
 
     /**
-     * @param array $teamMembers
+     * @param array<string,UpdateTeamMemberRequest> $teamMembers
      */
     public function __construct(array $teamMembers)
     {
@@ -24,9 +26,10 @@ class BulkUpdateTeamMembersRequest implements \JsonSerializable
 
     /**
      * Returns Team Members.
+     * The data used to update the `TeamMember` objects. Each key is the `team_member_id` that maps to the
+     * `UpdateTeamMemberRequest`.
      *
-     * The data which will be used to update the `TeamMember` objects. Each key is the `team_member_id`
-     * that maps to the `UpdateTeamMemberRequest`.
+     * @return array<string,UpdateTeamMemberRequest>
      */
     public function getTeamMembers(): array
     {
@@ -35,12 +38,13 @@ class BulkUpdateTeamMembersRequest implements \JsonSerializable
 
     /**
      * Sets Team Members.
-     *
-     * The data which will be used to update the `TeamMember` objects. Each key is the `team_member_id`
-     * that maps to the `UpdateTeamMemberRequest`.
+     * The data used to update the `TeamMember` objects. Each key is the `team_member_id` that maps to the
+     * `UpdateTeamMemberRequest`.
      *
      * @required
      * @maps team_members
+     *
+     * @param array<string,UpdateTeamMemberRequest> $teamMembers
      */
     public function setTeamMembers(array $teamMembers): void
     {
@@ -50,15 +54,20 @@ class BulkUpdateTeamMembersRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['team_members'] = $this->teamMembers;
-
-        return array_filter($json, function ($val) {
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

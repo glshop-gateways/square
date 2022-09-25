@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Contains details necessary to fulfill a shipment order.
+ * Contains the details necessary to fulfill a shipment order.
  */
 class OrderFulfillmentShipmentDetails implements \JsonSerializable
 {
@@ -86,8 +88,7 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Recipient.
-     *
-     * Contains information on the recipient of a fulfillment.
+     * Information about the fulfillment recipient.
      */
     public function getRecipient(): ?OrderFulfillmentRecipient
     {
@@ -96,8 +97,7 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Recipient.
-     *
-     * Contains information on the recipient of a fulfillment.
+     * Information about the fulfillment recipient.
      *
      * @maps recipient
      */
@@ -108,9 +108,7 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Carrier.
-     *
-     * The shipping carrier being used to ship this fulfillment
-     * e.g. UPS, FedEx, USPS, etc.
+     * The shipping carrier being used to ship this fulfillment (such as UPS, FedEx, or USPS).
      */
     public function getCarrier(): ?string
     {
@@ -119,9 +117,7 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Carrier.
-     *
-     * The shipping carrier being used to ship this fulfillment
-     * e.g. UPS, FedEx, USPS, etc.
+     * The shipping carrier being used to ship this fulfillment (such as UPS, FedEx, or USPS).
      *
      * @maps carrier
      */
@@ -132,7 +128,6 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Shipping Note.
-     *
      * A note with additional information for the shipping carrier.
      */
     public function getShippingNote(): ?string
@@ -142,7 +137,6 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Shipping Note.
-     *
      * A note with additional information for the shipping carrier.
      *
      * @maps shipping_note
@@ -154,9 +148,8 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Shipping Type.
-     *
-     * A description of the type of shipping product purchased from the carrier.
-     * e.g. First Class, Priority, Express
+     * A description of the type of shipping product purchased from the carrier
+     * (such as First Class, Priority, or Express).
      */
     public function getShippingType(): ?string
     {
@@ -165,9 +158,8 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Shipping Type.
-     *
-     * A description of the type of shipping product purchased from the carrier.
-     * e.g. First Class, Priority, Express
+     * A description of the type of shipping product purchased from the carrier
+     * (such as First Class, Priority, or Express).
      *
      * @maps shipping_type
      */
@@ -178,7 +170,6 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Tracking Number.
-     *
      * The reference number provided by the carrier to track the shipment's progress.
      */
     public function getTrackingNumber(): ?string
@@ -188,7 +179,6 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Tracking Number.
-     *
      * The reference number provided by the carrier to track the shipment's progress.
      *
      * @maps tracking_number
@@ -200,7 +190,6 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Tracking Url.
-     *
      * A link to the tracking webpage on the carrier's website.
      */
     public function getTrackingUrl(): ?string
@@ -210,7 +199,6 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Tracking Url.
-     *
      * A link to the tracking webpage on the carrier's website.
      *
      * @maps tracking_url
@@ -222,10 +210,9 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Placed At.
-     *
      * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
-     * indicating when the shipment was requested.
-     * Must be in RFC 3339 timestamp format, e.g., "2016-09-04T23:59:33.123Z".
+     * indicating when the shipment was requested. The timestamp must be in RFC 3339 format
+     * (for example, "2016-09-04T23:59:33.123Z").
      */
     public function getPlacedAt(): ?string
     {
@@ -234,10 +221,9 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Placed At.
-     *
      * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
-     * indicating when the shipment was requested.
-     * Must be in RFC 3339 timestamp format, e.g., "2016-09-04T23:59:33.123Z".
+     * indicating when the shipment was requested. The timestamp must be in RFC 3339 format
+     * (for example, "2016-09-04T23:59:33.123Z").
      *
      * @maps placed_at
      */
@@ -248,11 +234,11 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns In Progress At.
-     *
      * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
-     * indicating when this fulfillment wasmoved to the `RESERVED` state. Indicates that preparation
-     * of this shipment has begun.
-     * Must be in RFC 3339 timestamp format, e.g., "2016-09-04T23:59:33.123Z".
+     * indicating when this fulfillment was moved to the `RESERVED` state, which  indicates that
+     * preparation
+     * of this shipment has begun. The timestamp must be in RFC 3339 format (for example, "2016-09-04T23:59:
+     * 33.123Z").
      */
     public function getInProgressAt(): ?string
     {
@@ -261,11 +247,11 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets In Progress At.
-     *
      * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
-     * indicating when this fulfillment wasmoved to the `RESERVED` state. Indicates that preparation
-     * of this shipment has begun.
-     * Must be in RFC 3339 timestamp format, e.g., "2016-09-04T23:59:33.123Z".
+     * indicating when this fulfillment was moved to the `RESERVED` state, which  indicates that
+     * preparation
+     * of this shipment has begun. The timestamp must be in RFC 3339 format (for example, "2016-09-04T23:59:
+     * 33.123Z").
      *
      * @maps in_progress_at
      */
@@ -276,11 +262,10 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Packaged At.
-     *
-     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates) indicating when
-     * this fulfillment
-     * was moved to the `PREPARED` state. Indicates that the fulfillment is packaged.
-     * Must be in RFC 3339 timestamp format, e.g., "2016-09-04T23:59:33.123Z".
+     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
+     * indicating when this fulfillment was moved to the `PREPARED` state, which indicates that the
+     * fulfillment is packaged. The timestamp must be in RFC 3339 format (for example, "2016-09-04T23:59:33.
+     * 123Z").
      */
     public function getPackagedAt(): ?string
     {
@@ -289,11 +274,10 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Packaged At.
-     *
-     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates) indicating when
-     * this fulfillment
-     * was moved to the `PREPARED` state. Indicates that the fulfillment is packaged.
-     * Must be in RFC 3339 timestamp format, e.g., "2016-09-04T23:59:33.123Z".
+     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
+     * indicating when this fulfillment was moved to the `PREPARED` state, which indicates that the
+     * fulfillment is packaged. The timestamp must be in RFC 3339 format (for example, "2016-09-04T23:59:33.
+     * 123Z").
      *
      * @maps packaged_at
      */
@@ -304,10 +288,9 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Expected Shipped At.
-     *
      * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
-     * indicating when the shipment is expected to be delivered to the shipping carrier. Must be in
-     * RFC 3339 timestamp format, e.g., "2016-09-04T23:59:33.123Z".
+     * indicating when the shipment is expected to be delivered to the shipping carrier.
+     * The timestamp must be in RFC 3339 format (for example, "2016-09-04T23:59:33.123Z").
      */
     public function getExpectedShippedAt(): ?string
     {
@@ -316,10 +299,9 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Expected Shipped At.
-     *
      * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
-     * indicating when the shipment is expected to be delivered to the shipping carrier. Must be in
-     * RFC 3339 timestamp format, e.g., "2016-09-04T23:59:33.123Z".
+     * indicating when the shipment is expected to be delivered to the shipping carrier.
+     * The timestamp must be in RFC 3339 format (for example, "2016-09-04T23:59:33.123Z").
      *
      * @maps expected_shipped_at
      */
@@ -330,11 +312,10 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Shipped At.
-     *
      * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
-     * indicating when this fulfillment was moved to the `COMPLETED`state. Indicates that the fulfillment
-     * has been given to the shipping carrier. Must be in RFC 3339 timestamp format, e.g.,
-     * "2016-09-04T23:59:33.123Z".
+     * indicating when this fulfillment was moved to the `COMPLETED` state, which indicates that
+     * the fulfillment has been given to the shipping carrier. The timestamp must be in RFC 3339 format
+     * (for example, "2016-09-04T23:59:33.123Z").
      */
     public function getShippedAt(): ?string
     {
@@ -343,11 +324,10 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Shipped At.
-     *
      * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
-     * indicating when this fulfillment was moved to the `COMPLETED`state. Indicates that the fulfillment
-     * has been given to the shipping carrier. Must be in RFC 3339 timestamp format, e.g.,
-     * "2016-09-04T23:59:33.123Z".
+     * indicating when this fulfillment was moved to the `COMPLETED` state, which indicates that
+     * the fulfillment has been given to the shipping carrier. The timestamp must be in RFC 3339 format
+     * (for example, "2016-09-04T23:59:33.123Z").
      *
      * @maps shipped_at
      */
@@ -358,10 +338,9 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Canceled At.
-     *
-     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates) indicating the
-     * shipment was canceled.
-     * Must be in RFC 3339 timestamp format, e.g., "2016-09-04T23:59:33.123Z".
+     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
+     * indicating the shipment was canceled.
+     * The timestamp must be in RFC 3339 format (for example, "2016-09-04T23:59:33.123Z").
      */
     public function getCanceledAt(): ?string
     {
@@ -370,10 +349,9 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Canceled At.
-     *
-     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates) indicating the
-     * shipment was canceled.
-     * Must be in RFC 3339 timestamp format, e.g., "2016-09-04T23:59:33.123Z".
+     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
+     * indicating the shipment was canceled.
+     * The timestamp must be in RFC 3339 format (for example, "2016-09-04T23:59:33.123Z").
      *
      * @maps canceled_at
      */
@@ -384,7 +362,6 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Cancel Reason.
-     *
      * A description of why the shipment was canceled.
      */
     public function getCancelReason(): ?string
@@ -394,7 +371,6 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Cancel Reason.
-     *
      * A description of why the shipment was canceled.
      *
      * @maps cancel_reason
@@ -406,11 +382,9 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Failed At.
-     *
-     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates) indicating when
-     * the shipment
-     * failed to be completed. Must be in RFC 3339 timestamp format, e.g.,
-     * "2016-09-04T23:59:33.123Z".
+     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
+     * indicating when the shipment failed to be completed. The timestamp must be in RFC 3339 format
+     * (for example, "2016-09-04T23:59:33.123Z").
      */
     public function getFailedAt(): ?string
     {
@@ -419,11 +393,9 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Failed At.
-     *
-     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates) indicating when
-     * the shipment
-     * failed to be completed. Must be in RFC 3339 timestamp format, e.g.,
-     * "2016-09-04T23:59:33.123Z".
+     * The [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates)
+     * indicating when the shipment failed to be completed. The timestamp must be in RFC 3339 format
+     * (for example, "2016-09-04T23:59:33.123Z").
      *
      * @maps failed_at
      */
@@ -434,7 +406,6 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Returns Failure Reason.
-     *
      * A description of why the shipment failed to be completed.
      */
     public function getFailureReason(): ?string
@@ -444,7 +415,6 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
 
     /**
      * Sets Failure Reason.
-     *
      * A description of why the shipment failed to be completed.
      *
      * @maps failure_reason
@@ -457,29 +427,64 @@ class OrderFulfillmentShipmentDetails implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['recipient']         = $this->recipient;
-        $json['carrier']           = $this->carrier;
-        $json['shipping_note']     = $this->shippingNote;
-        $json['shipping_type']     = $this->shippingType;
-        $json['tracking_number']   = $this->trackingNumber;
-        $json['tracking_url']      = $this->trackingUrl;
-        $json['placed_at']         = $this->placedAt;
-        $json['in_progress_at']    = $this->inProgressAt;
-        $json['packaged_at']       = $this->packagedAt;
-        $json['expected_shipped_at'] = $this->expectedShippedAt;
-        $json['shipped_at']        = $this->shippedAt;
-        $json['canceled_at']       = $this->canceledAt;
-        $json['cancel_reason']     = $this->cancelReason;
-        $json['failed_at']         = $this->failedAt;
-        $json['failure_reason']    = $this->failureReason;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->recipient)) {
+            $json['recipient']           = $this->recipient;
+        }
+        if (isset($this->carrier)) {
+            $json['carrier']             = $this->carrier;
+        }
+        if (isset($this->shippingNote)) {
+            $json['shipping_note']       = $this->shippingNote;
+        }
+        if (isset($this->shippingType)) {
+            $json['shipping_type']       = $this->shippingType;
+        }
+        if (isset($this->trackingNumber)) {
+            $json['tracking_number']     = $this->trackingNumber;
+        }
+        if (isset($this->trackingUrl)) {
+            $json['tracking_url']        = $this->trackingUrl;
+        }
+        if (isset($this->placedAt)) {
+            $json['placed_at']           = $this->placedAt;
+        }
+        if (isset($this->inProgressAt)) {
+            $json['in_progress_at']      = $this->inProgressAt;
+        }
+        if (isset($this->packagedAt)) {
+            $json['packaged_at']         = $this->packagedAt;
+        }
+        if (isset($this->expectedShippedAt)) {
+            $json['expected_shipped_at'] = $this->expectedShippedAt;
+        }
+        if (isset($this->shippedAt)) {
+            $json['shipped_at']          = $this->shippedAt;
+        }
+        if (isset($this->canceledAt)) {
+            $json['canceled_at']         = $this->canceledAt;
+        }
+        if (isset($this->cancelReason)) {
+            $json['cancel_reason']       = $this->cancelReason;
+        }
+        if (isset($this->failedAt)) {
+            $json['failed_at']           = $this->failedAt;
+        }
+        if (isset($this->failureReason)) {
+            $json['failure_reason']      = $this->failureReason;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Describes pricing adjustments that are blocked from manual and
  * automatic application to a line item. For more information, see
@@ -24,9 +26,8 @@ class OrderLineItemPricingBlocklists implements \JsonSerializable
 
     /**
      * Returns Blocked Discounts.
-     *
      * A list of discounts blocked from applying to the line item.
-     * Discounts can be blocked by the `discount_uid` (for ad-hoc discounts) or
+     * Discounts can be blocked by the `discount_uid` (for ad hoc discounts) or
      * the `discount_catalog_object_id` (for catalog discounts).
      *
      * @return OrderLineItemPricingBlocklistsBlockedDiscount[]|null
@@ -38,9 +39,8 @@ class OrderLineItemPricingBlocklists implements \JsonSerializable
 
     /**
      * Sets Blocked Discounts.
-     *
      * A list of discounts blocked from applying to the line item.
-     * Discounts can be blocked by the `discount_uid` (for ad-hoc discounts) or
+     * Discounts can be blocked by the `discount_uid` (for ad hoc discounts) or
      * the `discount_catalog_object_id` (for catalog discounts).
      *
      * @maps blocked_discounts
@@ -54,9 +54,8 @@ class OrderLineItemPricingBlocklists implements \JsonSerializable
 
     /**
      * Returns Blocked Taxes.
-     *
      * A list of taxes blocked from applying to the line item.
-     * Taxes can be blocked by the `tax_uid` (for ad-hoc taxes) or
+     * Taxes can be blocked by the `tax_uid` (for ad hoc taxes) or
      * the `tax_catalog_object_id` (for catalog taxes).
      *
      * @return OrderLineItemPricingBlocklistsBlockedTax[]|null
@@ -68,9 +67,8 @@ class OrderLineItemPricingBlocklists implements \JsonSerializable
 
     /**
      * Sets Blocked Taxes.
-     *
      * A list of taxes blocked from applying to the line item.
-     * Taxes can be blocked by the `tax_uid` (for ad-hoc taxes) or
+     * Taxes can be blocked by the `tax_uid` (for ad hoc taxes) or
      * the `tax_catalog_object_id` (for catalog taxes).
      *
      * @maps blocked_taxes
@@ -85,16 +83,25 @@ class OrderLineItemPricingBlocklists implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['blocked_discounts'] = $this->blockedDiscounts;
-        $json['blocked_taxes']    = $this->blockedTaxes;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->blockedDiscounts)) {
+            $json['blocked_discounts'] = $this->blockedDiscounts;
+        }
+        if (isset($this->blockedTaxes)) {
+            $json['blocked_taxes']     = $this->blockedTaxes;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -57,8 +57,7 @@ class InvoiceRequestMethod
     public const SMS = 'SMS';
 
     /**
-     * Directs Square to charge the card on file on the `due_date` specified in the payment request and
-     * to
+     * Directs Square to charge the card on file on the `due_date` specified in the payment request and to
      * use SMS (text message) to send invoices and receipts.
      *
      * You cannot set `SMS_CHARGE_CARD_ON_FILE` as a request method using the Invoices API.

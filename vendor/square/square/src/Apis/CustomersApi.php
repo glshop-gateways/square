@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace Square\Apis;
 
 use Square\Exceptions\ApiException;
-use Square\ApiHelper;
 use Square\ConfigurationInterface;
+use Square\ApiHelper;
+use Square\Models;
 use Square\Http\ApiResponse;
 use Square\Http\HttpRequest;
 use Square\Http\HttpResponse;
 use Square\Http\HttpMethod;
 use Square\Http\HttpContext;
 use Square\Http\HttpCallBack;
-use Unirest\Request;
 
 class CustomersApi extends BaseApi
 {
-    public function __construct(ConfigurationInterface $config, ?HttpCallBack $httpCallBack = null)
+    public function __construct(ConfigurationInterface $config, array $authManagers, ?HttpCallBack $httpCallBack)
     {
-        parent::__construct($config, $httpCallBack);
+        parent::__construct($config, $authManagers, $httpCallBack);
     }
 
     /**
@@ -30,19 +30,24 @@ class CustomersApi extends BaseApi
      * profiles can take closer to one minute or longer, especially during network incidents and outages.
      *
      * @param string|null $cursor A pagination cursor returned by a previous call to this endpoint.
-     *                            Provide this cursor to retrieve the next set of results for your
-     *                            original query.
+     *        Provide this cursor to retrieve the next set of results for your original query.
      *
-     *                            For more information, see [Pagination](https://developer.
-     *                            squareup.com/docs/working-with-apis/pagination).
-     * @param string|null $sortField Indicates how customers should be sorted.
+     *        For more information, see [Pagination](https://developer.squareup.com/docs/build-
+     *        basics/common-api-patterns/pagination).
+     * @param int|null $limit The maximum number of results to return in a single page. This limit
+     *        is advisory. The response might contain more or fewer results.
+     *        If the specified limit is less than 1 or greater than 100, Square returns a `400
+     *        VALUE_TOO_LOW` or `400 VALUE_TOO_HIGH` error. The default value is 100.
      *
-     *                               Default: `DEFAULT`.
+     *        For more information, see [Pagination](https://developer.squareup.com/docs/build-
+     *        basics/common-api-patterns/pagination).
+     * @param string|null $sortField Indicates how customers should be sorted. The default value is
+     *        `DEFAULT`.
      * @param string|null $sortOrder Indicates whether customers should be sorted in ascending
-     *                               (`ASC`) or
-     *                               descending (`DESC`) order.
+     *        (`ASC`) or
+     *        descending (`DESC`) order.
      *
-     *                               Default: `ASC`.
+     *        The default value is `ASC`.
      *
      * @return ApiResponse Response from the API call
      *
@@ -50,46 +55,46 @@ class CustomersApi extends BaseApi
      */
     public function listCustomers(
         ?string $cursor = null,
+        ?int $limit = null,
         ?string $sortField = null,
         ?string $sortOrder = null
     ): ApiResponse {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers';
 
-        //process optional query parameters
-        ApiHelper::appendUrlWithQueryParameters($_queryBuilder, [
+        //process query parameters
+        ApiHelper::appendUrlWithQueryParameters($_queryUrl, [
             'cursor'     => $cursor,
+            'limit'      => $limit,
             'sort_field' => $sortField,
             'sort_order' => $sortOrder,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -103,13 +108,17 @@ class CustomersApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\ListCustomersResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'ListCustomersResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
-     * Creates a new customer for a business, which can have associated cards on file.
+     * Creates a new customer for a business.
      *
      * You must provide at least one of the following values in your request to this
      * endpoint:
@@ -120,52 +129,49 @@ class CustomersApi extends BaseApi
      * - `email_address`
      * - `phone_number`
      *
-     * @param \Square\Models\CreateCustomerRequest $body An object containing the fields to POST
-     *                                                   for the request.
+     * @param Models\CreateCustomerRequest $body An object containing the fields to POST for the
+     *        request.
      *
-     *                                                   See the corresponding object definition
-     *                                                   for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function createCustomer(\Square\Models\CreateCustomerRequest $body): ApiResponse
+    public function createCustomer(Models\CreateCustomerRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -179,13 +185,18 @@ class CustomersApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\CreateCustomerResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'CreateCustomerResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
-     * Searches the customer profiles associated with a Square account using a supported query filter.
+     * Searches the customer profiles associated with a Square account using one or more supported query
+     * filters.
      *
      * Calling `SearchCustomers` without any explicit query filter returns all
      * customer profiles ordered alphabetically based on `given_name` and
@@ -195,52 +206,49 @@ class CustomersApi extends BaseApi
      * for the search operation in well under 30 seconds. Occasionally, propagation of the new or updated
      * profiles can take closer to one minute or longer, especially during network incidents and outages.
      *
-     * @param \Square\Models\SearchCustomersRequest $body An object containing the fields to POST
-     *                                                    for the request.
+     * @param Models\SearchCustomersRequest $body An object containing the fields to POST for the
+     *        request.
      *
-     *                                                    See the corresponding object definition
-     *                                                    for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function searchCustomers(\Square\Models\SearchCustomersRequest $body): ApiResponse
+    public function searchCustomers(Models\SearchCustomersRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/search';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/search';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -254,13 +262,18 @@ class CustomersApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\SearchCustomersResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'SearchCustomersResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
-     * Deletes a customer profile from a business, including any linked cards on file.
+     * Deletes a customer profile from a business. This operation also unlinks any associated cards on file.
+     *
      *
      * As a best practice, you should include the `version` field in the request to enable [optimistic
      * concurrency](https://developer.squareup.com/docs/working-with-apis/optimistic-concurrency) control.
@@ -270,14 +283,11 @@ class CustomersApi extends BaseApi
      * the newly created profile.
      *
      * @param string $customerId The ID of the customer to delete.
-     * @param int|null $version The current version of the customer profile.
-     *
-     *                          As a best practice, you should include this parameter to enable
-     *                          [optimistic concurrency](https://developer.squareup.
-     *                          com/docs/working-with-apis/optimistic-concurrency) control.  For
-     *                          more information, see [Delete a customer profile](https:
-     *                          //developer.squareup.com/docs/customers-api/use-the-api/keep-
-     *                          records#delete-customer-profile).
+     * @param int|null $version The current version of the customer profile. As a best practice, you
+     *        should include this parameter to enable [optimistic concurrency](https://developer.
+     *        squareup.com/docs/build-basics/common-api-patterns/optimistic-concurrency) control.
+     *        For more information, see [Delete a customer profile](https://developer.squareup.
+     *        com/docs/customers-api/use-the-api/keep-records#delete-customer-profile).
      *
      * @return ApiResponse Response from the API call
      *
@@ -286,45 +296,43 @@ class CustomersApi extends BaseApi
     public function deleteCustomer(string $customerId, ?int $version = null): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/{customer_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/{customer_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'customer_id' => $customerId,
         ]);
 
-        //process optional query parameters
-        ApiHelper::appendUrlWithQueryParameters($_queryBuilder, [
+        //process query parameters
+        ApiHelper::appendUrlWithQueryParameters($_queryUrl, [
             'version'     => $version,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::DELETE, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::delete($_queryUrl, $_headers);
+            $response = self::$request->delete($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -338,8 +346,12 @@ class CustomersApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\DeleteCustomerResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'DeleteCustomerResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -355,40 +367,38 @@ class CustomersApi extends BaseApi
     public function retrieveCustomer(string $customerId): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/{customer_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/{customer_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'customer_id' => $customerId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -402,8 +412,12 @@ class CustomersApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\RetrieveCustomerResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'RetrieveCustomerResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -418,62 +432,58 @@ class CustomersApi extends BaseApi
      * To update a customer profile that was created by merging existing profiles, you must use the ID of
      * the newly created profile.
      *
-     * You cannot use this endpoint to change cards on file. To change a card on file, call
-     * [DeleteCustomerCard]($e/Customers/DeleteCustomerCard) to delete the existing card and then call
-     * [CreateCustomerCard]($e/Customers/CreateCustomerCard) to create a new card.
+     * You cannot use this endpoint to change cards on file. To make changes, use the [Cards API]($e/Cards)
+     * or [Gift Cards API]($e/GiftCards).
      *
      * @param string $customerId The ID of the customer to update.
-     * @param \Square\Models\UpdateCustomerRequest $body An object containing the fields to POST
-     *                                                   for the request.
+     * @param Models\UpdateCustomerRequest $body An object containing the fields to POST for the
+     *        request.
      *
-     *                                                   See the corresponding object definition
-     *                                                   for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function updateCustomer(string $customerId, \Square\Models\UpdateCustomerRequest $body): ApiResponse
+    public function updateCustomer(string $customerId, Models\UpdateCustomerRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/{customer_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/{customer_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
-            'customer_id' => $customerId,
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
+            'customer_id'  => $customerId,
         ]);
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::PUT, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::put($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->put($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -487,8 +497,12 @@ class CustomersApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\UpdateCustomerResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'UpdateCustomerResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -499,58 +513,59 @@ class CustomersApi extends BaseApi
      * calls with the same card nonce return the same card record that was created
      * with the provided nonce during the _first_ call.
      *
-     * @param string $customerId The Square ID of the customer profile the card is linked to.
-     * @param \Square\Models\CreateCustomerCardRequest $body An object containing the fields to
-     *                                                       POST for the request.
+     * @deprecated
      *
-     *                                                       See the corresponding object
-     *                                                       definition for field details.
+     * @param string $customerId The Square ID of the customer profile the card is linked to.
+     * @param Models\CreateCustomerCardRequest $body An object containing the fields to POST for the
+     *        request.
+     *
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function createCustomerCard(string $customerId, \Square\Models\CreateCustomerCardRequest $body): ApiResponse
+    public function createCustomerCard(string $customerId, Models\CreateCustomerCardRequest $body): ApiResponse
     {
+        trigger_error('Method ' . __METHOD__ . ' is deprecated.', E_USER_DEPRECATED);
+
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/{customer_id}/cards';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/{customer_id}/cards';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
-            'customer_id' => $customerId,
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
+            'customer_id'  => $customerId,
         ]);
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -564,13 +579,19 @@ class CustomersApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\CreateCustomerCardResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'CreateCustomerCardResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
      * Removes a card on file from a customer.
+     *
+     * @deprecated
      *
      * @param string $customerId The ID of the customer that the card on file belongs to.
      * @param string $cardId The ID of the card on file to delete.
@@ -581,42 +602,42 @@ class CustomersApi extends BaseApi
      */
     public function deleteCustomerCard(string $customerId, string $cardId): ApiResponse
     {
-        //prepare query string for API call
-        $_queryBuilder = '/v2/customers/{customer_id}/cards/{card_id}';
+        trigger_error('Method ' . __METHOD__ . ' is deprecated.', E_USER_DEPRECATED);
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //prepare query string for API call
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/{customer_id}/cards/{card_id}';
+
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'customer_id' => $customerId,
             'card_id'     => $cardId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::DELETE, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::delete($_queryUrl, $_headers);
+            $response = self::$request->delete($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -630,8 +651,12 @@ class CustomersApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\DeleteCustomerCardResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'DeleteCustomerCardResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -651,41 +676,39 @@ class CustomersApi extends BaseApi
     public function removeGroupFromCustomer(string $customerId, string $groupId): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/{customer_id}/groups/{group_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/{customer_id}/groups/{group_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'customer_id' => $customerId,
             'group_id'    => $groupId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::DELETE, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::delete($_queryUrl, $_headers);
+            $response = self::$request->delete($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -699,8 +722,12 @@ class CustomersApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\RemoveGroupFromCustomerResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'RemoveGroupFromCustomerResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -720,41 +747,39 @@ class CustomersApi extends BaseApi
     public function addGroupToCustomer(string $customerId, string $groupId): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/customers/{customer_id}/groups/{group_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/customers/{customer_id}/groups/{group_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'customer_id' => $customerId,
             'group_id'    => $groupId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::PUT, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::put($_queryUrl, $_headers);
+            $response = self::$request->put($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -768,8 +793,12 @@ class CustomersApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\AddGroupToCustomerResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'AddGroupToCustomerResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 }

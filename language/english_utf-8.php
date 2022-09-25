@@ -20,6 +20,7 @@ $LANG_SHOP_gateway = array(
     'prod_appid' => 'Production  App ID',
     'prod_token' => 'Production Access Token',
     'test_mode'     => 'Testing (Sandbox) Mode?',
+    'pmt_complete_status' => 'Payment status considered complete',
 
     'hlp_test_mode' => 'Check this box during testing. The Sandbox credentials and other values will be used instead of Production.',
     'hlp_cust_ref_prefix' => 'A unique string that is prepended to the user ID to create the Customer Reference ID when saving customers in Square.',
@@ -27,6 +28,7 @@ $LANG_SHOP_gateway = array(
     'hlp_appid' => 'Enter the application ID provided by Square.',
     'hlp_token' => 'Enter the personal access token provided by Square.',
     'hlp_webhook_sig_key' => 'Enter the webhook signature verification key.',
+    'hlp_pmt_complete_status' => 'Payment status to be considered complete and trigger order processing',
 );
 
 ?>

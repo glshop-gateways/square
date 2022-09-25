@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the request body for the [SearchCatalogItems]($e/Catalog/SearchCatalogItems) endpoint.
  */
@@ -56,7 +58,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Returns Text Filter.
-     *
      * The text filter expression to return items or item variations containing specified text in
      * the `name`, `description`, or `abbreviation` attribute value of an item, or in
      * the `name`, `sku`, or `upc` attribute value of an item variation.
@@ -68,7 +69,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Sets Text Filter.
-     *
      * The text filter expression to return items or item variations containing specified text in
      * the `name`, `description`, or `abbreviation` attribute value of an item, or in
      * the `name`, `sku`, or `upc` attribute value of an item variation.
@@ -82,7 +82,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Returns Category Ids.
-     *
      * The category id query expression to return items containing the specified category IDs.
      *
      * @return string[]|null
@@ -94,7 +93,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Sets Category Ids.
-     *
      * The category id query expression to return items containing the specified category IDs.
      *
      * @maps category_ids
@@ -108,7 +106,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Returns Stock Levels.
-     *
      * The stock-level query expression to return item variations with the specified stock levels.
      * See [SearchCatalogItemsRequestStockLevel](#type-searchcatalogitemsrequeststocklevel) for possible
      * values
@@ -122,7 +119,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Sets Stock Levels.
-     *
      * The stock-level query expression to return item variations with the specified stock levels.
      * See [SearchCatalogItemsRequestStockLevel](#type-searchcatalogitemsrequeststocklevel) for possible
      * values
@@ -138,7 +134,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Returns Enabled Location Ids.
-     *
      * The enabled-location query expression to return items and item variations having specified enabled
      * locations.
      *
@@ -151,7 +146,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Sets Enabled Location Ids.
-     *
      * The enabled-location query expression to return items and item variations having specified enabled
      * locations.
      *
@@ -166,7 +160,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * The pagination token, returned in the previous response, used to fetch the next batch of pending
      * results.
      */
@@ -177,7 +170,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * The pagination token, returned in the previous response, used to fetch the next batch of pending
      * results.
      *
@@ -190,7 +182,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Returns Limit.
-     *
      * The maximum number of results to return per page. The default value is 100.
      */
     public function getLimit(): ?int
@@ -200,7 +191,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Sets Limit.
-     *
      * The maximum number of results to return per page. The default value is 100.
      *
      * @maps limit
@@ -212,7 +202,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Returns Sort Order.
-     *
      * The order (e.g., chronological or alphabetical) in which results from a request are returned.
      */
     public function getSortOrder(): ?string
@@ -222,7 +211,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Sets Sort Order.
-     *
      * The order (e.g., chronological or alphabetical) in which results from a request are returned.
      *
      * @maps sort_order
@@ -234,7 +222,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Returns Product Types.
-     *
      * The product types query expression to return items or item variations having the specified product
      * types.
      *
@@ -247,7 +234,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Sets Product Types.
-     *
      * The product types query expression to return items or item variations having the specified product
      * types.
      *
@@ -262,7 +248,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Returns Custom Attribute Filters.
-     *
      * The customer-attribute filter to return items or item variations matching the specified
      * custom attribute expressions. A maximum number of 10 custom attribute expressions are supported in
      * a single call to the [SearchCatalogItems]($e/Catalog/SearchCatalogItems) endpoint.
@@ -276,7 +261,6 @@ class SearchCatalogItemsRequest implements \JsonSerializable
 
     /**
      * Sets Custom Attribute Filters.
-     *
      * The customer-attribute filter to return items or item variations matching the specified
      * custom attribute expressions. A maximum number of 10 custom attribute expressions are supported in
      * a single call to the [SearchCatalogItems]($e/Catalog/SearchCatalogItems) endpoint.
@@ -293,23 +277,46 @@ class SearchCatalogItemsRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['text_filter']            = $this->textFilter;
-        $json['category_ids']           = $this->categoryIds;
-        $json['stock_levels']           = $this->stockLevels;
-        $json['enabled_location_ids']   = $this->enabledLocationIds;
-        $json['cursor']                 = $this->cursor;
-        $json['limit']                  = $this->limit;
-        $json['sort_order']             = $this->sortOrder;
-        $json['product_types']          = $this->productTypes;
-        $json['custom_attribute_filters'] = $this->customAttributeFilters;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->textFilter)) {
+            $json['text_filter']              = $this->textFilter;
+        }
+        if (isset($this->categoryIds)) {
+            $json['category_ids']             = $this->categoryIds;
+        }
+        if (isset($this->stockLevels)) {
+            $json['stock_levels']             = $this->stockLevels;
+        }
+        if (isset($this->enabledLocationIds)) {
+            $json['enabled_location_ids']     = $this->enabledLocationIds;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']                   = $this->cursor;
+        }
+        if (isset($this->limit)) {
+            $json['limit']                    = $this->limit;
+        }
+        if (isset($this->sortOrder)) {
+            $json['sort_order']               = $this->sortOrder;
+        }
+        if (isset($this->productTypes)) {
+            $json['product_types']            = $this->productTypes;
+        }
+        if (isset($this->customAttributeFilters)) {
+            $json['custom_attribute_filters'] = $this->customAttributeFilters;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

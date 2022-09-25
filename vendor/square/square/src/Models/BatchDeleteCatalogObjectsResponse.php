@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class BatchDeleteCatalogObjectsResponse implements \JsonSerializable
 {
     /**
@@ -23,7 +25,6 @@ class BatchDeleteCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -35,7 +36,6 @@ class BatchDeleteCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -49,7 +49,6 @@ class BatchDeleteCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Returns Deleted Object Ids.
-     *
      * The IDs of all CatalogObjects deleted by this request.
      *
      * @return string[]|null
@@ -61,7 +60,6 @@ class BatchDeleteCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Sets Deleted Object Ids.
-     *
      * The IDs of all CatalogObjects deleted by this request.
      *
      * @maps deleted_object_ids
@@ -75,7 +73,6 @@ class BatchDeleteCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Returns Deleted At.
-     *
      * The database [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates) of
      * this deletion in RFC 3339 format, e.g., "2016-09-04T23:59:33.123Z".
      */
@@ -86,7 +83,6 @@ class BatchDeleteCatalogObjectsResponse implements \JsonSerializable
 
     /**
      * Sets Deleted At.
-     *
      * The database [timestamp](https://developer.squareup.com/docs/build-basics/working-with-dates) of
      * this deletion in RFC 3339 format, e.g., "2016-09-04T23:59:33.123Z".
      *
@@ -100,17 +96,28 @@ class BatchDeleteCatalogObjectsResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']           = $this->errors;
-        $json['deleted_object_ids'] = $this->deletedObjectIds;
-        $json['deleted_at']       = $this->deletedAt;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']             = $this->errors;
+        }
+        if (isset($this->deletedObjectIds)) {
+            $json['deleted_object_ids'] = $this->deletedObjectIds;
+        }
+        if (isset($this->deletedAt)) {
+            $json['deleted_at']         = $this->deletedAt;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

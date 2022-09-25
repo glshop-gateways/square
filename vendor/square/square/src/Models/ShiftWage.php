@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * The hourly wage rate used to compensate an employee for this shift.
  */
@@ -21,9 +23,8 @@ class ShiftWage implements \JsonSerializable
 
     /**
      * Returns Title.
-     *
      * The name of the job performed during this shift. Square
-     * labor-reporting UIs may group shifts together by title.
+     * labor-reporting UIs might group shifts together by title.
      */
     public function getTitle(): ?string
     {
@@ -32,9 +33,8 @@ class ShiftWage implements \JsonSerializable
 
     /**
      * Sets Title.
-     *
      * The name of the job performed during this shift. Square
-     * labor-reporting UIs may group shifts together by title.
+     * labor-reporting UIs might group shifts together by title.
      *
      * @maps title
      */
@@ -45,7 +45,6 @@ class ShiftWage implements \JsonSerializable
 
     /**
      * Returns Hourly Rate.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -61,7 +60,6 @@ class ShiftWage implements \JsonSerializable
 
     /**
      * Sets Hourly Rate.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -80,16 +78,25 @@ class ShiftWage implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['title']      = $this->title;
-        $json['hourly_rate'] = $this->hourlyRate;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->title)) {
+            $json['title']       = $this->title;
+        }
+        if (isset($this->hourlyRate)) {
+            $json['hourly_rate'] = $this->hourlyRate;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

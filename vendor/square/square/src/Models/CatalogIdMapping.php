@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A mapping between a temporary client-supplied ID and a permanent server-generated ID.
  *
@@ -31,7 +33,6 @@ class CatalogIdMapping implements \JsonSerializable
 
     /**
      * Returns Client Object Id.
-     *
      * The client-supplied temporary `#`-prefixed ID for a new `CatalogObject`.
      */
     public function getClientObjectId(): ?string
@@ -41,7 +42,6 @@ class CatalogIdMapping implements \JsonSerializable
 
     /**
      * Sets Client Object Id.
-     *
      * The client-supplied temporary `#`-prefixed ID for a new `CatalogObject`.
      *
      * @maps client_object_id
@@ -53,7 +53,6 @@ class CatalogIdMapping implements \JsonSerializable
 
     /**
      * Returns Object Id.
-     *
      * The permanent ID for the CatalogObject created by the server.
      */
     public function getObjectId(): ?string
@@ -63,7 +62,6 @@ class CatalogIdMapping implements \JsonSerializable
 
     /**
      * Sets Object Id.
-     *
      * The permanent ID for the CatalogObject created by the server.
      *
      * @maps object_id
@@ -76,16 +74,25 @@ class CatalogIdMapping implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['client_object_id'] = $this->clientObjectId;
-        $json['object_id']      = $this->objectId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->clientObjectId)) {
+            $json['client_object_id'] = $this->clientObjectId;
+        }
+        if (isset($this->objectId)) {
+            $json['object_id']        = $this->objectId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

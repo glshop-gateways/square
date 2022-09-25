@@ -26,8 +26,8 @@ class CatalogDiscountType
     public const VARIABLE_PERCENTAGE = 'VARIABLE_PERCENTAGE';
 
     /**
-     * Apply the discount as a variable amount off the item price. The amount will be specified at the
-     * time of sale.
+     * Apply the discount as a variable amount off the item price. The amount will be specified at the time
+     * of sale.
      */
     public const VARIABLE_AMOUNT = 'VARIABLE_AMOUNT';
 }

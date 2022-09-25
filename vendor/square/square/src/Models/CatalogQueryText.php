@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * The query filter to return the search result whose searchable attribute values contain all of the
  * specified keywords or tokens, independent of the token order or case.
@@ -25,7 +27,6 @@ class CatalogQueryText implements \JsonSerializable
 
     /**
      * Returns Keywords.
-     *
      * A list of 1, 2, or 3 search keywords. Keywords with fewer than 3 characters are ignored.
      *
      * @return string[]
@@ -37,7 +38,6 @@ class CatalogQueryText implements \JsonSerializable
 
     /**
      * Sets Keywords.
-     *
      * A list of 1, 2, or 3 search keywords. Keywords with fewer than 3 characters are ignored.
      *
      * @required
@@ -53,15 +53,20 @@ class CatalogQueryText implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['keywords'] = $this->keywords;
-
-        return array_filter($json, function ($val) {
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

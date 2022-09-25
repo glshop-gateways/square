@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a refund processed for a Square transaction.
  */
@@ -20,7 +22,7 @@ class Refund implements \JsonSerializable
     private $locationId;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $transactionId;
 
@@ -62,7 +64,6 @@ class Refund implements \JsonSerializable
     /**
      * @param string $id
      * @param string $locationId
-     * @param string $transactionId
      * @param string $tenderId
      * @param string $reason
      * @param Money $amountMoney
@@ -71,7 +72,6 @@ class Refund implements \JsonSerializable
     public function __construct(
         string $id,
         string $locationId,
-        string $transactionId,
         string $tenderId,
         string $reason,
         Money $amountMoney,
@@ -79,7 +79,6 @@ class Refund implements \JsonSerializable
     ) {
         $this->id = $id;
         $this->locationId = $locationId;
-        $this->transactionId = $transactionId;
         $this->tenderId = $tenderId;
         $this->reason = $reason;
         $this->amountMoney = $amountMoney;
@@ -88,7 +87,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The refund's unique ID.
      */
     public function getId(): string
@@ -98,7 +96,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The refund's unique ID.
      *
      * @required
@@ -111,7 +108,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * The ID of the refund's associated location.
      */
     public function getLocationId(): string
@@ -121,7 +117,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * The ID of the refund's associated location.
      *
      * @required
@@ -134,30 +129,26 @@ class Refund implements \JsonSerializable
 
     /**
      * Returns Transaction Id.
-     *
      * The ID of the transaction that the refunded tender is part of.
      */
-    public function getTransactionId(): string
+    public function getTransactionId(): ?string
     {
         return $this->transactionId;
     }
 
     /**
      * Sets Transaction Id.
-     *
      * The ID of the transaction that the refunded tender is part of.
      *
-     * @required
      * @maps transaction_id
      */
-    public function setTransactionId(string $transactionId): void
+    public function setTransactionId(?string $transactionId): void
     {
         $this->transactionId = $transactionId;
     }
 
     /**
      * Returns Tender Id.
-     *
      * The ID of the refunded tender.
      */
     public function getTenderId(): string
@@ -167,7 +158,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Sets Tender Id.
-     *
      * The ID of the refunded tender.
      *
      * @required
@@ -180,7 +170,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * The timestamp for when the refund was created, in RFC 3339 format.
      */
     public function getCreatedAt(): ?string
@@ -190,7 +179,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * The timestamp for when the refund was created, in RFC 3339 format.
      *
      * @maps created_at
@@ -202,7 +190,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Returns Reason.
-     *
      * The reason for the refund being issued.
      */
     public function getReason(): string
@@ -212,7 +199,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Sets Reason.
-     *
      * The reason for the refund being issued.
      *
      * @required
@@ -225,7 +211,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Returns Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -241,7 +226,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Sets Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -260,7 +244,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Returns Status.
-     *
      * Indicates a refund's current status.
      */
     public function getStatus(): string
@@ -270,7 +253,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Sets Status.
-     *
      * Indicates a refund's current status.
      *
      * @required
@@ -283,7 +265,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Returns Processing Fee Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -299,7 +280,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Sets Processing Fee Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -317,7 +297,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Returns Additional Recipients.
-     *
      * Additional recipients (other than the merchant) receiving a portion of this refund.
      * For example, fees assessed on a refund of a purchase by a third party integration.
      *
@@ -330,7 +309,6 @@ class Refund implements \JsonSerializable
 
     /**
      * Sets Additional Recipients.
-     *
      * Additional recipients (other than the merchant) receiving a portion of this refund.
      * For example, fees assessed on a refund of a purchase by a third party integration.
      *
@@ -346,24 +324,37 @@ class Refund implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']                   = $this->id;
-        $json['location_id']          = $this->locationId;
-        $json['transaction_id']       = $this->transactionId;
-        $json['tender_id']            = $this->tenderId;
-        $json['created_at']           = $this->createdAt;
-        $json['reason']               = $this->reason;
-        $json['amount_money']         = $this->amountMoney;
-        $json['status']               = $this->status;
-        $json['processing_fee_money'] = $this->processingFeeMoney;
-        $json['additional_recipients'] = $this->additionalRecipients;
-
-        return array_filter($json, function ($val) {
+        $json['id']                        = $this->id;
+        $json['location_id']               = $this->locationId;
+        if (isset($this->transactionId)) {
+            $json['transaction_id']        = $this->transactionId;
+        }
+        $json['tender_id']                 = $this->tenderId;
+        if (isset($this->createdAt)) {
+            $json['created_at']            = $this->createdAt;
+        }
+        $json['reason']                    = $this->reason;
+        $json['amount_money']              = $this->amountMoney;
+        $json['status']                    = $this->status;
+        if (isset($this->processingFeeMoney)) {
+            $json['processing_fee_money']  = $this->processingFeeMoney;
+        }
+        if (isset($this->additionalRecipients)) {
+            $json['additional_recipients'] = $this->additionalRecipients;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

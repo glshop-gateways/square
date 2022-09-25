@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Defines fields that are included in a
- * [CancelSubscription]($e/Subscriptions/CancelSubscription) response.
+ * Defines output parameters in a response from the
+ * [CancelSubscription]($e/Subscriptions/CancelSubscription) endpoint.
  */
 class CancelSubscriptionResponse implements \JsonSerializable
 {
@@ -21,9 +23,13 @@ class CancelSubscriptionResponse implements \JsonSerializable
     private $subscription;
 
     /**
+     * @var SubscriptionAction[]|null
+     */
+    private $actions;
+
+    /**
      * Returns Errors.
-     *
-     * Information about errors encountered during the request.
+     * Errors encountered during the request.
      *
      * @return Error[]|null
      */
@@ -34,8 +40,7 @@ class CancelSubscriptionResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
-     * Information about errors encountered during the request.
+     * Errors encountered during the request.
      *
      * @maps errors
      *
@@ -48,8 +53,8 @@ class CancelSubscriptionResponse implements \JsonSerializable
 
     /**
      * Returns Subscription.
+     * Represents a subscription to a subscription plan by a subscriber.
      *
-     * Represents a customer subscription to a subscription plan.
      * For an overview of the `Subscription` type, see
      * [Subscription object](https://developer.squareup.com/docs/subscriptions-api/overview#subscription-
      * object-overview).
@@ -61,8 +66,8 @@ class CancelSubscriptionResponse implements \JsonSerializable
 
     /**
      * Sets Subscription.
+     * Represents a subscription to a subscription plan by a subscriber.
      *
-     * Represents a customer subscription to a subscription plan.
      * For an overview of the `Subscription` type, see
      * [Subscription object](https://developer.squareup.com/docs/subscriptions-api/overview#subscription-
      * object-overview).
@@ -75,18 +80,54 @@ class CancelSubscriptionResponse implements \JsonSerializable
     }
 
     /**
+     * Returns Actions.
+     * A list of a single `CANCEL` action scheduled for the subscription.
+     *
+     * @return SubscriptionAction[]|null
+     */
+    public function getActions(): ?array
+    {
+        return $this->actions;
+    }
+
+    /**
+     * Sets Actions.
+     * A list of a single `CANCEL` action scheduled for the subscription.
+     *
+     * @maps actions
+     *
+     * @param SubscriptionAction[]|null $actions
+     */
+    public function setActions(?array $actions): void
+    {
+        $this->actions = $actions;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']       = $this->errors;
-        $json['subscription'] = $this->subscription;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']       = $this->errors;
+        }
+        if (isset($this->subscription)) {
+            $json['subscription'] = $this->subscription;
+        }
+        if (isset($this->actions)) {
+            $json['actions']      = $this->actions;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

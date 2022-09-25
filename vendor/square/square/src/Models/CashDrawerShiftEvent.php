@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class CashDrawerShiftEvent implements \JsonSerializable
 {
     /**
@@ -38,7 +40,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The unique ID of the event.
      */
     public function getId(): ?string
@@ -48,7 +49,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The unique ID of the event.
      *
      * @maps id
@@ -60,7 +60,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Returns Employee Id.
-     *
      * The ID of the employee that created the event.
      */
     public function getEmployeeId(): ?string
@@ -70,7 +69,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Sets Employee Id.
-     *
      * The ID of the employee that created the event.
      *
      * @maps employee_id
@@ -82,7 +80,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Returns Event Type.
-     *
      * The types of events on a CashDrawerShift.
      * Each event type represents an employee action on the actual cash drawer
      * represented by a CashDrawerShift.
@@ -94,7 +91,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Sets Event Type.
-     *
      * The types of events on a CashDrawerShift.
      * Each event type represents an employee action on the actual cash drawer
      * represented by a CashDrawerShift.
@@ -108,7 +104,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Returns Event Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -124,7 +119,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Sets Event Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -142,7 +136,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * The event time in ISO 8601 format.
      */
     public function getCreatedAt(): ?string
@@ -152,7 +145,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * The event time in ISO 8601 format.
      *
      * @maps created_at
@@ -164,7 +156,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Returns Description.
-     *
      * An optional description of the event, entered by the employee that
      * created the event.
      */
@@ -175,7 +166,6 @@ class CashDrawerShiftEvent implements \JsonSerializable
 
     /**
      * Sets Description.
-     *
      * An optional description of the event, entered by the employee that
      * created the event.
      *
@@ -189,20 +179,37 @@ class CashDrawerShiftEvent implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']          = $this->id;
-        $json['employee_id'] = $this->employeeId;
-        $json['event_type']  = $this->eventType;
-        $json['event_money'] = $this->eventMoney;
-        $json['created_at']  = $this->createdAt;
-        $json['description'] = $this->description;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']          = $this->id;
+        }
+        if (isset($this->employeeId)) {
+            $json['employee_id'] = $this->employeeId;
+        }
+        if (isset($this->eventType)) {
+            $json['event_type']  = $this->eventType;
+        }
+        if (isset($this->eventMoney)) {
+            $json['event_money'] = $this->eventMoney;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']  = $this->createdAt;
+        }
+        if (isset($this->description)) {
+            $json['description'] = $this->description;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

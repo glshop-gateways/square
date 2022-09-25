@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class ListCatalogResponse implements \JsonSerializable
 {
     /**
@@ -23,7 +25,6 @@ class ListCatalogResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -35,7 +36,6 @@ class ListCatalogResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -49,7 +49,6 @@ class ListCatalogResponse implements \JsonSerializable
 
     /**
      * Returns Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If unset, this is the final response.
      * See [Pagination](https://developer.squareup.com/docs/basics/api101/pagination) for more information.
      */
@@ -60,7 +59,6 @@ class ListCatalogResponse implements \JsonSerializable
 
     /**
      * Sets Cursor.
-     *
      * The pagination cursor to be used in a subsequent request. If unset, this is the final response.
      * See [Pagination](https://developer.squareup.com/docs/basics/api101/pagination) for more information.
      *
@@ -73,7 +71,6 @@ class ListCatalogResponse implements \JsonSerializable
 
     /**
      * Returns Objects.
-     *
      * The CatalogObjects returned.
      *
      * @return CatalogObject[]|null
@@ -85,7 +82,6 @@ class ListCatalogResponse implements \JsonSerializable
 
     /**
      * Sets Objects.
-     *
      * The CatalogObjects returned.
      *
      * @maps objects
@@ -100,17 +96,28 @@ class ListCatalogResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors']  = $this->errors;
-        $json['cursor']  = $this->cursor;
-        $json['objects'] = $this->objects;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors']  = $this->errors;
+        }
+        if (isset($this->cursor)) {
+            $json['cursor']  = $this->cursor;
+        }
+        if (isset($this->objects)) {
+            $json['objects'] = $this->objects;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

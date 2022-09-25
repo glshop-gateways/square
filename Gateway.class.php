@@ -19,6 +19,7 @@ use Shop\Currency;
 use Shop\Order;
 use Shop\Cart;
 use Shop\Company;
+use Shop\Customer;
 use Square\SquareClient;
 use Square\Environment;
 use Square\Models\Money;
@@ -35,6 +36,10 @@ use Square\Models\Order as sqOrder;
  */
 class Gateway extends \Shop\Gateway
 {
+    /** Gateway version.
+     * @var string */
+    protected $VERSION = '1.6.0';
+
     /** Gateway ID.
      * @var string */
     protected $gw_name = 'square';
@@ -49,19 +54,19 @@ class Gateway extends \Shop\Gateway
 
     /** Square location value.
      * @var string */
-    private $loc_id;
+    private $loc_id = '';
 
     /** Square App ID.
      * @var string */
-    private $appid;
+    private $appid = '';
 
     /** Square Token.
      * @var string */
-    private $token;
+    private $token = '';
 
     /** Square API URL. Set to production or sandbox in constructor.
      * @var string */
-    private $api_url;
+    private $api_url = '';
 
     /** Internal API client to facilitate reuse.
      * @var object */
@@ -70,6 +75,10 @@ class Gateway extends \Shop\Gateway
     /** API errors.
      * @var object */
     private $_errors = NULL;
+
+    /** Payment Link URL, to be returned from getActionUrl().
+     * @var string */
+    private $pmtlink_url = '';
 
 
     /**
@@ -93,12 +102,22 @@ class Gateway extends \Shop\Gateway
                 'appid'    => 'password',
                 'token'    => 'password',
                 'webhook_sig_key' => 'password',
+                'pmt_complete_status' => array(
+                    'COMPLETED',
+                    'APPROVED',
+                    'AUTHORIZED',
+                ),
             ),
             'test' => array(
                 'loc_id'     => 'password',
                 'appid'      => 'password',
                 'token'      => 'password',
                 'webhook_sig_key' => 'password',
+                'pmt_complete_status' => array(
+                    'COMPLETED',
+                    'APPROVED',
+                    'AUTHORIZED',
+                ),
             ),
             'global' => array(
                 'test_mode' => 'checkbox',
@@ -110,6 +129,12 @@ class Gateway extends \Shop\Gateway
             'global' => array(
                 'cust_ref_prefix' => 'glshop_',
                 'test_mode'         => '1',
+            ),
+            'prod' => array(
+                'pmt_complete_status' => 'COMPLETED',
+            ),
+            'test' => array(
+                'pmt_complete_status' => 'COMPLETED',
             ),
         );
 
@@ -171,7 +196,7 @@ class Gateway extends \Shop\Gateway
      * @param   object  $Ord    Cart or order object
      * @return  object      Square OrderRequest object
      */
-    private function _createOrderRequest($Ord)
+    private function _createOrder($Ord) : sqOrder
     {
         global $LANG_SHOP;
 
@@ -260,6 +285,11 @@ class Gateway extends \Shop\Gateway
         }
 
         $sqOrder->setReferenceId($Ord->getOrderID());
+        $customer = $this->getCustomer($Ord);
+        if ($customer) {
+            $sqOrder->setCustomerId($customer->getId());
+        }
+
         $sqOrder->setMetadata(array(
             'order_ref' => $Ord->getOrderId(),
         ) );
@@ -267,7 +297,20 @@ class Gateway extends \Shop\Gateway
         if (!empty($discounts)) {
             $sqOrder->setDiscounts($discounts);
         }
+        return $sqOrder;
+    }
 
+
+    /**
+     * Create an OrderRequest object.
+     *
+     * @param   object  $Ord    Order object
+     * @return  object      CreateOrderRequest object
+     */
+    private function _createOrderRequest($Ord) : CreateOrderRequest
+    {
+        // Create the order, then submit the order request.
+        $sqOrder = $this->_createOrder($Ord);
         $req = new CreateOrderRequest;
         $req->setIdempotencyKey(uniqid());
         $req->setOrder($sqOrder);
@@ -284,7 +327,7 @@ class Gateway extends \Shop\Gateway
      * @param   object  $cart   Shopping cart object
      * @return  string      HTML for purchase button
      */
-    public function gatewayVars($cart) : ?string
+    public function gatewayVars($cart) : string
     {
         if (!$this->Supports('checkout')) {
             return '';
@@ -299,29 +342,24 @@ class Gateway extends \Shop\Gateway
 
         // Create and configure a new API client object
         $ApiClient = $this->_getApiClient();
+        $ordersApi = $ApiClient->getOrdersApi();
         $checkoutApi = $ApiClient->getCheckoutApi();
 
-        $order_req = $this->_createOrderRequest($cart);
-        $checkout = new \Square\Models\CreateCheckoutRequest(
-            uniqid(),
-            $order_req
-        );
-        $checkout->setRedirectUrl($this->returnUrl($cart->getOrderID(), $cart->getToken()));
-        $checkout->setPrePopulateBuyerEmail($cart->getInfo('payer_email'));
+        $sqOrder = $this->_createOrder($cart);
+        $idempotency_key = uniqid();
 
-        $apiResponse = $checkoutApi->createCheckout($locationId, $checkout);
+        $pmtLinkReq = new \Square\Models\CreatePaymentLinkRequest;
+        $pmtLinkReq->setIdempotencyKey($idempotency_key);
+        $pmtLinkReq->setOrder($sqOrder);
+        $apiResponse = $checkoutApi->createPaymentLink($pmtLinkReq);
         if ($apiResponse->isSuccess()) {
-            $createCheckoutResponse = $apiResponse->getResult();
-            $url = $createCheckoutResponse->getCheckout()->getCheckoutPageUrl();
+            $pmtLinkResult = $apiResponse->getResult();
+            $this->pmtlink_url = $pmtLinkResult->getPaymentLink()->getUrl();
         } else {
             $this->_errors = $apiResponse->getErrors();
             return NULL;
         }
-        $url_parts = parse_url($url);
-        parse_str($url_parts['query'], $q_parts);
-        foreach ($q_parts as $key=>$val) {
-            $gatewayVars[] = '<input type="hidden" name="' . $key . '" value="' . $val . '"/>';
-        }
+        $gatewayVars = array();
         $gateway_vars = implode("\n", $gatewayVars);
         return $gateway_vars;
     }
@@ -426,7 +464,7 @@ class Gateway extends \Shop\Gateway
      */
     public function getActionUrl()
     {
-        return $this->api_url . '/v2/checkout';
+        return $this->pmtlink_url;
     }
 
 
@@ -574,7 +612,7 @@ class Gateway extends \Shop\Gateway
             }
         }
         $customersApi = $this->_getApiClient()->getCustomersApi();
-        $name_parts = $Customer::parseName($Customer->getName());
+        $name_parts = Customer::parseName($Customer->getName());
         $body = new \Square\Models\CreateCustomerRequest;
         $body->setGivenName($name_parts['fname']);
         $body->setFamilyName($name_parts['lname']);

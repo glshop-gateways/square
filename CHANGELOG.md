@@ -1,5 +1,10 @@
 # Square Payment Gateway for glFusion Shop Plugin
 
+## v1.6.0
+Release 2022-09-25
+- Update Square SDK to version 10.0.0.20210421.
+- Configurable payment statuses to be considered complete for test and prod.
+
 ## v1.3.1
 Release TBD
 Initial pluggable gateway release

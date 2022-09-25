@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class TipSettings implements \JsonSerializable
 {
     /**
@@ -33,7 +35,6 @@ class TipSettings implements \JsonSerializable
 
     /**
      * Returns Allow Tipping.
-     *
      * Indicates whether tipping is enabled for this checkout. Defaults to false.
      */
     public function getAllowTipping(): ?bool
@@ -43,7 +44,6 @@ class TipSettings implements \JsonSerializable
 
     /**
      * Sets Allow Tipping.
-     *
      * Indicates whether tipping is enabled for this checkout. Defaults to false.
      *
      * @maps allow_tipping
@@ -55,7 +55,6 @@ class TipSettings implements \JsonSerializable
 
     /**
      * Returns Separate Tip Screen.
-     *
      * Indicates whether tip options should be presented on the screen before presenting
      * the signature screen during card payment. Defaults to false.
      */
@@ -66,7 +65,6 @@ class TipSettings implements \JsonSerializable
 
     /**
      * Sets Separate Tip Screen.
-     *
      * Indicates whether tip options should be presented on the screen before presenting
      * the signature screen during card payment. Defaults to false.
      *
@@ -79,7 +77,6 @@ class TipSettings implements \JsonSerializable
 
     /**
      * Returns Custom Tip Field.
-     *
      * Indicates whether custom tip amounts are allowed during the checkout flow. Defaults to false.
      */
     public function getCustomTipField(): ?bool
@@ -89,7 +86,6 @@ class TipSettings implements \JsonSerializable
 
     /**
      * Sets Custom Tip Field.
-     *
      * Indicates whether custom tip amounts are allowed during the checkout flow. Defaults to false.
      *
      * @maps custom_tip_field
@@ -101,7 +97,6 @@ class TipSettings implements \JsonSerializable
 
     /**
      * Returns Tip Percentages.
-     *
      * A list of tip percentages that should be presented during the checkout flow, specified as
      * up to 3 non-negative integers from 0 to 100 (inclusive). Defaults to 15, 20, and 25.
      *
@@ -114,7 +109,6 @@ class TipSettings implements \JsonSerializable
 
     /**
      * Sets Tip Percentages.
-     *
      * A list of tip percentages that should be presented during the checkout flow, specified as
      * up to 3 non-negative integers from 0 to 100 (inclusive). Defaults to 15, 20, and 25.
      *
@@ -129,12 +123,14 @@ class TipSettings implements \JsonSerializable
 
     /**
      * Returns Smart Tipping.
-     *
      * Enables the "Smart Tip Amounts" behavior.
      * Exact tipping options depend on the region in which the Square seller is active.
      *
-     * In the United States and Canada, tipping options are presented in whole dollar amounts for
-     * payments under $10 USD/CAD respectively.
+     * For payments under 10.00, in the Australia, Canada, Ireland, United Kingdom, and United States,
+     * tipping options are presented as no tip, .50, 1.00 or 2.00.
+     *
+     * For payment amounts of 10.00 or greater, tipping options are presented as the following percentages:
+     * 0%, 5%, 10%, 15%.
      *
      * If set to true, the `tip_percentages` settings is ignored.
      * Defaults to false.
@@ -149,12 +145,14 @@ class TipSettings implements \JsonSerializable
 
     /**
      * Sets Smart Tipping.
-     *
      * Enables the "Smart Tip Amounts" behavior.
      * Exact tipping options depend on the region in which the Square seller is active.
      *
-     * In the United States and Canada, tipping options are presented in whole dollar amounts for
-     * payments under $10 USD/CAD respectively.
+     * For payments under 10.00, in the Australia, Canada, Ireland, United Kingdom, and United States,
+     * tipping options are presented as no tip, .50, 1.00 or 2.00.
+     *
+     * For payment amounts of 10.00 or greater, tipping options are presented as the following percentages:
+     * 0%, 5%, 10%, 15%.
      *
      * If set to true, the `tip_percentages` settings is ignored.
      * Defaults to false.
@@ -172,19 +170,34 @@ class TipSettings implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['allow_tipping']     = $this->allowTipping;
-        $json['separate_tip_screen'] = $this->separateTipScreen;
-        $json['custom_tip_field']  = $this->customTipField;
-        $json['tip_percentages']   = $this->tipPercentages;
-        $json['smart_tipping']     = $this->smartTipping;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->allowTipping)) {
+            $json['allow_tipping']       = $this->allowTipping;
+        }
+        if (isset($this->separateTipScreen)) {
+            $json['separate_tip_screen'] = $this->separateTipScreen;
+        }
+        if (isset($this->customTipField)) {
+            $json['custom_tip_field']    = $this->customTipField;
+        }
+        if (isset($this->tipPercentages)) {
+            $json['tip_percentages']     = $this->tipPercentages;
+        }
+        if (isset($this->smartTipping)) {
+            $json['smart_tipping']       = $this->smartTipping;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * The booking profile of a seller's team member, including the team member's ID, display name,
  * description and whether the team member can be booked as a service provider.
@@ -37,7 +39,6 @@ class TeamMemberBookingProfile implements \JsonSerializable
 
     /**
      * Returns Team Member Id.
-     *
      * The ID of the [TeamMember]($m/TeamMember) object for the team member associated with the booking
      * profile.
      */
@@ -48,7 +49,6 @@ class TeamMemberBookingProfile implements \JsonSerializable
 
     /**
      * Sets Team Member Id.
-     *
      * The ID of the [TeamMember]($m/TeamMember) object for the team member associated with the booking
      * profile.
      *
@@ -61,7 +61,6 @@ class TeamMemberBookingProfile implements \JsonSerializable
 
     /**
      * Returns Description.
-     *
      * The description of the team member.
      */
     public function getDescription(): ?string
@@ -71,7 +70,6 @@ class TeamMemberBookingProfile implements \JsonSerializable
 
     /**
      * Sets Description.
-     *
      * The description of the team member.
      *
      * @maps description
@@ -83,7 +81,6 @@ class TeamMemberBookingProfile implements \JsonSerializable
 
     /**
      * Returns Display Name.
-     *
      * The display name of the team member.
      */
     public function getDisplayName(): ?string
@@ -93,7 +90,6 @@ class TeamMemberBookingProfile implements \JsonSerializable
 
     /**
      * Sets Display Name.
-     *
      * The display name of the team member.
      *
      * @maps display_name
@@ -105,7 +101,6 @@ class TeamMemberBookingProfile implements \JsonSerializable
 
     /**
      * Returns Is Bookable.
-     *
      * Indicates whether the team member can be booked through the Bookings API or the seller's online
      * booking channel or site (`true) or not (`false`).
      */
@@ -116,7 +111,6 @@ class TeamMemberBookingProfile implements \JsonSerializable
 
     /**
      * Sets Is Bookable.
-     *
      * Indicates whether the team member can be booked through the Bookings API or the seller's online
      * booking channel or site (`true) or not (`false`).
      *
@@ -129,7 +123,6 @@ class TeamMemberBookingProfile implements \JsonSerializable
 
     /**
      * Returns Profile Image Url.
-     *
      * The URL of the team member's image for the bookings profile.
      */
     public function getProfileImageUrl(): ?string
@@ -139,7 +132,6 @@ class TeamMemberBookingProfile implements \JsonSerializable
 
     /**
      * Sets Profile Image Url.
-     *
      * The URL of the team member's image for the bookings profile.
      *
      * @maps profile_image_url
@@ -152,19 +144,34 @@ class TeamMemberBookingProfile implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['team_member_id']  = $this->teamMemberId;
-        $json['description']     = $this->description;
-        $json['display_name']    = $this->displayName;
-        $json['is_bookable']     = $this->isBookable;
-        $json['profile_image_url'] = $this->profileImageUrl;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->teamMemberId)) {
+            $json['team_member_id']    = $this->teamMemberId;
+        }
+        if (isset($this->description)) {
+            $json['description']       = $this->description;
+        }
+        if (isset($this->displayName)) {
+            $json['display_name']      = $this->displayName;
+        }
+        if (isset($this->isBookable)) {
+            $json['is_bookable']       = $this->isBookable;
+        }
+        if (isset($this->profileImageUrl)) {
+            $json['profile_image_url'] = $this->profileImageUrl;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

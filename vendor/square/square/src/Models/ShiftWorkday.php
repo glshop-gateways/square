@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A `Shift` search query filter parameter that sets a range of days that
  * a `Shift` must start or end in before passing the filter condition.
@@ -27,7 +29,6 @@ class ShiftWorkday implements \JsonSerializable
 
     /**
      * Returns Date Range.
-     *
      * A range defined by two dates. Used for filtering a query for Connect v2
      * objects that have date properties.
      */
@@ -38,7 +39,6 @@ class ShiftWorkday implements \JsonSerializable
 
     /**
      * Sets Date Range.
-     *
      * A range defined by two dates. Used for filtering a query for Connect v2
      * objects that have date properties.
      *
@@ -51,7 +51,6 @@ class ShiftWorkday implements \JsonSerializable
 
     /**
      * Returns Match Shifts By.
-     *
      * Defines the logic used to apply a workday filter.
      */
     public function getMatchShiftsBy(): ?string
@@ -61,7 +60,6 @@ class ShiftWorkday implements \JsonSerializable
 
     /**
      * Sets Match Shifts By.
-     *
      * Defines the logic used to apply a workday filter.
      *
      * @maps match_shifts_by
@@ -73,9 +71,8 @@ class ShiftWorkday implements \JsonSerializable
 
     /**
      * Returns Default Timezone.
-     *
      * Location-specific timezones convert workdays to datetime filters.
-     * Every location included in the query must have a timezone, or this field
+     * Every location included in the query must have a timezone or this field
      * must be provided as a fallback. Format: the IANA timezone database
      * identifier for the relevant timezone.
      */
@@ -86,9 +83,8 @@ class ShiftWorkday implements \JsonSerializable
 
     /**
      * Sets Default Timezone.
-     *
      * Location-specific timezones convert workdays to datetime filters.
-     * Every location included in the query must have a timezone, or this field
+     * Every location included in the query must have a timezone or this field
      * must be provided as a fallback. Format: the IANA timezone database
      * identifier for the relevant timezone.
      *
@@ -102,17 +98,28 @@ class ShiftWorkday implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['date_range']      = $this->dateRange;
-        $json['match_shifts_by'] = $this->matchShiftsBy;
-        $json['default_timezone'] = $this->defaultTimezone;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->dateRange)) {
+            $json['date_range']       = $this->dateRange;
+        }
+        if (isset($this->matchShiftsBy)) {
+            $json['match_shifts_by']  = $this->matchShiftsBy;
+        }
+        if (isset($this->defaultTimezone)) {
+            $json['default_timezone'] = $this->defaultTimezone;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

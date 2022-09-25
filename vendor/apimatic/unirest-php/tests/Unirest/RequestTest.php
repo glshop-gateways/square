@@ -3,33 +3,48 @@
 namespace Unirest\Request\Test;
 
 use Unirest\Request as Request;
+use Unirest\Exception as Exception;
+use Unirest\RequestChild;
 
-require __DIR__ . '/../../src/Unirest.php';
+require __DIR__ . '/RequestChild.php';
 
 class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 {
+    private $request;
+    private $requestChild;
+
+    /**
+     * @before
+     */
+    public function initializeDependencies()
+    {
+        $this->request = new Request();
+        $this->requestChild = new RequestChild();
+    }
+
     // Generic
     public function testCurlOpts()
     {
-        Request::curlOpt(CURLOPT_COOKIE, 'foo=bar');
+        $this->request->curlOpt(CURLOPT_COOKIE, 'foo=bar');
 
-        $response = Request::get('http://mockbin.com/request');
+        $response = $this->request->get('http://mockbin.com/request');
 
         $this->assertTrue(property_exists($response->body->cookies, 'foo'));
 
-        Request::clearCurlOpts();
+        $this->request->clearCurlOpts();
     }
 
-    /**
-     * @expectedException \Unirest\Exception
-     */
     public function testTimeoutFail()
     {
-        Request::timeout(1);
-
-        Request::get('http://mockbin.com/delay/1000');
-
-        Request::timeout(null); // Cleaning timeout for the other tests
+        $this->request->timeout(1);
+        $message = "Timeout exception not thrown";
+        try {
+            $this->request->get('http://mockbin.com/delay/2000');
+        } catch (Exception $e) {
+            $message = substr($e->getMessage(), 0, 19);
+        }
+        $this->request->timeout(null); // Cleaning timeout for the other tests
+        $this->assertEquals('Operation timed out', $message);
     }
 
     public function testDefaultHeaders()
@@ -38,9 +53,9 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'header1' => 'Hello',
             'header2' => 'world'
         );
-        Request::defaultHeaders($defaultHeaders);
+        $this->request->defaultHeaders($defaultHeaders);
 
-        $response = Request::get('http://mockbin.com/request');
+        $response = $this->request->get('http://mockbin.com/request');
 
         $this->assertEquals(200, $response->code);
         $this->assertObjectHasAttribute('header1', $response->body->headers);
@@ -48,15 +63,15 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
         $this->assertObjectHasAttribute('header2', $response->body->headers);
         $this->assertEquals('world', $response->body->headers->header2);
 
-        $response = Request::get('http://mockbin.com/request', ['header1' => 'Custom value']);
+        $response = $this->request->get('http://mockbin.com/request', ['header1' => 'Custom value']);
 
         $this->assertEquals(200, $response->code);
         $this->assertObjectHasAttribute('header1', $response->body->headers);
         $this->assertEquals('Custom value', $response->body->headers->header1);
 
-        Request::clearDefaultHeaders();
+        $this->request->clearDefaultHeaders();
 
-        $response = Request::get('http://mockbin.com/request');
+        $response = $this->request->get('http://mockbin.com/request');
 
         $this->assertEquals(200, $response->code);
         $this->assertObjectNotHasAttribute('header1', $response->body->headers);
@@ -65,42 +80,96 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testDefaultHeader()
     {
-        Request::defaultHeader('Hello', 'custom');
+        $this->request->defaultHeader('Hello', 'custom');
 
-        $response = Request::get('http://mockbin.com/request');
+        $response = $this->request->get('http://mockbin.com/request');
 
         $this->assertEquals(200, $response->code);
         $this->assertTrue(property_exists($response->body->headers, 'hello'));
         $this->assertEquals('custom', $response->body->headers->hello);
 
-        Request::clearDefaultHeaders();
+        $this->request->clearDefaultHeaders();
 
-        $response = Request::get('http://mockbin.com/request');
+        $response = $this->request->get('http://mockbin.com/request');
 
         $this->assertEquals(200, $response->code);
         $this->assertFalse(property_exists($response->body->headers, 'hello'));
     }
 
+    public function testConnectionReuse()
+    {
+        $this->requestChild->resetHandle();
+        $url = "http://httpbin.org/get";
+
+        // test client sending keep-alive automatically
+        $res = $this->requestChild->get($url);
+        $this->assertEquals("keep-alive", $res->headers['Connection']);
+        $this->assertEquals(1, $this->requestChild->getTotalNumberOfConnections());
+
+        // test closing connection after response is received
+        $res = $this->requestChild->get($url, [ 'Connection' => 'close' ]);
+        $this->assertEquals("close", $res->headers['Connection']);
+        $this->assertEquals(1, $this->requestChild->getTotalNumberOfConnections());
+
+        // test creating a new connection after closing previous one
+        $res = $this->requestChild->get($url);
+        $this->assertEquals("keep-alive", $res->headers['Connection']);
+        $this->assertEquals(2, $this->requestChild->getTotalNumberOfConnections());
+
+        // test persisting the new connection
+        $res = $this->requestChild->get($url);
+        $this->assertEquals("keep-alive", $res->headers['Connection']);
+        $this->assertEquals(2, $this->requestChild->getTotalNumberOfConnections());
+    }
+
+    public function testConnectionReuseForMultipleDomains()
+    {
+        $this->requestChild->resetHandle();
+        $url1 = "http://httpbin.org/get";
+        $url2 = "http://ptsv2.com/t/cedqp-1655183385";
+        $url3 = "http://en2hoq5smpha9.x.pipedream.net";
+        $url4 = "http://mockbin.com/request";
+
+        $this->requestChild->get($url1);
+        $this->requestChild->get($url2);
+        $this->requestChild->get($url3);
+        // test creating 3 connections by calling 3 domains
+        $this->assertEquals(3, $this->requestChild->getTotalNumberOfConnections());
+
+        $this->requestChild->get($url1);
+        $this->requestChild->get($url2);
+        $this->requestChild->get($url3);
+        // test persisting previous 3 connections
+        $this->assertEquals(3, $this->requestChild->getTotalNumberOfConnections());
+
+        $this->requestChild->get($url1);
+        $this->requestChild->get($url2);
+        $this->requestChild->get($url3);
+        $this->requestChild->get($url4);
+        // test adding a new connection by persisting previous ones using a call to another domain
+        $this->assertEquals(4, $this->requestChild->getTotalNumberOfConnections());
+    }
+
     public function testSetMashapeKey()
     {
-        Request::setMashapeKey('abcd');
+        $this->request->setMashapeKey('abcd');
 
-        $response = Request::get('http://mockbin.com/request');
+        $response = $this->request->get('http://mockbin.com/request');
 
         $this->assertEquals(200, $response->code);
         $this->assertTrue(property_exists($response->body->headers, 'x-mashape-key'));
         $this->assertEquals('abcd', $response->body->headers->{'x-mashape-key'});
 
         // send another request
-        $response = Request::get('http://mockbin.com/request');
+        $response = $this->request->get('http://mockbin.com/request');
 
         $this->assertEquals(200, $response->code);
         $this->assertTrue(property_exists($response->body->headers, 'x-mashape-key'));
         $this->assertEquals('abcd', $response->body->headers->{'x-mashape-key'});
 
-        Request::clearDefaultHeaders();
+        $this->request->clearDefaultHeaders();
 
-        $response = Request::get('http://mockbin.com/request');
+        $response = $this->request->get('http://mockbin.com/request');
 
         $this->assertEquals(200, $response->code);
         $this->assertFalse(property_exists($response->body->headers, 'x-mashape-key'));
@@ -108,30 +177,30 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testGzip()
     {
-        $response = Request::get('http://mockbin.com/gzip/request');
+        $response = $this->request->post('http://mockbin.com/gzip');
 
         $this->assertEquals('gzip', $response->headers['Content-Encoding']);
     }
 
     public function testBasicAuthenticationDeprecated()
     {
-        $response = Request::get('http://mockbin.com/request', array(), array(), 'user', 'password');
+        $response = $this->request->get('http://mockbin.com/request', array(), array(), 'user', 'password');
 
         $this->assertEquals('Basic dXNlcjpwYXNzd29yZA==', $response->body->headers->authorization);
     }
 
     public function testBasicAuthentication()
     {
-        Request::auth('user', 'password');
+        $this->request->auth('user', 'password');
 
-        $response = Request::get('http://mockbin.com/request');
+        $response = $this->request->get('http://mockbin.com/request');
 
         $this->assertEquals('Basic dXNlcjpwYXNzd29yZA==', $response->body->headers->authorization);
     }
 
     public function testCustomHeaders()
     {
-        $response = Request::get('http://mockbin.com/request', array(
+        $response = $this->request->get('http://mockbin.com/request', array(
             'user-agent' => 'unirest-php',
         ));
 
@@ -142,7 +211,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     // GET
     public function testGet()
     {
-        $response = Request::get('http://mockbin.com/request?name=Mark', array(
+        $response = $this->request->get('http://mockbin.com/request?name=Mark', array(
             'Accept' => 'application/json'
         ), array(
             'nick' => 'thefosk'
@@ -156,7 +225,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testGetMultidimensionalArray()
     {
-        $response = Request::get('http://mockbin.com/request', array(
+        $response = $this->request->get('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'key' => 'value',
@@ -175,7 +244,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testGetWithDots()
     {
-        $response = Request::get('http://mockbin.com/request', array(
+        $response = $this->request->get('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'user.name' => 'Mark',
@@ -190,7 +259,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testGetWithDotsAlt()
     {
-        $response = Request::get('http://mockbin.com/request', array(
+        $response = $this->request->get('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'user.name' => 'Mark Bond',
@@ -204,7 +273,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     }
     public function testGetWithEqualSign()
     {
-        $response = Request::get('http://mockbin.com/request', array(
+        $response = $this->request->get('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'name' => 'Mark=Hello'
@@ -217,7 +286,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testGetWithEqualSignAlt()
     {
-        $response = Request::get('http://mockbin.com/request', array(
+        $response = $this->request->get('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'name' => 'Mark=Hello=John'
@@ -230,7 +299,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testGetWithComplexQuery()
     {
-        $response = Request::get('http://mockbin.com/request?query=[{"type":"/music/album","name":null,"artist":{"id":"/en/bob_dylan"},"limit":3}]&cursor');
+        $response = $this->request->get('http://mockbin.com/request?query=[{"type":"/music/album","name":null,"artist":{"id":"/en/bob_dylan"},"limit":3}]&cursor');
 
         $this->assertEquals(200, $response->code);
         $this->assertEquals('GET', $response->body->method);
@@ -240,7 +309,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testGetArray()
     {
-        $response = Request::get('http://mockbin.com/request', array(), array(
+        $response = $this->request->get('http://mockbin.com/request', array(), array(
             'name[0]' => 'Mark',
             'name[1]' => 'John'
         ));
@@ -254,7 +323,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     // HEAD
     public function testHead()
     {
-        $response = Request::head('http://mockbin.com/request?name=Mark', array(
+        $response = $this->request->head('http://mockbin.com/request?name=Mark', array(
           'Accept' => 'application/json'
         ));
 
@@ -264,7 +333,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     // POST
     public function testPost()
     {
-        $response = Request::post('http://mockbin.com/request', array(
+        $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'name' => 'Mark',
@@ -284,7 +353,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'nick' => 'thefosk'
         ));
 
-        $response = Request::post('http://mockbin.com/request', array(
+        $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), $body);
 
@@ -302,7 +371,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'nick' => 'thefosk'
         ));
 
-        $response = Request::post('http://mockbin.com/request', (object) array(
+        $response = $this->request->post('http://mockbin.com/request', (object) array(
             'Accept' => 'application/json',
         ), $body);
 
@@ -319,7 +388,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             'name' => 'Mark=Hello'
         ));
 
-        $response = Request::post('http://mockbin.com/request', array(
+        $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), $body);
 
@@ -330,7 +399,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testPostArray()
     {
-        $response = Request::post('http://mockbin.com/request', array(
+        $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'name[0]' => 'Mark',
@@ -345,7 +414,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testPostWithDots()
     {
-        $response = Request::post('http://mockbin.com/request', array(
+        $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'user.name' => 'Mark',
@@ -360,7 +429,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
     public function testRawPost()
     {
-        $response = Request::post('http://mockbin.com/request', array(
+        $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json',
             'Content-Type' => 'application/json'
         ), json_encode(array(
@@ -382,7 +451,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
             )
         ));
 
-        $response = Request::post('http://mockbin.com/request', array(
+        $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), $body);
 
@@ -396,7 +465,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     // PUT
     public function testPut()
     {
-        $response = Request::put('http://mockbin.com/request', array(
+        $response = $this->request->put('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'name' => 'Mark',
@@ -412,7 +481,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     // PATCH
     public function testPatch()
     {
-        $response = Request::patch('http://mockbin.com/request', array(
+        $response = $this->request->patch('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'name' => 'Mark',
@@ -428,7 +497,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     // DELETE
     public function testDelete()
     {
-        $response = Request::delete('http://mockbin.com/request', array(
+        $response = $this->request->delete('http://mockbin.com/request', array(
             'Accept' => 'application/json',
             'Content-Type' => 'application/x-www-form-urlencoded'
         ), array(
@@ -451,7 +520,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
 
         $body = Request\Body::Multipart($data, $files);
 
-        $response = Request::post('http://mockbin.com/request', $headers, $body);
+        $response = $this->request->post('http://mockbin.com/request', $headers, $body);
 
         $this->assertEquals(200, $response->code);
         $this->assertEquals('POST', $response->body->method);
@@ -463,7 +532,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     {
         $fixture = __DIR__ . '/../fixtures/upload.txt';
 
-        $response = Request::post('http://mockbin.com/request', array(
+        $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'name' => 'Mark',
@@ -480,7 +549,7 @@ class UnirestRequestTest extends \PHPUnit\Framework\TestCase
     {
         $fixture = __DIR__ . '/../fixtures/upload.txt';
 
-        $response = Request::post('http://mockbin.com/request', array(
+        $response = $this->request->post('http://mockbin.com/request', array(
             'Accept' => 'application/json'
         ), array(
             'name' => 'Mark',

@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
- * Defines an accrual rule, which is how buyers can earn points.
+ * Represents an accrual rule, which defines how buyers can earn points from the base [loyalty
+ * program]($m/LoyaltyProgram).
  */
 class LoyaltyProgramAccrualRule implements \JsonSerializable
 {
@@ -20,19 +23,24 @@ class LoyaltyProgramAccrualRule implements \JsonSerializable
     private $points;
 
     /**
-     * @var Money|null
+     * @var LoyaltyProgramAccrualRuleVisitData|null
      */
-    private $visitMinimumAmountMoney;
+    private $visitData;
 
     /**
-     * @var Money|null
+     * @var LoyaltyProgramAccrualRuleSpendData|null
      */
-    private $spendAmountMoney;
+    private $spendData;
 
     /**
-     * @var string|null
+     * @var LoyaltyProgramAccrualRuleItemVariationData|null
      */
-    private $catalogObjectId;
+    private $itemVariationData;
+
+    /**
+     * @var LoyaltyProgramAccrualRuleCategoryData|null
+     */
+    private $categoryData;
 
     /**
      * @param string $accrualType
@@ -44,7 +52,6 @@ class LoyaltyProgramAccrualRule implements \JsonSerializable
 
     /**
      * Returns Accrual Type.
-     *
      * The type of the accrual rule that defines how buyers can earn points.
      */
     public function getAccrualType(): string
@@ -54,7 +61,6 @@ class LoyaltyProgramAccrualRule implements \JsonSerializable
 
     /**
      * Sets Accrual Type.
-     *
      * The type of the accrual rule that defines how buyers can earn points.
      *
      * @required
@@ -67,7 +73,6 @@ class LoyaltyProgramAccrualRule implements \JsonSerializable
 
     /**
      * Returns Points.
-     *
      * The number of points that
      * buyers earn based on the `accrual_type`.
      */
@@ -78,7 +83,6 @@ class LoyaltyProgramAccrualRule implements \JsonSerializable
 
     /**
      * Sets Points.
-     *
      * The number of points that
      * buyers earn based on the `accrual_type`.
      *
@@ -90,117 +94,117 @@ class LoyaltyProgramAccrualRule implements \JsonSerializable
     }
 
     /**
-     * Returns Visit Minimum Amount Money.
-     *
-     * Represents an amount of money. `Money` fields can be signed or unsigned.
-     * Fields that do not explicitly define whether they are signed or unsigned are
-     * considered unsigned and can only hold positive amounts. For signed fields, the
-     * sign of the value indicates the purpose of the money transfer. See
-     * [Working with Monetary Amounts](https://developer.squareup.com/docs/build-basics/working-with-
-     * monetary-amounts)
-     * for more information.
+     * Returns Visit Data.
+     * Represents additional data for rules with the `VISIT` accrual type.
      */
-    public function getVisitMinimumAmountMoney(): ?Money
+    public function getVisitData(): ?LoyaltyProgramAccrualRuleVisitData
     {
-        return $this->visitMinimumAmountMoney;
+        return $this->visitData;
     }
 
     /**
-     * Sets Visit Minimum Amount Money.
+     * Sets Visit Data.
+     * Represents additional data for rules with the `VISIT` accrual type.
      *
-     * Represents an amount of money. `Money` fields can be signed or unsigned.
-     * Fields that do not explicitly define whether they are signed or unsigned are
-     * considered unsigned and can only hold positive amounts. For signed fields, the
-     * sign of the value indicates the purpose of the money transfer. See
-     * [Working with Monetary Amounts](https://developer.squareup.com/docs/build-basics/working-with-
-     * monetary-amounts)
-     * for more information.
-     *
-     * @maps visit_minimum_amount_money
+     * @maps visit_data
      */
-    public function setVisitMinimumAmountMoney(?Money $visitMinimumAmountMoney): void
+    public function setVisitData(?LoyaltyProgramAccrualRuleVisitData $visitData): void
     {
-        $this->visitMinimumAmountMoney = $visitMinimumAmountMoney;
+        $this->visitData = $visitData;
     }
 
     /**
-     * Returns Spend Amount Money.
-     *
-     * Represents an amount of money. `Money` fields can be signed or unsigned.
-     * Fields that do not explicitly define whether they are signed or unsigned are
-     * considered unsigned and can only hold positive amounts. For signed fields, the
-     * sign of the value indicates the purpose of the money transfer. See
-     * [Working with Monetary Amounts](https://developer.squareup.com/docs/build-basics/working-with-
-     * monetary-amounts)
-     * for more information.
+     * Returns Spend Data.
+     * Represents additional data for rules with the `SPEND` accrual type.
      */
-    public function getSpendAmountMoney(): ?Money
+    public function getSpendData(): ?LoyaltyProgramAccrualRuleSpendData
     {
-        return $this->spendAmountMoney;
+        return $this->spendData;
     }
 
     /**
-     * Sets Spend Amount Money.
+     * Sets Spend Data.
+     * Represents additional data for rules with the `SPEND` accrual type.
      *
-     * Represents an amount of money. `Money` fields can be signed or unsigned.
-     * Fields that do not explicitly define whether they are signed or unsigned are
-     * considered unsigned and can only hold positive amounts. For signed fields, the
-     * sign of the value indicates the purpose of the money transfer. See
-     * [Working with Monetary Amounts](https://developer.squareup.com/docs/build-basics/working-with-
-     * monetary-amounts)
-     * for more information.
-     *
-     * @maps spend_amount_money
+     * @maps spend_data
      */
-    public function setSpendAmountMoney(?Money $spendAmountMoney): void
+    public function setSpendData(?LoyaltyProgramAccrualRuleSpendData $spendData): void
     {
-        $this->spendAmountMoney = $spendAmountMoney;
+        $this->spendData = $spendData;
     }
 
     /**
-     * Returns Catalog Object Id.
-     *
-     * The ID of the [catalog object]($m/CatalogObject) to purchase to earn the number of points defined by
-     * the
-     * rule. This is either an item variation or a category, depending on the type. This is defined on
-     * `ITEM_VARIATION` rules and `CATEGORY` rules.
+     * Returns Item Variation Data.
+     * Represents additional data for rules with the `ITEM_VARIATION` accrual type.
      */
-    public function getCatalogObjectId(): ?string
+    public function getItemVariationData(): ?LoyaltyProgramAccrualRuleItemVariationData
     {
-        return $this->catalogObjectId;
+        return $this->itemVariationData;
     }
 
     /**
-     * Sets Catalog Object Id.
+     * Sets Item Variation Data.
+     * Represents additional data for rules with the `ITEM_VARIATION` accrual type.
      *
-     * The ID of the [catalog object]($m/CatalogObject) to purchase to earn the number of points defined by
-     * the
-     * rule. This is either an item variation or a category, depending on the type. This is defined on
-     * `ITEM_VARIATION` rules and `CATEGORY` rules.
-     *
-     * @maps catalog_object_id
+     * @maps item_variation_data
      */
-    public function setCatalogObjectId(?string $catalogObjectId): void
+    public function setItemVariationData(?LoyaltyProgramAccrualRuleItemVariationData $itemVariationData): void
     {
-        $this->catalogObjectId = $catalogObjectId;
+        $this->itemVariationData = $itemVariationData;
+    }
+
+    /**
+     * Returns Category Data.
+     * Represents additional data for rules with the `CATEGORY` accrual type.
+     */
+    public function getCategoryData(): ?LoyaltyProgramAccrualRuleCategoryData
+    {
+        return $this->categoryData;
+    }
+
+    /**
+     * Sets Category Data.
+     * Represents additional data for rules with the `CATEGORY` accrual type.
+     *
+     * @maps category_data
+     */
+    public function setCategoryData(?LoyaltyProgramAccrualRuleCategoryData $categoryData): void
+    {
+        $this->categoryData = $categoryData;
     }
 
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['accrual_type']            = $this->accrualType;
-        $json['points']                  = $this->points;
-        $json['visit_minimum_amount_money'] = $this->visitMinimumAmountMoney;
-        $json['spend_amount_money']      = $this->spendAmountMoney;
-        $json['catalog_object_id']       = $this->catalogObjectId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->points)) {
+            $json['points']              = $this->points;
+        }
+        if (isset($this->visitData)) {
+            $json['visit_data']          = $this->visitData;
+        }
+        if (isset($this->spendData)) {
+            $json['spend_data']          = $this->spendData;
+        }
+        if (isset($this->itemVariationData)) {
+            $json['item_variation_data'] = $this->itemVariationData;
+        }
+        if (isset($this->categoryData)) {
+            $json['category_data']       = $this->categoryData;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

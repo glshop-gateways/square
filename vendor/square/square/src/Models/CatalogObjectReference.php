@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A reference to a Catalog object at a specific version. In general this is
  * used as an entry point into a graph of catalog objects, where the objects exist
@@ -23,7 +25,6 @@ class CatalogObjectReference implements \JsonSerializable
 
     /**
      * Returns Object Id.
-     *
      * The ID of the referenced object.
      */
     public function getObjectId(): ?string
@@ -33,7 +34,6 @@ class CatalogObjectReference implements \JsonSerializable
 
     /**
      * Sets Object Id.
-     *
      * The ID of the referenced object.
      *
      * @maps object_id
@@ -45,7 +45,6 @@ class CatalogObjectReference implements \JsonSerializable
 
     /**
      * Returns Catalog Version.
-     *
      * The version of the object.
      */
     public function getCatalogVersion(): ?int
@@ -55,7 +54,6 @@ class CatalogObjectReference implements \JsonSerializable
 
     /**
      * Sets Catalog Version.
-     *
      * The version of the object.
      *
      * @maps catalog_version
@@ -68,16 +66,25 @@ class CatalogObjectReference implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['object_id']      = $this->objectId;
-        $json['catalog_version'] = $this->catalogVersion;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->objectId)) {
+            $json['object_id']       = $this->objectId;
+        }
+        if (isset($this->catalogVersion)) {
+            $json['catalog_version'] = $this->catalogVersion;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

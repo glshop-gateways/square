@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class RetrieveBusinessBookingProfileResponse implements \JsonSerializable
 {
     /**
@@ -36,8 +38,7 @@ class RetrieveBusinessBookingProfileResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
-     * Any errors that occurred during the request.
+     * Errors that occurred during the request.
      *
      * @return Error[]|null
      */
@@ -48,8 +49,7 @@ class RetrieveBusinessBookingProfileResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
-     * Any errors that occurred during the request.
+     * Errors that occurred during the request.
      *
      * @maps errors
      *
@@ -63,16 +63,25 @@ class RetrieveBusinessBookingProfileResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['business_booking_profile'] = $this->businessBookingProfile;
-        $json['errors']                 = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->businessBookingProfile)) {
+            $json['business_booking_profile'] = $this->businessBookingProfile;
+        }
+        if (isset($this->errors)) {
+            $json['errors']                   = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

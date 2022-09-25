@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a tender (i.e., a method of payment) used in a Square transaction.
  */
@@ -89,8 +91,7 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
-     * The tender's unique ID.
+     * The tender's unique ID. It is the associated payment ID.
      */
     public function getId(): ?string
     {
@@ -99,8 +100,7 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
-     * The tender's unique ID.
+     * The tender's unique ID. It is the associated payment ID.
      *
      * @maps id
      */
@@ -111,7 +111,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * The ID of the transaction's associated location.
      */
     public function getLocationId(): ?string
@@ -121,7 +120,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * The ID of the transaction's associated location.
      *
      * @maps location_id
@@ -133,7 +131,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Transaction Id.
-     *
      * The ID of the tender's associated transaction.
      */
     public function getTransactionId(): ?string
@@ -143,7 +140,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Transaction Id.
-     *
      * The ID of the tender's associated transaction.
      *
      * @maps transaction_id
@@ -155,7 +151,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * The timestamp for when the tender was created, in RFC 3339 format.
      */
     public function getCreatedAt(): ?string
@@ -165,7 +160,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * The timestamp for when the tender was created, in RFC 3339 format.
      *
      * @maps created_at
@@ -177,7 +171,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Note.
-     *
      * An optional note associated with the tender at the time of payment.
      */
     public function getNote(): ?string
@@ -187,7 +180,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Note.
-     *
      * An optional note associated with the tender at the time of payment.
      *
      * @maps note
@@ -199,7 +191,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -215,7 +206,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -233,7 +223,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Tip Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -249,7 +238,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Tip Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -267,7 +255,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Processing Fee Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -283,7 +270,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Processing Fee Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -301,7 +287,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Customer Id.
-     *
      * If the tender is associated with a customer or represents a customer's card on file,
      * this is the ID of the associated customer.
      */
@@ -312,7 +297,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Customer Id.
-     *
      * If the tender is associated with a customer or represents a customer's card on file,
      * this is the ID of the associated customer.
      *
@@ -325,7 +309,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Type.
-     *
      * Indicates a tender's type.
      */
     public function getType(): string
@@ -335,7 +318,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Type.
-     *
      * Indicates a tender's type.
      *
      * @required
@@ -348,7 +330,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Card Details.
-     *
      * Represents additional details of a tender with `type` `CARD` or `SQUARE_GIFT_CARD`
      */
     public function getCardDetails(): ?TenderCardDetails
@@ -358,7 +339,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Card Details.
-     *
      * Represents additional details of a tender with `type` `CARD` or `SQUARE_GIFT_CARD`
      *
      * @maps card_details
@@ -370,7 +350,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Cash Details.
-     *
      * Represents the details of a tender with `type` `CASH`.
      */
     public function getCashDetails(): ?TenderCashDetails
@@ -380,7 +359,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Cash Details.
-     *
      * Represents the details of a tender with `type` `CASH`.
      *
      * @maps cash_details
@@ -392,7 +370,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Additional Recipients.
-     *
      * Additional recipients (other than the merchant) receiving a portion of this tender.
      * For example, fees assessed on the purchase by a third party integration.
      *
@@ -405,7 +382,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Additional Recipients.
-     *
      * Additional recipients (other than the merchant) receiving a portion of this tender.
      * For example, fees assessed on the purchase by a third party integration.
      *
@@ -420,7 +396,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Returns Payment Id.
-     *
      * The ID of the [Payment]($m/Payment) that corresponds to this tender.
      * This value is only present for payments created with the v2 Payments API.
      */
@@ -431,7 +406,6 @@ class Tender implements \JsonSerializable
 
     /**
      * Sets Payment Id.
-     *
      * The ID of the [Payment]($m/Payment) that corresponds to this tender.
      * This value is only present for payments created with the v2 Payments API.
      *
@@ -445,28 +419,59 @@ class Tender implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']                   = $this->id;
-        $json['location_id']          = $this->locationId;
-        $json['transaction_id']       = $this->transactionId;
-        $json['created_at']           = $this->createdAt;
-        $json['note']                 = $this->note;
-        $json['amount_money']         = $this->amountMoney;
-        $json['tip_money']            = $this->tipMoney;
-        $json['processing_fee_money'] = $this->processingFeeMoney;
-        $json['customer_id']          = $this->customerId;
-        $json['type']                 = $this->type;
-        $json['card_details']         = $this->cardDetails;
-        $json['cash_details']         = $this->cashDetails;
-        $json['additional_recipients'] = $this->additionalRecipients;
-        $json['payment_id']           = $this->paymentId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->id)) {
+            $json['id']                    = $this->id;
+        }
+        if (isset($this->locationId)) {
+            $json['location_id']           = $this->locationId;
+        }
+        if (isset($this->transactionId)) {
+            $json['transaction_id']        = $this->transactionId;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']            = $this->createdAt;
+        }
+        if (isset($this->note)) {
+            $json['note']                  = $this->note;
+        }
+        if (isset($this->amountMoney)) {
+            $json['amount_money']          = $this->amountMoney;
+        }
+        if (isset($this->tipMoney)) {
+            $json['tip_money']             = $this->tipMoney;
+        }
+        if (isset($this->processingFeeMoney)) {
+            $json['processing_fee_money']  = $this->processingFeeMoney;
+        }
+        if (isset($this->customerId)) {
+            $json['customer_id']           = $this->customerId;
+        }
+        $json['type']                      = $this->type;
+        if (isset($this->cardDetails)) {
+            $json['card_details']          = $this->cardDetails;
+        }
+        if (isset($this->cashDetails)) {
+            $json['cash_details']          = $this->cashDetails;
+        }
+        if (isset($this->additionalRecipients)) {
+            $json['additional_recipients'] = $this->additionalRecipients;
+        }
+        if (isset($this->paymentId)) {
+            $json['payment_id']            = $this->paymentId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

@@ -5,21 +5,22 @@ declare(strict_types=1);
 namespace Square\Apis;
 
 use Square\Exceptions\ApiException;
-use Square\ApiHelper;
 use Square\ConfigurationInterface;
+use Square\ApiHelper;
+use Square\Models;
+use Square\Utils\FileWrapper;
 use Square\Http\ApiResponse;
 use Square\Http\HttpRequest;
 use Square\Http\HttpResponse;
 use Square\Http\HttpMethod;
 use Square\Http\HttpContext;
 use Square\Http\HttpCallBack;
-use Unirest\Request;
 
 class CatalogApi extends BaseApi
 {
-    public function __construct(ConfigurationInterface $config, ?HttpCallBack $httpCallBack = null)
+    public function __construct(ConfigurationInterface $config, array $authManagers, ?HttpCallBack $httpCallBack)
     {
-        parent::__construct($config, $httpCallBack);
+        parent::__construct($config, $authManagers, $httpCallBack);
     }
 
     /**
@@ -34,52 +35,49 @@ class CatalogApi extends BaseApi
      * IDs can be deleted. The response will only include IDs that were
      * actually deleted.
      *
-     * @param \Square\Models\BatchDeleteCatalogObjectsRequest $body An object containing the
-     *                                                              fields to POST for the request.
+     * @param Models\BatchDeleteCatalogObjectsRequest $body An object containing the fields to POST
+     *        for the request.
      *
-     *                                                              See the corresponding object
-     *                                                              definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function batchDeleteCatalogObjects(\Square\Models\BatchDeleteCatalogObjectsRequest $body): ApiResponse
+    public function batchDeleteCatalogObjects(Models\BatchDeleteCatalogObjectsRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/batch-delete';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/batch-delete';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -93,8 +91,12 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\BatchDeleteCatalogObjectsResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'BatchDeleteCatalogObjectsResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -106,53 +108,49 @@ class CatalogApi extends BaseApi
      * its [CatalogModifierList]($m/CatalogModifierList) objects, and the ids of
      * any [CatalogTax]($m/CatalogTax) objects that apply to it.
      *
-     * @param \Square\Models\BatchRetrieveCatalogObjectsRequest $body An object containing the
-     *                                                                fields to POST for the
-     *                                                                request.
+     * @param Models\BatchRetrieveCatalogObjectsRequest $body An object containing the fields to
+     *        POST for the request.
      *
-     *                                                                See the corresponding object
-     *                                                                definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function batchRetrieveCatalogObjects(\Square\Models\BatchRetrieveCatalogObjectsRequest $body): ApiResponse
+    public function batchRetrieveCatalogObjects(Models\BatchRetrieveCatalogObjectsRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/batch-retrieve';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/batch-retrieve';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -166,10 +164,11 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass(
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
             $response->body,
-            'Square\\Models\\BatchRetrieveCatalogObjectsResponse'
+            'BatchRetrieveCatalogObjectsResponse'
         );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
@@ -185,52 +184,49 @@ class CatalogApi extends BaseApi
      * request (items, variations, modifier lists, discounts, and taxes) is no more
      * than 10,000.
      *
-     * @param \Square\Models\BatchUpsertCatalogObjectsRequest $body An object containing the
-     *                                                              fields to POST for the request.
+     * @param Models\BatchUpsertCatalogObjectsRequest $body An object containing the fields to POST
+     *        for the request.
      *
-     *                                                              See the corresponding object
-     *                                                              definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function batchUpsertCatalogObjects(\Square\Models\BatchUpsertCatalogObjectsRequest $body): ApiResponse
+    public function batchUpsertCatalogObjects(Models\BatchUpsertCatalogObjectsRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/batch-upsert';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/batch-upsert';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -244,69 +240,75 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\BatchUpsertCatalogObjectsResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'BatchUpsertCatalogObjectsResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
-     * Uploads an image file to be represented by a [CatalogImage]($m/CatalogImage) object linked to an
-     * existing
-     * [CatalogObject]($m/CatalogObject) instance. A call to this endpoint can upload an image, link an
-     * image to
-     * a catalog object, or do both.
+     * Uploads an image file to be represented by a [CatalogImage]($m/CatalogImage) object that can be
+     * linked to an existing
+     * [CatalogObject]($m/CatalogObject) instance. The resulting `CatalogImage` is unattached to any
+     * `CatalogObject` if the `object_id`
+     * is not specified.
      *
      * This `CreateCatalogImage` endpoint accepts HTTP multipart/form-data requests with a JSON part and an
      * image file part in
      * JPEG, PJPEG, PNG, or GIF format. The maximum file size is 15MB.
      *
-     * @param \Square\Models\CreateCatalogImageRequest|null $request
-     * @param \Square\Utils\FileWrapper|null $imageFile
+     * @param Models\CreateCatalogImageRequest|null $request
+     * @param FileWrapper|null $imageFile
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
     public function createCatalogImage(
-        ?\Square\Models\CreateCatalogImageRequest $request = null,
-        ?\Square\Utils\FileWrapper $imageFile = null
+        ?Models\CreateCatalogImageRequest $request = null,
+        ?FileWrapper $imageFile = null
     ): ApiResponse {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/images';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/images';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //prepare parameters
         $_parameters = [
-            'request'  => json_encode($request),
+            'request'    => ApiHelper::serialize($request),
             'image_file' => $imageFile === null ? null : $imageFile->createCurlFileInstance('image/jpeg')
         ];
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl, $_parameters);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, Request::buildHTTPCurlQuery($_parameters));
+            $response = self::$request->post(
+                $_httpRequest->getQueryUrl(),
+                $_httpRequest->getHeaders(),
+                \Unirest\Request::buildHTTPCurlQuery($_parameters)
+            );
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -320,8 +322,99 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\CreateCatalogImageResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'CreateCatalogImageResponse'
+        );
+        return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
+    }
+
+    /**
+     * Uploads a new image file to replace the existing one in the specified
+     * [CatalogImage]($m/CatalogImage) object.
+     *
+     * This `UpdateCatalogImage` endpoint accepts HTTP multipart/form-data requests with a JSON part and an
+     * image file part in
+     * JPEG, PJPEG, PNG, or GIF format. The maximum file size is 15MB.
+     *
+     * @param string $imageId The ID of the `CatalogImage` object to update the encapsulated image
+     *        file.
+     * @param Models\UpdateCatalogImageRequest|null $request
+     * @param FileWrapper|null $imageFile
+     *
+     * @return ApiResponse Response from the API call
+     *
+     * @throws ApiException Thrown if API call fails
+     */
+    public function updateCatalogImage(
+        string $imageId,
+        ?Models\UpdateCatalogImageRequest $request = null,
+        ?FileWrapper $imageFile = null
+    ): ApiResponse {
+        //prepare query string for API call
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/images/{image_id}';
+
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
+            'image_id'   => $imageId,
+        ]);
+
+        //prepare headers
+        $_headers = [
+            'user-agent'    => $this->internalUserAgent,
+            'Accept'        => 'application/json',
+            'Square-Version' => $this->config->getSquareVersion()
+        ];
+        $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
+
+        //prepare parameters
+        $_parameters = [
+            'request'    => ApiHelper::serialize($request),
+            'image_file' => $imageFile === null ? null : $imageFile->createCurlFileInstance('image/jpeg')
+        ];
+
+        $_httpRequest = new HttpRequest(HttpMethod::PUT, $_headers, $_queryUrl, $_parameters);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
+        //call on-before Http callback
+        if ($this->getHttpCallBack() != null) {
+            $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
+        }
+
+        // and invoke the API call request to fetch the response
+        try {
+            $response = self::$request->put(
+                $_httpRequest->getQueryUrl(),
+                $_httpRequest->getHeaders(),
+                \Unirest\Request::buildHTTPCurlQuery($_parameters)
+            );
+        } catch (\Unirest\Exception $ex) {
+            throw new ApiException($ex->getMessage(), $_httpRequest);
+        }
+
+
+        $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
+        $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
+
+        //call on-after Http callback
+        if ($this->getHttpCallBack() != null) {
+            $this->getHttpCallBack()->callOnAfterRequest($_httpContext);
+        }
+
+        if (!$this->isValidResponse($_httpResponse)) {
+            return ApiResponse::createFromContext($response->body, null, $_httpContext);
+        }
+
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'UpdateCatalogImageResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -336,35 +429,33 @@ class CatalogApi extends BaseApi
     public function catalogInfo(): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/info';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/info';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -378,83 +469,102 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\CatalogInfoResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'CatalogInfoResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
-     * Returns a list of [CatalogObject]($m/CatalogObject)s that includes
-     * all objects of a set of desired types (for example, all [CatalogItem]($m/CatalogItem)
-     * and [CatalogTax]($m/CatalogTax) objects) in the catalog. The `types` parameter
-     * is specified as a comma-separated list of valid [CatalogObject]($m/CatalogObject) types:
-     * `ITEM`, `ITEM_VARIATION`, `MODIFIER`, `MODIFIER_LIST`, `CATEGORY`, `DISCOUNT`, `TAX`, `IMAGE`.
+     * Returns a list of all [CatalogObject]($m/CatalogObject)s of the specified types in the catalog.
+     *
+     * The `types` parameter is specified as a comma-separated list of the
+     * [CatalogObjectType]($m/CatalogObjectType) values,
+     * for example, "`ITEM`, `ITEM_VARIATION`, `MODIFIER`, `MODIFIER_LIST`, `CATEGORY`, `DISCOUNT`, `TAX`,
+     * `IMAGE`".
      *
      * __Important:__ ListCatalog does not return deleted catalog items. To retrieve
      * deleted catalog items, use [SearchCatalogObjects]($e/Catalog/SearchCatalogObjects)
      * and set the `include_deleted_objects` attribute value to `true`.
      *
      * @param string|null $cursor The pagination cursor returned in the previous response. Leave
-     *                            unset for an initial request.
-     *                            See [Pagination](https://developer.squareup.
-     *                            com/docs/basics/api101/pagination) for more information.
-     * @param string|null $types An optional case-insensitive, comma-separated list of object
-     *                           types to retrieve, for example
-     *                           `ITEM,ITEM_VARIATION,CATEGORY,IMAGE`.
+     *        unset for an initial request.
+     *        The page size is currently set to be 100.
+     *        See [Pagination](https://developer.squareup.com/docs/basics/api101/pagination) for
+     *        more information.
+     * @param string|null $types An optional case-insensitive, comma-separated list of object types
+     *        to retrieve.
      *
-     *                           The legal values are taken from the CatalogObjectType enum:
-     *                           `ITEM`, `ITEM_VARIATION`, `CATEGORY`, `DISCOUNT`, `TAX`,
-     *                           `MODIFIER`, `MODIFIER_LIST`, or `IMAGE`.
-     * @param int|null $catalogVersion The specific version of the catalog objects to be included
-     *                                 in the response.
-     *                                 This allows you to retrieve historical
-     *                                 versions of objects. The specified version value is matched
-     *                                 against
-     *                                 the [CatalogObject]($m/CatalogObject)s' `version` attribute.
+     *        The valid values are defined in the [CatalogObjectType]($m/CatalogObjectType) enum,
+     *        for example,
+     *        `ITEM`, `ITEM_VARIATION`, `CATEGORY`, `DISCOUNT`, `TAX`,
+     *        `MODIFIER`, `MODIFIER_LIST`, `IMAGE`, etc.
+     *
+     *        If this is unspecified, the operation returns objects of all the top level types at
+     *        the version
+     *        of the Square API used to make the request. Object types that are nested onto other
+     *        object types
+     *        are not included in the defaults.
+     *
+     *        At the current API version the default object types are:
+     *        ITEM, CATEGORY, TAX, DISCOUNT, MODIFIER_LIST,
+     *        PRICING_RULE, PRODUCT_SET, TIME_PERIOD, MEASUREMENT_UNIT,
+     *        SUBSCRIPTION_PLAN, ITEM_OPTION, CUSTOM_ATTRIBUTE_DEFINITION, QUICK_AMOUNT_SETTINGS.
+     * @param int|null $catalogVersion The specific version of the catalog objects to be included in
+     *        the response.
+     *        This allows you to retrieve historical
+     *        versions of objects. The specified version value is matched against
+     *        the [CatalogObject]($m/CatalogObject)s' `version` attribute.  If not included,
+     *        results will
+     *        be from the current version of the catalog.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function listCatalog(?string $cursor = null, ?string $types = null, ?int $catalogVersion = null): ApiResponse
-    {
+    public function listCatalog(
+        ?string $cursor = null,
+        ?string $types = null,
+        ?int $catalogVersion = null
+    ): ApiResponse {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/list';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/list';
 
-        //process optional query parameters
-        ApiHelper::appendUrlWithQueryParameters($_queryBuilder, [
+        //process query parameters
+        ApiHelper::appendUrlWithQueryParameters($_queryUrl, [
             'cursor'          => $cursor,
             'types'           => $types,
             'catalog_version' => $catalogVersion,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -468,60 +578,61 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\ListCatalogResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'ListCatalogResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
      * Creates or updates the target [CatalogObject]($m/CatalogObject).
      *
-     * @param \Square\Models\UpsertCatalogObjectRequest $body An object containing the fields to
-     *                                                        POST for the request.
+     * @param Models\UpsertCatalogObjectRequest $body An object containing the fields to POST for
+     *        the request.
      *
-     *                                                        See the corresponding object
-     *                                                        definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function upsertCatalogObject(\Square\Models\UpsertCatalogObjectRequest $body): ApiResponse
+    public function upsertCatalogObject(Models\UpsertCatalogObjectRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/object';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/object';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -535,8 +646,12 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\UpsertCatalogObjectResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'UpsertCatalogObjectResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -549,10 +664,10 @@ class CatalogApi extends BaseApi
      * [CatalogItemVariation]($m/CatalogItemVariation) children.
      *
      * @param string $objectId The ID of the catalog object to be deleted. When an object is
-     *                         deleted, other
-     *                         objects in the graph that depend on that object will be deleted as
-     *                         well (for example, deleting a
-     *                         catalog item will delete its catalog item variations).
+     *        deleted, other
+     *        objects in the graph that depend on that object will be deleted as well (for example,
+     *        deleting a
+     *        catalog item will delete its catalog item variations).
      *
      * @return ApiResponse Response from the API call
      *
@@ -561,40 +676,38 @@ class CatalogApi extends BaseApi
     public function deleteCatalogObject(string $objectId): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/object/{object_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/object/{object_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'object_id' => $objectId,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::DELETE, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::delete($_queryUrl, $_headers);
+            $response = self::$request->delete($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -608,8 +721,12 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\DeleteCatalogObjectResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'DeleteCatalogObjectResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -624,25 +741,30 @@ class CatalogApi extends BaseApi
      *
      * @param string $objectId The object ID of any type of catalog objects to be retrieved.
      * @param bool|null $includeRelatedObjects If `true`, the response will include additional
-     *                                         objects that are related to the
-     *                                         requested object, as follows:
+     *        objects that are related to the
+     *        requested objects. Related objects are defined as any objects referenced by ID by
+     *        the results in the `objects` field
+     *        of the response. These objects are put in the `related_objects` field. Setting this
+     *        to `true` is
+     *        helpful when the objects are needed for immediate display to a user.
+     *        This process only goes one level deep. Objects referenced by the related objects
+     *        will not be included. For example,
      *
-     *                                         If the `object` field of the response contains a
-     *                                         `CatalogItem`, its associated
-     *                                         `CatalogCategory`, `CatalogTax`, `CatalogImage` and
-     *                                         `CatalogModifierList` objects will
-     *                                         be returned in the `related_objects` field of the
-     *                                         response. If the `object` field of
-     *                                         the response contains a `CatalogItemVariation`, its
-     *                                         parent `CatalogItem` will be returned
-     *                                         in the `related_objects` field of the response.
+     *        if the `objects` field of the response contains a CatalogItem, its associated
+     *        CatalogCategory objects, CatalogTax objects, CatalogImage objects and
+     *        CatalogModifierLists will be returned in the `related_objects` field of the
+     *        response. If the `objects` field of the response contains a CatalogItemVariation,
+     *        its parent CatalogItem will be returned in the `related_objects` field of
+     *        the response.
      *
-     *                                         Default value: `false`
+     *        Default value: `false`
      * @param int|null $catalogVersion Requests objects as of a specific version of the catalog.
-     *                                 This allows you to retrieve historical
-     *                                 versions of objects. The value to retrieve a specific
-     *                                 version of an object can be found
-     *                                 in the version field of [CatalogObject]($m/CatalogObject)s.
+     *        This allows you to retrieve historical
+     *        versions of objects. The value to retrieve a specific version of an object can be
+     *        found
+     *        in the version field of [CatalogObject]($m/CatalogObject)s. If not included, results
+     *        will
+     *        be from the current version of the catalog.
      *
      * @return ApiResponse Response from the API call
      *
@@ -654,47 +776,45 @@ class CatalogApi extends BaseApi
         ?int $catalogVersion = null
     ): ApiResponse {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/object/{object_id}';
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/object/{object_id}';
 
-        //process optional query parameters
-        $_queryBuilder = ApiHelper::appendUrlWithTemplateParameters($_queryBuilder, [
+        //process template parameters
+        $_queryUrl = ApiHelper::appendUrlWithTemplateParameters($_queryUrl, [
             'object_id'               => $objectId,
         ]);
 
-        //process optional query parameters
-        ApiHelper::appendUrlWithQueryParameters($_queryBuilder, [
+        //process query parameters
+        ApiHelper::appendUrlWithQueryParameters($_queryUrl, [
             'include_related_objects' => (null != $includeRelatedObjects) ?
                 var_export($includeRelatedObjects, true) : false,
             'catalog_version'         => $catalogVersion,
         ]);
 
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
-
         //prepare headers
         $_headers = [
-            'user-agent'            => BaseApi::USER_AGENT,
+            'user-agent'            => $this->internalUserAgent,
             'Accept'                => 'application/json',
-            'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Square-Version' => $this->config->getSquareVersion()
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         $_httpRequest = new HttpRequest(HttpMethod::GET, $_headers, $_queryUrl);
 
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
+
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::get($_queryUrl, $_headers);
+            $response = self::$request->get($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders());
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -708,8 +828,12 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\RetrieveCatalogObjectResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'RetrieveCatalogObjectResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -717,7 +841,7 @@ class CatalogApi extends BaseApi
      * Searches for [CatalogObject]($m/CatalogObject) of any type by matching supported search attribute
      * values,
      * excluding custom attribute values on items or item variations, against one or more of the specified
-     * query expressions.
+     * query filters.
      *
      * This (`SearchCatalogObjects`) endpoint differs from the
      * [SearchCatalogItems]($e/Catalog/SearchCatalogItems)
@@ -731,52 +855,49 @@ class CatalogApi extends BaseApi
      * items or item variations, whereas `SearchCatalogObjects` does.
      * - The both endpoints have different call conventions, including the query filter formats.
      *
-     * @param \Square\Models\SearchCatalogObjectsRequest $body An object containing the fields to
-     *                                                         POST for the request.
+     * @param Models\SearchCatalogObjectsRequest $body An object containing the fields to POST for
+     *        the request.
      *
-     *                                                         See the corresponding object
-     *                                                         definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function searchCatalogObjects(\Square\Models\SearchCatalogObjectsRequest $body): ApiResponse
+    public function searchCatalogObjects(Models\SearchCatalogObjectsRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/search';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/search';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -790,15 +911,19 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\SearchCatalogObjectsResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'SearchCatalogObjectsResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
     /**
      * Searches for catalog items or item variations by matching supported search attribute values,
      * including
-     * custom attribute values, against one or more of the specified query expressions.
+     * custom attribute values, against one or more of the specified query filters.
      *
      * This (`SearchCatalogItems`) endpoint differs from the
      * [SearchCatalogObjects]($e/Catalog/SearchCatalogObjects)
@@ -812,52 +937,49 @@ class CatalogApi extends BaseApi
      * items or item variations, whereas `SearchCatalogObjects` does.
      * - The both endpoints use different call conventions, including the query filter formats.
      *
-     * @param \Square\Models\SearchCatalogItemsRequest $body An object containing the fields to
-     *                                                       POST for the request.
+     * @param Models\SearchCatalogItemsRequest $body An object containing the fields to POST for the
+     *        request.
      *
-     *                                                       See the corresponding object
-     *                                                       definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function searchCatalogItems(\Square\Models\SearchCatalogItemsRequest $body): ApiResponse
+    public function searchCatalogItems(Models\SearchCatalogItemsRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/search-catalog-items';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/search-catalog-items';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -871,8 +993,12 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\SearchCatalogItemsResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'SearchCatalogItemsResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -881,52 +1007,49 @@ class CatalogApi extends BaseApi
      * that apply to the targeted [CatalogItem]($m/CatalogItem) without having
      * to perform an upsert on the entire item.
      *
-     * @param \Square\Models\UpdateItemModifierListsRequest $body An object containing the fields
-     *                                                            to POST for the request.
+     * @param Models\UpdateItemModifierListsRequest $body An object containing the fields to POST
+     *        for the request.
      *
-     *                                                            See the corresponding object
-     *                                                            definition for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function updateItemModifierLists(\Square\Models\UpdateItemModifierListsRequest $body): ApiResponse
+    public function updateItemModifierLists(Models\UpdateItemModifierListsRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/update-item-modifier-lists';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/update-item-modifier-lists';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -940,8 +1063,12 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\UpdateItemModifierListsResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'UpdateItemModifierListsResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 
@@ -950,52 +1077,49 @@ class CatalogApi extends BaseApi
      * targeted [CatalogItem]($m/CatalogItem) without having to perform an
      * upsert on the entire item.
      *
-     * @param \Square\Models\UpdateItemTaxesRequest $body An object containing the fields to POST
-     *                                                    for the request.
+     * @param Models\UpdateItemTaxesRequest $body An object containing the fields to POST for the
+     *        request.
      *
-     *                                                    See the corresponding object definition
-     *                                                    for field details.
+     *        See the corresponding object definition for field details.
      *
      * @return ApiResponse Response from the API call
      *
      * @throws ApiException Thrown if API call fails
      */
-    public function updateItemTaxes(\Square\Models\UpdateItemTaxesRequest $body): ApiResponse
+    public function updateItemTaxes(Models\UpdateItemTaxesRequest $body): ApiResponse
     {
         //prepare query string for API call
-        $_queryBuilder = '/v2/catalog/update-item-taxes';
-
-        //validate and preprocess url
-        $_queryUrl = ApiHelper::cleanUrl($this->config->getBaseUri() . $_queryBuilder);
+        $_queryUrl = $this->config->getBaseUri() . '/v2/catalog/update-item-taxes';
 
         //prepare headers
         $_headers = [
-            'user-agent'    => BaseApi::USER_AGENT,
+            'user-agent'    => $this->internalUserAgent,
             'Accept'        => 'application/json',
-            'content-type'  => 'application/json',
             'Square-Version' => $this->config->getSquareVersion(),
-            'Authorization' => sprintf('Bearer %1$s', $this->config->getAccessToken())
+            'Content-Type'    => 'application/json'
         ];
         $_headers = ApiHelper::mergeHeaders($_headers, $this->config->getAdditionalHeaders());
 
         //json encode body
-        $_bodyJson = Request\Body::Json($body);
+        $_bodyJson = ApiHelper::serialize($body);
 
         $_httpRequest = new HttpRequest(HttpMethod::POST, $_headers, $_queryUrl);
+
+        // Apply authorization to request
+        $this->getAuthManager('global')->apply($_httpRequest);
 
         //call on-before Http callback
         if ($this->getHttpCallBack() != null) {
             $this->getHttpCallBack()->callOnBeforeRequest($_httpRequest);
         }
-        // Set request timeout
-        Request::timeout($this->config->getTimeout());
 
         // and invoke the API call request to fetch the response
         try {
-            $response = Request::post($_queryUrl, $_headers, $_bodyJson);
+            $response = self::$request->post($_httpRequest->getQueryUrl(), $_httpRequest->getHeaders(), $_bodyJson);
         } catch (\Unirest\Exception $ex) {
             throw new ApiException($ex->getMessage(), $_httpRequest);
         }
+
 
         $_httpResponse = new HttpResponse($response->code, $response->headers, $response->raw_body);
         $_httpContext = new HttpContext($_httpRequest, $_httpResponse);
@@ -1009,8 +1133,12 @@ class CatalogApi extends BaseApi
             return ApiResponse::createFromContext($response->body, null, $_httpContext);
         }
 
-        $mapper = $this->getJsonMapper();
-        $deserializedResponse = $mapper->mapClass($response->body, 'Square\\Models\\UpdateItemTaxesResponse');
+        $deserializedResponse = ApiHelper::mapClass(
+            $_httpRequest,
+            $_httpResponse,
+            $response->body,
+            'UpdateItemTaxesResponse'
+        );
         return ApiResponse::createFromContext($response->body, $deserializedResponse, $_httpContext);
     }
 }

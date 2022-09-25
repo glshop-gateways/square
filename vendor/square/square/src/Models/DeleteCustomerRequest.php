@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields that are included in a request to the `DeleteCustomer`
  * endpoint.
@@ -17,13 +19,12 @@ class DeleteCustomerRequest implements \JsonSerializable
 
     /**
      * Returns Version.
-     *
      * The current version of the customer profile.
      *
      * As a best practice, you should include this parameter to enable [optimistic concurrency](https:
-     * //developer.squareup.com/docs/working-with-apis/optimistic-concurrency) control.  For more
-     * information, see [Delete a customer profile](https://developer.squareup.com/docs/customers-api/use-
-     * the-api/keep-records#delete-customer-profile).
+     * //developer.squareup.com/docs/build-basics/common-api-patterns/optimistic-concurrency) control.  For
+     * more information, see [Delete a customer profile](https://developer.squareup.com/docs/customers-
+     * api/use-the-api/keep-records#delete-customer-profile).
      */
     public function getVersion(): ?int
     {
@@ -32,13 +33,12 @@ class DeleteCustomerRequest implements \JsonSerializable
 
     /**
      * Sets Version.
-     *
      * The current version of the customer profile.
      *
      * As a best practice, you should include this parameter to enable [optimistic concurrency](https:
-     * //developer.squareup.com/docs/working-with-apis/optimistic-concurrency) control.  For more
-     * information, see [Delete a customer profile](https://developer.squareup.com/docs/customers-api/use-
-     * the-api/keep-records#delete-customer-profile).
+     * //developer.squareup.com/docs/build-basics/common-api-patterns/optimistic-concurrency) control.  For
+     * more information, see [Delete a customer profile](https://developer.squareup.com/docs/customers-
+     * api/use-the-api/keep-records#delete-customer-profile).
      *
      * @maps version
      */
@@ -50,15 +50,22 @@ class DeleteCustomerRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['version'] = $this->version;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->version)) {
+            $json['version'] = $this->version;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

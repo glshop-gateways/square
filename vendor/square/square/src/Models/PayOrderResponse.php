@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields that are included in the response body of a request to the
  * [PayOrder]($e/Orders/PayOrder) endpoint.
@@ -22,7 +24,6 @@ class PayOrderResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -34,7 +35,6 @@ class PayOrderResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -48,10 +48,9 @@ class PayOrderResponse implements \JsonSerializable
 
     /**
      * Returns Order.
-     *
      * Contains all information related to a single order to process with Square,
-     * including line items that specify the products to purchase. Order objects also
-     * include information on any associated tenders, refunds, and returns.
+     * including line items that specify the products to purchase. `Order` objects also
+     * include information about any associated tenders, refunds, and returns.
      *
      * All Connect V2 Transactions have all been converted to Orders including all associated
      * itemization data.
@@ -63,10 +62,9 @@ class PayOrderResponse implements \JsonSerializable
 
     /**
      * Sets Order.
-     *
      * Contains all information related to a single order to process with Square,
-     * including line items that specify the products to purchase. Order objects also
-     * include information on any associated tenders, refunds, and returns.
+     * including line items that specify the products to purchase. `Order` objects also
+     * include information about any associated tenders, refunds, and returns.
      *
      * All Connect V2 Transactions have all been converted to Orders including all associated
      * itemization data.
@@ -81,16 +79,25 @@ class PayOrderResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors'] = $this->errors;
-        $json['order']  = $this->order;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors'] = $this->errors;
+        }
+        if (isset($this->order)) {
+            $json['order']  = $this->order;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

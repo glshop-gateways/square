@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class SearchAvailabilityResponse implements \JsonSerializable
 {
     /**
@@ -18,8 +20,7 @@ class SearchAvailabilityResponse implements \JsonSerializable
 
     /**
      * Returns Availabilities.
-     *
-     * List of slots available for booking.
+     * List of appointment slots available for booking.
      *
      * @return Availability[]|null
      */
@@ -30,8 +31,7 @@ class SearchAvailabilityResponse implements \JsonSerializable
 
     /**
      * Sets Availabilities.
-     *
-     * List of slots available for booking.
+     * List of appointment slots available for booking.
      *
      * @maps availabilities
      *
@@ -44,8 +44,7 @@ class SearchAvailabilityResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
-     * Any errors that occurred during the request.
+     * Errors that occurred during the request.
      *
      * @return Error[]|null
      */
@@ -56,8 +55,7 @@ class SearchAvailabilityResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
-     * Any errors that occurred during the request.
+     * Errors that occurred during the request.
      *
      * @maps errors
      *
@@ -71,16 +69,25 @@ class SearchAvailabilityResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['availabilities'] = $this->availabilities;
-        $json['errors']         = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->availabilities)) {
+            $json['availabilities'] = $this->availabilities;
+        }
+        if (isset($this->errors)) {
+            $json['errors']         = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

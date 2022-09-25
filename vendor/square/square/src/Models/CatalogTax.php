@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A tax applicable to an item.
  */
@@ -41,7 +43,6 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Returns Name.
-     *
      * The tax's name. This is a searchable attribute for use in applicable query filters, and its value
      * length is of Unicode code points.
      */
@@ -52,7 +53,6 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * The tax's name. This is a searchable attribute for use in applicable query filters, and its value
      * length is of Unicode code points.
      *
@@ -65,7 +65,6 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Returns Calculation Phase.
-     *
      * When to calculate the taxes due on a cart.
      */
     public function getCalculationPhase(): ?string
@@ -75,7 +74,6 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Sets Calculation Phase.
-     *
      * When to calculate the taxes due on a cart.
      *
      * @maps calculation_phase
@@ -87,7 +85,6 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Returns Inclusion Type.
-     *
      * Whether to the tax amount should be additional to or included in the CatalogItem price.
      */
     public function getInclusionType(): ?string
@@ -97,7 +94,6 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Sets Inclusion Type.
-     *
      * Whether to the tax amount should be additional to or included in the CatalogItem price.
      *
      * @maps inclusion_type
@@ -109,10 +105,10 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Returns Percentage.
-     *
      * The percentage of the tax in decimal form, using a `'.'` as the decimal separator and without a
      * `'%'` sign.
-     * A value of `7.5` corresponds to 7.5%.
+     * A value of `7.5` corresponds to 7.5%. For a location-specific tax rate, contact the tax authority of
+     * the location or a tax consultant.
      */
     public function getPercentage(): ?string
     {
@@ -121,10 +117,10 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Sets Percentage.
-     *
      * The percentage of the tax in decimal form, using a `'.'` as the decimal separator and without a
      * `'%'` sign.
-     * A value of `7.5` corresponds to 7.5%.
+     * A value of `7.5` corresponds to 7.5%. For a location-specific tax rate, contact the tax authority of
+     * the location or a tax consultant.
      *
      * @maps percentage
      */
@@ -135,7 +131,6 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Returns Applies to Custom Amounts.
-     *
      * If `true`, the fee applies to custom amounts entered into the Square Point of Sale
      * app that are not associated with a particular `CatalogItem`.
      */
@@ -146,7 +141,6 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Sets Applies to Custom Amounts.
-     *
      * If `true`, the fee applies to custom amounts entered into the Square Point of Sale
      * app that are not associated with a particular `CatalogItem`.
      *
@@ -159,7 +153,6 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Returns Enabled.
-     *
      * A Boolean flag to indicate whether the tax is displayed as enabled (`true`) in the Square Point of
      * Sale app or not (`false`).
      */
@@ -170,7 +163,6 @@ class CatalogTax implements \JsonSerializable
 
     /**
      * Sets Enabled.
-     *
      * A Boolean flag to indicate whether the tax is displayed as enabled (`true`) in the Square Point of
      * Sale app or not (`false`).
      *
@@ -184,20 +176,37 @@ class CatalogTax implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['name']                   = $this->name;
-        $json['calculation_phase']      = $this->calculationPhase;
-        $json['inclusion_type']         = $this->inclusionType;
-        $json['percentage']             = $this->percentage;
-        $json['applies_to_custom_amounts'] = $this->appliesToCustomAmounts;
-        $json['enabled']                = $this->enabled;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->name)) {
+            $json['name']                      = $this->name;
+        }
+        if (isset($this->calculationPhase)) {
+            $json['calculation_phase']         = $this->calculationPhase;
+        }
+        if (isset($this->inclusionType)) {
+            $json['inclusion_type']            = $this->inclusionType;
+        }
+        if (isset($this->percentage)) {
+            $json['percentage']                = $this->percentage;
+        }
+        if (isset($this->appliesToCustomAmounts)) {
+            $json['applies_to_custom_amounts'] = $this->appliesToCustomAmounts;
+        }
+        if (isset($this->enabled)) {
+            $json['enabled']                   = $this->enabled;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

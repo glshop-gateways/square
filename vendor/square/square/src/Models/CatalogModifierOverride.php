@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Options to control how to override the default behavior of the specified modifier.
  */
@@ -29,7 +31,6 @@ class CatalogModifierOverride implements \JsonSerializable
 
     /**
      * Returns Modifier Id.
-     *
      * The ID of the `CatalogModifier` whose default behavior is being overridden.
      */
     public function getModifierId(): string
@@ -39,7 +40,6 @@ class CatalogModifierOverride implements \JsonSerializable
 
     /**
      * Sets Modifier Id.
-     *
      * The ID of the `CatalogModifier` whose default behavior is being overridden.
      *
      * @required
@@ -52,7 +52,6 @@ class CatalogModifierOverride implements \JsonSerializable
 
     /**
      * Returns On by Default.
-     *
      * If `true`, this `CatalogModifier` should be selected by default for this `CatalogItem`.
      */
     public function getOnByDefault(): ?bool
@@ -62,7 +61,6 @@ class CatalogModifierOverride implements \JsonSerializable
 
     /**
      * Sets On by Default.
-     *
      * If `true`, this `CatalogModifier` should be selected by default for this `CatalogItem`.
      *
      * @maps on_by_default
@@ -75,16 +73,23 @@ class CatalogModifierOverride implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['modifier_id'] = $this->modifierId;
-        $json['on_by_default'] = $this->onByDefault;
-
-        return array_filter($json, function ($val) {
+        $json['modifier_id']       = $this->modifierId;
+        if (isset($this->onByDefault)) {
+            $json['on_by_default'] = $this->onByDefault;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

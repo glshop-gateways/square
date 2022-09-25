@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents a bank account. For more information about
  * linking a bank account to a Square account, see
@@ -134,7 +136,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
      * The unique, Square-issued identifier for the bank account.
      */
     public function getId(): string
@@ -144,7 +145,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
      * The unique, Square-issued identifier for the bank account.
      *
      * @required
@@ -157,7 +157,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Account Number Suffix.
-     *
      * The last few digits of the account number.
      */
     public function getAccountNumberSuffix(): string
@@ -167,7 +166,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Account Number Suffix.
-     *
      * The last few digits of the account number.
      *
      * @required
@@ -180,7 +178,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Country.
-     *
      * Indicates the country associated with another entity, such as a business.
      * Values are in [ISO 3166-1-alpha-2 format](http://www.iso.org/iso/home/standards/country_codes.htm).
      */
@@ -191,7 +188,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Country.
-     *
      * Indicates the country associated with another entity, such as a business.
      * Values are in [ISO 3166-1-alpha-2 format](http://www.iso.org/iso/home/standards/country_codes.htm).
      *
@@ -205,7 +201,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Currency.
-     *
      * Indicates the associated currency for an amount of money. Values correspond
      * to [ISO 4217](https://wikipedia.org/wiki/ISO_4217).
      */
@@ -216,7 +211,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Currency.
-     *
      * Indicates the associated currency for an amount of money. Values correspond
      * to [ISO 4217](https://wikipedia.org/wiki/ISO_4217).
      *
@@ -230,7 +224,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Account Type.
-     *
      * Indicates the financial purpose of the bank account.
      */
     public function getAccountType(): string
@@ -240,7 +233,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Account Type.
-     *
      * Indicates the financial purpose of the bank account.
      *
      * @required
@@ -253,7 +245,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Holder Name.
-     *
      * Name of the account holder. This name must match the name
      * on the targeted bank account record.
      */
@@ -264,7 +255,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Holder Name.
-     *
      * Name of the account holder. This name must match the name
      * on the targeted bank account record.
      *
@@ -278,7 +268,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Primary Bank Identification Number.
-     *
      * Primary identifier for the bank. For more information, see
      * [Bank Accounts API](https://developer.squareup.com/docs/bank-accounts-api).
      */
@@ -289,7 +278,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Primary Bank Identification Number.
-     *
      * Primary identifier for the bank. For more information, see
      * [Bank Accounts API](https://developer.squareup.com/docs/bank-accounts-api).
      *
@@ -303,7 +291,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Secondary Bank Identification Number.
-     *
      * Secondary identifier for the bank. For more information, see
      * [Bank Accounts API](https://developer.squareup.com/docs/bank-accounts-api).
      */
@@ -314,7 +301,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Secondary Bank Identification Number.
-     *
      * Secondary identifier for the bank. For more information, see
      * [Bank Accounts API](https://developer.squareup.com/docs/bank-accounts-api).
      *
@@ -327,7 +313,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Debit Mandate Reference Id.
-     *
      * Reference identifier that will be displayed to UK bank account owners
      * when collecting direct debit authorization. Only required for UK bank accounts.
      */
@@ -338,7 +323,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Debit Mandate Reference Id.
-     *
      * Reference identifier that will be displayed to UK bank account owners
      * when collecting direct debit authorization. Only required for UK bank accounts.
      *
@@ -351,7 +335,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Reference Id.
-     *
      * Client-provided identifier for linking the banking account to an entity
      * in a third-party system (for example, a bank account number or a user identifier).
      */
@@ -362,7 +345,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Reference Id.
-     *
      * Client-provided identifier for linking the banking account to an entity
      * in a third-party system (for example, a bank account number or a user identifier).
      *
@@ -375,7 +357,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * The location to which the bank account belongs.
      */
     public function getLocationId(): ?string
@@ -385,7 +366,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * The location to which the bank account belongs.
      *
      * @maps location_id
@@ -397,7 +377,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Status.
-     *
      * Indicates the current verification status of a `BankAccount` object.
      */
     public function getStatus(): string
@@ -407,7 +386,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Status.
-     *
      * Indicates the current verification status of a `BankAccount` object.
      *
      * @required
@@ -420,7 +398,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Creditable.
-     *
      * Indicates whether it is possible for Square to send money to this bank account.
      */
     public function getCreditable(): bool
@@ -430,7 +407,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Creditable.
-     *
      * Indicates whether it is possible for Square to send money to this bank account.
      *
      * @required
@@ -443,7 +419,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Debitable.
-     *
      * Indicates whether it is possible for Square to take money from this
      * bank account.
      */
@@ -454,7 +429,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Debitable.
-     *
      * Indicates whether it is possible for Square to take money from this
      * bank account.
      *
@@ -468,7 +442,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Fingerprint.
-     *
      * A Square-assigned, unique identifier for the bank account based on the
      * account information. The account fingerprint can be used to compare account
      * entries and determine if the they represent the same real-world bank account.
@@ -480,7 +453,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Fingerprint.
-     *
      * A Square-assigned, unique identifier for the bank account based on the
      * account information. The account fingerprint can be used to compare account
      * entries and determine if the they represent the same real-world bank account.
@@ -494,7 +466,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Version.
-     *
      * The current version of the `BankAccount`.
      */
     public function getVersion(): ?int
@@ -504,7 +475,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Version.
-     *
      * The current version of the `BankAccount`.
      *
      * @maps version
@@ -516,7 +486,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Returns Bank Name.
-     *
      * Read only. Name of actual financial institution.
      * For example "Bank of America".
      */
@@ -527,7 +496,6 @@ class BankAccount implements \JsonSerializable
 
     /**
      * Sets Bank Name.
-     *
      * Read only. Name of actual financial institution.
      * For example "Bank of America".
      *
@@ -541,31 +509,50 @@ class BankAccount implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']                                = $this->id;
-        $json['account_number_suffix']             = $this->accountNumberSuffix;
-        $json['country']                           = $this->country;
-        $json['currency']                          = $this->currency;
-        $json['account_type']                      = $this->accountType;
-        $json['holder_name']                       = $this->holderName;
-        $json['primary_bank_identification_number'] = $this->primaryBankIdentificationNumber;
-        $json['secondary_bank_identification_number'] = $this->secondaryBankIdentificationNumber;
-        $json['debit_mandate_reference_id']        = $this->debitMandateReferenceId;
-        $json['reference_id']                      = $this->referenceId;
-        $json['location_id']                       = $this->locationId;
-        $json['status']                            = $this->status;
-        $json['creditable']                        = $this->creditable;
-        $json['debitable']                         = $this->debitable;
-        $json['fingerprint']                       = $this->fingerprint;
-        $json['version']                           = $this->version;
-        $json['bank_name']                         = $this->bankName;
-
-        return array_filter($json, function ($val) {
+        $json['id']                                       = $this->id;
+        $json['account_number_suffix']                    = $this->accountNumberSuffix;
+        $json['country']                                  = $this->country;
+        $json['currency']                                 = $this->currency;
+        $json['account_type']                             = $this->accountType;
+        $json['holder_name']                              = $this->holderName;
+        $json['primary_bank_identification_number']       = $this->primaryBankIdentificationNumber;
+        if (isset($this->secondaryBankIdentificationNumber)) {
+            $json['secondary_bank_identification_number'] = $this->secondaryBankIdentificationNumber;
+        }
+        if (isset($this->debitMandateReferenceId)) {
+            $json['debit_mandate_reference_id']           = $this->debitMandateReferenceId;
+        }
+        if (isset($this->referenceId)) {
+            $json['reference_id']                         = $this->referenceId;
+        }
+        if (isset($this->locationId)) {
+            $json['location_id']                          = $this->locationId;
+        }
+        $json['status']                                   = $this->status;
+        $json['creditable']                               = $this->creditable;
+        $json['debitable']                                = $this->debitable;
+        if (isset($this->fingerprint)) {
+            $json['fingerprint']                          = $this->fingerprint;
+        }
+        if (isset($this->version)) {
+            $json['version']                              = $this->version;
+        }
+        if (isset($this->bankName)) {
+            $json['bank_name']                            = $this->bankName;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

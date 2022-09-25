@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A defined break template that sets an expectation for possible `Break`
  * instances on a `Shift`.
@@ -66,8 +68,7 @@ class BreakType implements \JsonSerializable
 
     /**
      * Returns Id.
-     *
-     * UUID for this object.
+     * The UUID for this object.
      */
     public function getId(): ?string
     {
@@ -76,8 +77,7 @@ class BreakType implements \JsonSerializable
 
     /**
      * Sets Id.
-     *
-     * UUID for this object.
+     * The UUID for this object.
      *
      * @maps id
      */
@@ -88,7 +88,6 @@ class BreakType implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * The ID of the business location this type of break applies to.
      */
     public function getLocationId(): string
@@ -98,7 +97,6 @@ class BreakType implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * The ID of the business location this type of break applies to.
      *
      * @required
@@ -111,8 +109,7 @@ class BreakType implements \JsonSerializable
 
     /**
      * Returns Break Name.
-     *
-     * A human-readable name for this type of break. Will be displayed to
+     * A human-readable name for this type of break. The name is displayed to
      * employees in Square products.
      */
     public function getBreakName(): string
@@ -122,8 +119,7 @@ class BreakType implements \JsonSerializable
 
     /**
      * Sets Break Name.
-     *
-     * A human-readable name for this type of break. Will be displayed to
+     * A human-readable name for this type of break. The name is displayed to
      * employees in Square products.
      *
      * @required
@@ -136,9 +132,8 @@ class BreakType implements \JsonSerializable
 
     /**
      * Returns Expected Duration.
-     *
      * Format: RFC-3339 P[n]Y[n]M[n]DT[n]H[n]M[n]S. The expected length of
-     * this break. Precision below minutes is truncated.
+     * this break. Precision less than minutes is truncated.
      */
     public function getExpectedDuration(): string
     {
@@ -147,9 +142,8 @@ class BreakType implements \JsonSerializable
 
     /**
      * Sets Expected Duration.
-     *
      * Format: RFC-3339 P[n]Y[n]M[n]DT[n]H[n]M[n]S. The expected length of
-     * this break. Precision below minutes is truncated.
+     * this break. Precision less than minutes is truncated.
      *
      * @required
      * @maps expected_duration
@@ -161,7 +155,6 @@ class BreakType implements \JsonSerializable
 
     /**
      * Returns Is Paid.
-     *
      * Whether this break counts towards time worked for compensation
      * purposes.
      */
@@ -172,7 +165,6 @@ class BreakType implements \JsonSerializable
 
     /**
      * Sets Is Paid.
-     *
      * Whether this break counts towards time worked for compensation
      * purposes.
      *
@@ -186,9 +178,8 @@ class BreakType implements \JsonSerializable
 
     /**
      * Returns Version.
-     *
-     * Used for resolving concurrency issues; request will fail if version
-     * provided does not match server version at time of request. If a value is not
+     * Used for resolving concurrency issues. The request fails if the version
+     * provided does not match the server version at the time of the request. If a value is not
      * provided, Square's servers execute a "blind" write; potentially
      * overwriting another writer's data.
      */
@@ -199,9 +190,8 @@ class BreakType implements \JsonSerializable
 
     /**
      * Sets Version.
-     *
-     * Used for resolving concurrency issues; request will fail if version
-     * provided does not match server version at time of request. If a value is not
+     * Used for resolving concurrency issues. The request fails if the version
+     * provided does not match the server version at the time of the request. If a value is not
      * provided, Square's servers execute a "blind" write; potentially
      * overwriting another writer's data.
      *
@@ -214,7 +204,6 @@ class BreakType implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * A read-only timestamp in RFC 3339 format.
      */
     public function getCreatedAt(): ?string
@@ -224,7 +213,6 @@ class BreakType implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * A read-only timestamp in RFC 3339 format.
      *
      * @maps created_at
@@ -236,7 +224,6 @@ class BreakType implements \JsonSerializable
 
     /**
      * Returns Updated At.
-     *
      * A read-only timestamp in RFC 3339 format.
      */
     public function getUpdatedAt(): ?string
@@ -246,7 +233,6 @@ class BreakType implements \JsonSerializable
 
     /**
      * Sets Updated At.
-     *
      * A read-only timestamp in RFC 3339 format.
      *
      * @maps updated_at
@@ -259,22 +245,35 @@ class BreakType implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['id']               = $this->id;
-        $json['location_id']      = $this->locationId;
-        $json['break_name']       = $this->breakName;
+        if (isset($this->id)) {
+            $json['id']            = $this->id;
+        }
+        $json['location_id']       = $this->locationId;
+        $json['break_name']        = $this->breakName;
         $json['expected_duration'] = $this->expectedDuration;
-        $json['is_paid']          = $this->isPaid;
-        $json['version']          = $this->version;
-        $json['created_at']       = $this->createdAt;
-        $json['updated_at']       = $this->updatedAt;
-
-        return array_filter($json, function ($val) {
+        $json['is_paid']           = $this->isPaid;
+        if (isset($this->version)) {
+            $json['version']       = $this->version;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']    = $this->createdAt;
+        }
+        if (isset($this->updatedAt)) {
+            $json['updated_at']    = $this->updatedAt;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

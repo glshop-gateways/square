@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class BusinessBookingProfile implements \JsonSerializable
 {
     /**
@@ -42,8 +44,12 @@ class BusinessBookingProfile implements \JsonSerializable
     private $businessAppointmentSettings;
 
     /**
+     * @var bool|null
+     */
+    private $supportSellerLevelWrites;
+
+    /**
      * Returns Seller Id.
-     *
      * The ID of the seller, obtainable using the Merchants API.
      */
     public function getSellerId(): ?string
@@ -53,7 +59,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Sets Seller Id.
-     *
      * The ID of the seller, obtainable using the Merchants API.
      *
      * @maps seller_id
@@ -65,7 +70,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Returns Created At.
-     *
      * The RFC 3339 timestamp specifying the booking's creation time.
      */
     public function getCreatedAt(): ?string
@@ -75,7 +79,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Sets Created At.
-     *
      * The RFC 3339 timestamp specifying the booking's creation time.
      *
      * @maps created_at
@@ -87,7 +90,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Returns Booking Enabled.
-     *
      * Indicates whether the seller is open for booking.
      */
     public function getBookingEnabled(): ?bool
@@ -97,7 +99,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Sets Booking Enabled.
-     *
      * Indicates whether the seller is open for booking.
      *
      * @maps booking_enabled
@@ -109,7 +110,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Returns Customer Timezone Choice.
-     *
      * Choices of customer-facing time zone used for bookings.
      */
     public function getCustomerTimezoneChoice(): ?string
@@ -119,7 +119,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Sets Customer Timezone Choice.
-     *
      * Choices of customer-facing time zone used for bookings.
      *
      * @maps customer_timezone_choice
@@ -131,7 +130,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Returns Booking Policy.
-     *
      * Policies for accepting bookings.
      */
     public function getBookingPolicy(): ?string
@@ -141,7 +139,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Sets Booking Policy.
-     *
      * Policies for accepting bookings.
      *
      * @maps booking_policy
@@ -153,7 +150,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Returns Allow User Cancel.
-     *
      * Indicates whether customers can cancel or reschedule their own bookings (`true`) or not (`false`).
      */
     public function getAllowUserCancel(): ?bool
@@ -163,7 +159,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Sets Allow User Cancel.
-     *
      * Indicates whether customers can cancel or reschedule their own bookings (`true`) or not (`false`).
      *
      * @maps allow_user_cancel
@@ -175,7 +170,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Returns Business Appointment Settings.
-     *
      * The service appointment settings, including where and how the service is provided.
      */
     public function getBusinessAppointmentSettings(): ?BusinessAppointmentSettings
@@ -185,7 +179,6 @@ class BusinessBookingProfile implements \JsonSerializable
 
     /**
      * Sets Business Appointment Settings.
-     *
      * The service appointment settings, including where and how the service is provided.
      *
      * @maps business_appointment_settings
@@ -196,23 +189,67 @@ class BusinessBookingProfile implements \JsonSerializable
     }
 
     /**
+     * Returns Support Seller Level Writes.
+     * Indicates whether the seller's subscription to Square Appointments supports creating, updating or
+     * canceling an appointment through the API (`true`) or not (`false`) using seller permission.
+     */
+    public function getSupportSellerLevelWrites(): ?bool
+    {
+        return $this->supportSellerLevelWrites;
+    }
+
+    /**
+     * Sets Support Seller Level Writes.
+     * Indicates whether the seller's subscription to Square Appointments supports creating, updating or
+     * canceling an appointment through the API (`true`) or not (`false`) using seller permission.
+     *
+     * @maps support_seller_level_writes
+     */
+    public function setSupportSellerLevelWrites(?bool $supportSellerLevelWrites): void
+    {
+        $this->supportSellerLevelWrites = $supportSellerLevelWrites;
+    }
+
+    /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['seller_id']                   = $this->sellerId;
-        $json['created_at']                  = $this->createdAt;
-        $json['booking_enabled']             = $this->bookingEnabled;
-        $json['customer_timezone_choice']    = $this->customerTimezoneChoice;
-        $json['booking_policy']              = $this->bookingPolicy;
-        $json['allow_user_cancel']           = $this->allowUserCancel;
-        $json['business_appointment_settings'] = $this->businessAppointmentSettings;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->sellerId)) {
+            $json['seller_id']                     = $this->sellerId;
+        }
+        if (isset($this->createdAt)) {
+            $json['created_at']                    = $this->createdAt;
+        }
+        if (isset($this->bookingEnabled)) {
+            $json['booking_enabled']               = $this->bookingEnabled;
+        }
+        if (isset($this->customerTimezoneChoice)) {
+            $json['customer_timezone_choice']      = $this->customerTimezoneChoice;
+        }
+        if (isset($this->bookingPolicy)) {
+            $json['booking_policy']                = $this->bookingPolicy;
+        }
+        if (isset($this->allowUserCancel)) {
+            $json['allow_user_cancel']             = $this->allowUserCancel;
+        }
+        if (isset($this->businessAppointmentSettings)) {
+            $json['business_appointment_settings'] = $this->businessAppointmentSettings;
+        }
+        if (isset($this->supportSellerLevelWrites)) {
+            $json['support_seller_level_writes']   = $this->supportSellerLevelWrites;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

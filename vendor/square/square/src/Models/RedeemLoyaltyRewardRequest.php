@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A request to redeem a loyalty reward.
  */
@@ -31,7 +33,6 @@ class RedeemLoyaltyRewardRequest implements \JsonSerializable
 
     /**
      * Returns Idempotency Key.
-     *
      * A unique string that identifies this `RedeemLoyaltyReward` request.
      * Keys can be any valid string, but must be unique for every request.
      */
@@ -42,7 +43,6 @@ class RedeemLoyaltyRewardRequest implements \JsonSerializable
 
     /**
      * Sets Idempotency Key.
-     *
      * A unique string that identifies this `RedeemLoyaltyReward` request.
      * Keys can be any valid string, but must be unique for every request.
      *
@@ -56,7 +56,6 @@ class RedeemLoyaltyRewardRequest implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * The ID of the [location]($m/Location) where the reward is redeemed.
      */
     public function getLocationId(): string
@@ -66,7 +65,6 @@ class RedeemLoyaltyRewardRequest implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * The ID of the [location]($m/Location) where the reward is redeemed.
      *
      * @required
@@ -80,16 +78,21 @@ class RedeemLoyaltyRewardRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['idempotency_key'] = $this->idempotencyKey;
-        $json['location_id']    = $this->locationId;
-
-        return array_filter($json, function ($val) {
+        $json['location_id']     = $this->locationId;
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

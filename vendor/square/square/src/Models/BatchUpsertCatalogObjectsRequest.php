@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 class BatchUpsertCatalogObjectsRequest implements \JsonSerializable
 {
     /**
@@ -28,7 +30,6 @@ class BatchUpsertCatalogObjectsRequest implements \JsonSerializable
 
     /**
      * Returns Idempotency Key.
-     *
      * A value you specify that uniquely identifies this
      * request among all your requests. A common way to create
      * a valid idempotency key is to use a Universally unique
@@ -48,7 +49,6 @@ class BatchUpsertCatalogObjectsRequest implements \JsonSerializable
 
     /**
      * Sets Idempotency Key.
-     *
      * A value you specify that uniquely identifies this
      * request among all your requests. A common way to create
      * a valid idempotency key is to use a Universally unique
@@ -71,7 +71,6 @@ class BatchUpsertCatalogObjectsRequest implements \JsonSerializable
 
     /**
      * Returns Batches.
-     *
      * A batch of CatalogObjects to be inserted/updated atomically.
      * The objects within a batch will be inserted in an all-or-nothing fashion, i.e., if an error occurs
      * attempting to insert or update an object within a batch, the entire batch will be rejected. However,
@@ -107,7 +106,6 @@ class BatchUpsertCatalogObjectsRequest implements \JsonSerializable
 
     /**
      * Sets Batches.
-     *
      * A batch of CatalogObjects to be inserted/updated atomically.
      * The objects within a batch will be inserted in an all-or-nothing fashion, i.e., if an error occurs
      * attempting to insert or update an object within a batch, the entire batch will be rejected. However,
@@ -147,16 +145,21 @@ class BatchUpsertCatalogObjectsRequest implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['idempotency_key'] = $this->idempotencyKey;
-        $json['batches']        = $this->batches;
-
-        return array_filter($json, function ($val) {
+        $json['batches']         = $this->batches;
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

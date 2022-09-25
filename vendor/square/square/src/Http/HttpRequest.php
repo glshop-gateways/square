@@ -14,42 +14,42 @@ class HttpRequest
      *
      * @var string
      */
-    private $httpMethod = null;
+    private $httpMethod;
 
     /**
      * Headers
      *
      * @var array
      */
-    private $headers = null;
+    private $headers;
 
     /**
      * Query url
      *
      * @var string
      */
-    private $queryUrl = null;
+    private $queryUrl;
 
     /**
      * Input parameters
      *
      * @var array
      */
-    private $parameters = null;
+    private $parameters;
 
     /**
      * Create a new HttpRequest
      *
-     * @param string      $httpMethod HTTP method
-     * @param array|null  $headers    Map of headers
-     * @param string|null $queryUrl   Query url
-     * @param array|null  $parameters Map of parameters sent
+     * @param string $httpMethod HTTP method
+     * @param array  $headers    Map of headers
+     * @param string $queryUrl   Query url
+     * @param array  $parameters Map of parameters sent
      */
     public function __construct(
         string $httpMethod,
-        array $headers = null,
-        ?string $queryUrl = null,
-        array $parameters = null
+        array $headers = [],
+        string $queryUrl = "",
+        array $parameters = []
     ) {
         $this->httpMethod = $httpMethod;
         $this->headers = $headers;
@@ -93,6 +93,17 @@ class HttpRequest
     public function setHeaders(array $headers): void
     {
         $this->headers = $headers;
+    }
+
+    /**
+     * Add or replace a single header
+     *
+     * @param string $key   key for the header
+     * @param string $value value of the header
+     */
+    public function addHeader(string $key, string $value): void
+    {
+        $this->headers[$key] = $value;
     }
 
     /**

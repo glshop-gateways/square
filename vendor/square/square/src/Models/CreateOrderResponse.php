@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Defines the fields that are included in the response body of
- * a request to the CreateOrder endpoint.
+ * a request to the `CreateOrder` endpoint.
  *
- * One of `errors` or `order` is present in a given response (never both).
+ * Either `errors` or `order` is present in a given response, but never both.
  */
 class CreateOrderResponse implements \JsonSerializable
 {
@@ -24,10 +26,9 @@ class CreateOrderResponse implements \JsonSerializable
 
     /**
      * Returns Order.
-     *
      * Contains all information related to a single order to process with Square,
-     * including line items that specify the products to purchase. Order objects also
-     * include information on any associated tenders, refunds, and returns.
+     * including line items that specify the products to purchase. `Order` objects also
+     * include information about any associated tenders, refunds, and returns.
      *
      * All Connect V2 Transactions have all been converted to Orders including all associated
      * itemization data.
@@ -39,10 +40,9 @@ class CreateOrderResponse implements \JsonSerializable
 
     /**
      * Sets Order.
-     *
      * Contains all information related to a single order to process with Square,
-     * including line items that specify the products to purchase. Order objects also
-     * include information on any associated tenders, refunds, and returns.
+     * including line items that specify the products to purchase. `Order` objects also
+     * include information about any associated tenders, refunds, and returns.
      *
      * All Connect V2 Transactions have all been converted to Orders including all associated
      * itemization data.
@@ -56,7 +56,6 @@ class CreateOrderResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -68,7 +67,6 @@ class CreateOrderResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -83,16 +81,25 @@ class CreateOrderResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['order']  = $this->order;
-        $json['errors'] = $this->errors;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->order)) {
+            $json['order']  = $this->order;
+        }
+        if (isset($this->errors)) {
+            $json['errors'] = $this->errors;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

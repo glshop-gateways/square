@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Square\Models;
 
 /**
- * Indicates whether the price of a CatalogItemVariation should be entered manually at the time of
- * sale.
+ * Indicates whether the price of a CatalogItemVariation should be entered manually at the time of sale.
  */
 class CatalogPricingType
 {

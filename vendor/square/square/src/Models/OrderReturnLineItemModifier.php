@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A line item modifier being returned.
  */
@@ -25,6 +27,11 @@ class OrderReturnLineItemModifier implements \JsonSerializable
     private $catalogObjectId;
 
     /**
+     * @var int|null
+     */
+    private $catalogVersion;
+
+    /**
      * @var string|null
      */
     private $name;
@@ -41,8 +48,7 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Returns Uid.
-     *
-     * Unique ID that identifies the return modifier only within this order.
+     * A unique ID that identifies the return modifier only within this order.
      */
     public function getUid(): ?string
     {
@@ -51,8 +57,7 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Sets Uid.
-     *
-     * Unique ID that identifies the return modifier only within this order.
+     * A unique ID that identifies the return modifier only within this order.
      *
      * @maps uid
      */
@@ -63,8 +68,7 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Returns Source Modifier Uid.
-     *
-     * `uid` of the Modifier from the LineItem from the Order which contains the
+     * The modifier `uid` from the order's line item that contains the
      * original sale of this line item modifier.
      */
     public function getSourceModifierUid(): ?string
@@ -74,8 +78,7 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Sets Source Modifier Uid.
-     *
-     * `uid` of the Modifier from the LineItem from the Order which contains the
+     * The modifier `uid` from the order's line item that contains the
      * original sale of this line item modifier.
      *
      * @maps source_modifier_uid
@@ -87,8 +90,7 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Returns Catalog Object Id.
-     *
-     * The catalog object id referencing [CatalogModifier]($m/CatalogModifier).
+     * The catalog object ID referencing [CatalogModifier]($m/CatalogModifier).
      */
     public function getCatalogObjectId(): ?string
     {
@@ -97,8 +99,7 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Sets Catalog Object Id.
-     *
-     * The catalog object id referencing [CatalogModifier]($m/CatalogModifier).
+     * The catalog object ID referencing [CatalogModifier]($m/CatalogModifier).
      *
      * @maps catalog_object_id
      */
@@ -108,8 +109,27 @@ class OrderReturnLineItemModifier implements \JsonSerializable
     }
 
     /**
-     * Returns Name.
+     * Returns Catalog Version.
+     * The version of the catalog object that this line item modifier references.
+     */
+    public function getCatalogVersion(): ?int
+    {
+        return $this->catalogVersion;
+    }
+
+    /**
+     * Sets Catalog Version.
+     * The version of the catalog object that this line item modifier references.
      *
+     * @maps catalog_version
+     */
+    public function setCatalogVersion(?int $catalogVersion): void
+    {
+        $this->catalogVersion = $catalogVersion;
+    }
+
+    /**
+     * Returns Name.
      * The name of the item modifier.
      */
     public function getName(): ?string
@@ -119,7 +139,6 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * The name of the item modifier.
      *
      * @maps name
@@ -131,7 +150,6 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Returns Base Price Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -147,7 +165,6 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Sets Base Price Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -165,7 +182,6 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Returns Total Price Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -181,7 +197,6 @@ class OrderReturnLineItemModifier implements \JsonSerializable
 
     /**
      * Sets Total Price Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -200,20 +215,40 @@ class OrderReturnLineItemModifier implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['uid']               = $this->uid;
-        $json['source_modifier_uid'] = $this->sourceModifierUid;
-        $json['catalog_object_id'] = $this->catalogObjectId;
-        $json['name']              = $this->name;
-        $json['base_price_money']  = $this->basePriceMoney;
-        $json['total_price_money'] = $this->totalPriceMoney;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->uid)) {
+            $json['uid']                 = $this->uid;
+        }
+        if (isset($this->sourceModifierUid)) {
+            $json['source_modifier_uid'] = $this->sourceModifierUid;
+        }
+        if (isset($this->catalogObjectId)) {
+            $json['catalog_object_id']   = $this->catalogObjectId;
+        }
+        if (isset($this->catalogVersion)) {
+            $json['catalog_version']     = $this->catalogVersion;
+        }
+        if (isset($this->name)) {
+            $json['name']                = $this->name;
+        }
+        if (isset($this->basePriceMoney)) {
+            $json['base_price_money']    = $this->basePriceMoney;
+        }
+        if (isset($this->totalPriceMoney)) {
+            $json['total_price_money']   = $this->totalPriceMoney;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

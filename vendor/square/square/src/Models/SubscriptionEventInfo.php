@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Provides information about the subscription event.
  */
@@ -21,7 +23,6 @@ class SubscriptionEventInfo implements \JsonSerializable
 
     /**
      * Returns Detail.
-     *
      * A human-readable explanation for the event.
      */
     public function getDetail(): ?string
@@ -31,7 +32,6 @@ class SubscriptionEventInfo implements \JsonSerializable
 
     /**
      * Sets Detail.
-     *
      * A human-readable explanation for the event.
      *
      * @maps detail
@@ -43,8 +43,7 @@ class SubscriptionEventInfo implements \JsonSerializable
 
     /**
      * Returns Code.
-     *
-     * The possible subscription event info codes.
+     * Supported info codes of a subscription event.
      */
     public function getCode(): ?string
     {
@@ -53,8 +52,7 @@ class SubscriptionEventInfo implements \JsonSerializable
 
     /**
      * Sets Code.
-     *
-     * The possible subscription event info codes.
+     * Supported info codes of a subscription event.
      *
      * @maps code
      */
@@ -66,16 +64,25 @@ class SubscriptionEventInfo implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['detail'] = $this->detail;
-        $json['code']   = $this->code;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->detail)) {
+            $json['detail'] = $this->detail;
+        }
+        if (isset($this->code)) {
+            $json['code']   = $this->code;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

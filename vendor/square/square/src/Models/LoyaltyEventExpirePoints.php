@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Provides metadata when the event `type` is `EXPIRE_POINTS`.
  */
@@ -31,7 +33,6 @@ class LoyaltyEventExpirePoints implements \JsonSerializable
 
     /**
      * Returns Loyalty Program Id.
-     *
      * The Square-assigned ID of the [loyalty program]($m/LoyaltyProgram).
      */
     public function getLoyaltyProgramId(): string
@@ -41,7 +42,6 @@ class LoyaltyEventExpirePoints implements \JsonSerializable
 
     /**
      * Sets Loyalty Program Id.
-     *
      * The Square-assigned ID of the [loyalty program]($m/LoyaltyProgram).
      *
      * @required
@@ -54,7 +54,6 @@ class LoyaltyEventExpirePoints implements \JsonSerializable
 
     /**
      * Returns Points.
-     *
      * The number of points expired.
      */
     public function getPoints(): int
@@ -64,7 +63,6 @@ class LoyaltyEventExpirePoints implements \JsonSerializable
 
     /**
      * Sets Points.
-     *
      * The number of points expired.
      *
      * @required
@@ -78,16 +76,21 @@ class LoyaltyEventExpirePoints implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
         $json['loyalty_program_id'] = $this->loyaltyProgramId;
-        $json['points']           = $this->points;
-
-        return array_filter($json, function ($val) {
+        $json['points']             = $this->points;
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

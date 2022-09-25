@@ -71,6 +71,11 @@ class ErrorCode
     public const CARD_PROCESSING_NOT_ENABLED = 'CARD_PROCESSING_NOT_ENABLED';
 
     /**
+     * A required subscription was not found for the merchant
+     */
+    public const MERCHANT_SUBSCRIPTION_NOT_FOUND = 'MERCHANT_SUBSCRIPTION_NOT_FOUND';
+
+    /**
      * A general error occurred with the request.
      */
     public const BAD_REQUEST = 'BAD_REQUEST';
@@ -287,6 +292,26 @@ class ErrorCode
     public const MAP_KEY_LENGTH_TOO_LONG = 'MAP_KEY_LENGTH_TOO_LONG';
 
     /**
+     * The provided customer does not have a recorded name.
+     */
+    public const CUSTOMER_MISSING_NAME = 'CUSTOMER_MISSING_NAME';
+
+    /**
+     * The provided customer does not have a recorded email.
+     */
+    public const CUSTOMER_MISSING_EMAIL = 'CUSTOMER_MISSING_EMAIL';
+
+    /**
+     * The subscription cannot be paused longer than the duration of the current phase.
+     */
+    public const INVALID_PAUSE_LENGTH = 'INVALID_PAUSE_LENGTH';
+
+    /**
+     * The subscription cannot be paused/resumed on the given date.
+     */
+    public const INVALID_DATE = 'INVALID_DATE';
+
+    /**
      * The card issuer declined the request because the card is expired.
      */
     public const CARD_EXPIRED = 'CARD_EXPIRED';
@@ -328,6 +353,12 @@ class ErrorCode
      * The credit card cannot be validated based on the provided details.
      */
     public const INVALID_CARD = 'INVALID_CARD';
+
+    /**
+     * The payment was declined because there was a payment amount mismatch.
+     * The money amount Square was expecting does not match the amount provided.
+     */
+    public const PAYMENT_AMOUNT_MISMATCH = 'PAYMENT_AMOUNT_MISMATCH';
 
     /**
      * Square received a decline without any additional information.
@@ -421,6 +452,16 @@ class ErrorCode
     public const INVALID_PIN = 'INVALID_PIN';
 
     /**
+     * The payment is missing a required PIN.
+     */
+    public const MISSING_PIN = 'MISSING_PIN';
+
+    /**
+     * The payment is missing a required ACCOUNT_TYPE parameter.
+     */
+    public const MISSING_ACCOUNT_TYPE = 'MISSING_ACCOUNT_TYPE';
+
+    /**
      * The postal code is incorrectly formatted.
      */
     public const INVALID_POSTAL_CODE = 'INVALID_POSTAL_CODE';
@@ -490,7 +531,7 @@ class ErrorCode
     public const CARD_TOKEN_EXPIRED = 'CARD_TOKEN_EXPIRED';
 
     /**
-     * The provided card token (nonce) was already used to process payment.
+     * The provided card token (nonce) was already used to process the payment or refund.
      */
     public const CARD_TOKEN_USED = 'CARD_TOKEN_USED';
 
@@ -515,8 +556,9 @@ class ErrorCode
     public const REFUND_ALREADY_PENDING = 'REFUND_ALREADY_PENDING';
 
     /**
-     * The payment is not refundable. For example, a previous refund has
-     * already been rejected and no new refunds can be accepted.
+     * The payment is not refundable. For example, the payment has been disputed and is no longer eligible
+     * for
+     * refunds.
      */
     public const PAYMENT_NOT_REFUNDABLE = 'PAYMENT_NOT_REFUNDABLE';
 
@@ -649,6 +691,11 @@ class ErrorCode
     public const RESERVATION_DECLINED = 'RESERVATION_DECLINED';
 
     /**
+     * The body parameter is not recognized by the requested endpoint.
+     */
+    public const UNKNOWN_BODY_PARAMETER = 'UNKNOWN_BODY_PARAMETER';
+
+    /**
      * Not Found - a general error occurred.
      */
     public const NOT_FOUND = 'NOT_FOUND';
@@ -656,7 +703,7 @@ class ErrorCode
     /**
      * Square could not find the associated Apple Pay certificate.
      */
-    public const APPLE_PAYMENT_PROCESSING_CERTIFICATE_HASH_NOT_FOUND =
+    public const APPLE_PAYMENT_PROCESSING_CERTIFICATE_HASH_NOT_FOUND     =
         'APPLE_PAYMENT_PROCESSING_CERTIFICATE_HASH_NOT_FOUND';
 
     /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Square\Models;
 
 /**
- * Indicates the Square product used to generate an inventory change.
+ * Indicates the Square product used to generate a change.
  */
 class Product
 {
@@ -15,7 +15,7 @@ class Product
     public const SQUARE_POS = 'SQUARE_POS';
 
     /**
-     * Square Connect APIs (Transactions API, Checkout API).
+     * Square Connect APIs (for example, Orders API or Checkout API).
      */
     public const EXTERNAL_API = 'EXTERNAL_API';
 
@@ -45,12 +45,12 @@ class Product
     public const PAYROLL = 'PAYROLL';
 
     /**
-     * Square Dashboard
+     * Square Dashboard.
      */
     public const DASHBOARD = 'DASHBOARD';
 
     /**
-     * Item Library Import
+     * Item Library Import.
      */
     public const ITEM_LIBRARY_IMPORT = 'ITEM_LIBRARY_IMPORT';
 

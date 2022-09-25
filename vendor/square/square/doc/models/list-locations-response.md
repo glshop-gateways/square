@@ -1,10 +1,10 @@
 
 # List Locations Response
 
-Defines the fields that are included in the response body of
-a request to the __ListLocations__ endpoint.
+Defines the fields that are included in the response body of a request
+to the [ListLocations](../../doc/apis/locations.md#list-locations) endpoint.
 
-One of `errors` or `locations` is present in a given response (never both).
+Either `errors` or `locations` is present in a given response (never both).
 
 ## Structure
 
@@ -14,8 +14,8 @@ One of `errors` or `locations` is present in a given response (never both).
 
 | Name | Type | Tags | Description | Getter | Setter |
 |  --- | --- | --- | --- | --- | --- |
-| `errors` | [`?(Error[])`](/doc/models/error.md) | Optional | Any errors that occurred during the request. | getErrors(): ?array | setErrors(?array errors): void |
-| `locations` | [`?(Location[])`](/doc/models/location.md) | Optional | The business locations. | getLocations(): ?array | setLocations(?array locations): void |
+| `errors` | [`?(Error[])`](../../doc/models/error.md) | Optional | Any errors that occurred during the request. | getErrors(): ?array | setErrors(?array errors): void |
+| `locations` | [`?(Location[])`](../../doc/models/location.md) | Optional | The business locations. | getLocations(): ?array | setLocations(?array locations): void |
 
 ## Example (as JSON)
 
@@ -30,7 +30,7 @@ One of `errors` or `locations` is present in a given response (never both).
         "locality": "San Francisco",
         "postal_code": "94114"
       },
-      "business_name": "Pumbaa's business name",
+      "business_name": "Jet Fuel Coffee",
       "capabilities": [
         "CREDIT_CARD_PROCESSING"
       ],
@@ -40,10 +40,38 @@ One of `errors` or `locations` is present in a given response (never both).
       "id": "18YC4JDH91E1H",
       "language_code": "en-US",
       "merchant_id": "3MYCJG5GVYQ8Q",
-      "name": "your location name",
+      "name": "Grant Park",
       "phone_number": "+1 650-354-7217",
       "status": "ACTIVE",
       "timezone": "America/Los_Angeles"
+    },
+    {
+      "address": {
+        "address_line_1": "1234 Peachtree St. NE",
+        "administrative_district_level_1": "GA",
+        "locality": "Atlanta",
+        "postal_code": "30309"
+      },
+      "business_name": "Jet Fuel Coffee",
+      "capabilities": [
+        "CREDIT_CARD_PROCESSING"
+      ],
+      "coordinates": {
+        "latitude": 33.7889,
+        "longitude": -84.3841
+      },
+      "country": "US",
+      "created_at": "2022-02-19T17:58:25Z",
+      "currency": "USD",
+      "description": "Midtown Atlanta store",
+      "id": "3Z4V4WHQK64X9",
+      "language_code": "en-US",
+      "mcc": "7299",
+      "merchant_id": "3MYCJG5GVYQ8Q",
+      "name": "Midtown",
+      "status": "ACTIVE",
+      "timezone": "America/New_York",
+      "type": "PHYSICAL"
     }
   ]
 }

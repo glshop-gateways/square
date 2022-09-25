@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * Represents an additional recipient (other than the merchant) receiving a portion of this tender.
  */
@@ -41,7 +43,6 @@ class AdditionalRecipient implements \JsonSerializable
 
     /**
      * Returns Location Id.
-     *
      * The location ID for a recipient (other than the merchant) receiving a portion of this tender.
      */
     public function getLocationId(): string
@@ -51,7 +52,6 @@ class AdditionalRecipient implements \JsonSerializable
 
     /**
      * Sets Location Id.
-     *
      * The location ID for a recipient (other than the merchant) receiving a portion of this tender.
      *
      * @required
@@ -64,7 +64,6 @@ class AdditionalRecipient implements \JsonSerializable
 
     /**
      * Returns Description.
-     *
      * The description of the additional recipient.
      */
     public function getDescription(): ?string
@@ -74,7 +73,6 @@ class AdditionalRecipient implements \JsonSerializable
 
     /**
      * Sets Description.
-     *
      * The description of the additional recipient.
      *
      * @maps description
@@ -86,7 +84,6 @@ class AdditionalRecipient implements \JsonSerializable
 
     /**
      * Returns Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -102,7 +99,6 @@ class AdditionalRecipient implements \JsonSerializable
 
     /**
      * Sets Amount Money.
-     *
      * Represents an amount of money. `Money` fields can be signed or unsigned.
      * Fields that do not explicitly define whether they are signed or unsigned are
      * considered unsigned and can only hold positive amounts. For signed fields, the
@@ -121,9 +117,8 @@ class AdditionalRecipient implements \JsonSerializable
 
     /**
      * Returns Receivable Id.
-     *
-     * The unique ID for this [AdditionalRecipientReceivable]($m/AdditionalRecipientReceivable), assigned
-     * by the server.
+     * The unique ID for the RETIRED `AdditionalRecipientReceivable` object. This field should be empty for
+     * any `AdditionalRecipient` objects created after the retirement.
      */
     public function getReceivableId(): ?string
     {
@@ -132,9 +127,8 @@ class AdditionalRecipient implements \JsonSerializable
 
     /**
      * Sets Receivable Id.
-     *
-     * The unique ID for this [AdditionalRecipientReceivable]($m/AdditionalRecipientReceivable), assigned
-     * by the server.
+     * The unique ID for the RETIRED `AdditionalRecipientReceivable` object. This field should be empty for
+     * any `AdditionalRecipient` objects created after the retirement.
      *
      * @maps receivable_id
      */
@@ -146,18 +140,27 @@ class AdditionalRecipient implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['location_id']  = $this->locationId;
-        $json['description']  = $this->description;
-        $json['amount_money'] = $this->amountMoney;
-        $json['receivable_id'] = $this->receivableId;
-
-        return array_filter($json, function ($val) {
+        $json['location_id']       = $this->locationId;
+        if (isset($this->description)) {
+            $json['description']   = $this->description;
+        }
+        $json['amount_money']      = $this->amountMoney;
+        if (isset($this->receivableId)) {
+            $json['receivable_id'] = $this->receivableId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

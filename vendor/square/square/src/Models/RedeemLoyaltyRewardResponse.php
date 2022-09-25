@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * A response that includes the `LoyaltyEvent` published for redeeming the reward.
  */
@@ -21,7 +23,6 @@ class RedeemLoyaltyRewardResponse implements \JsonSerializable
 
     /**
      * Returns Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @return Error[]|null
@@ -33,7 +34,6 @@ class RedeemLoyaltyRewardResponse implements \JsonSerializable
 
     /**
      * Sets Errors.
-     *
      * Any errors that occurred during the request.
      *
      * @maps errors
@@ -47,10 +47,9 @@ class RedeemLoyaltyRewardResponse implements \JsonSerializable
 
     /**
      * Returns Event.
-     *
      * Provides information about a loyalty event.
-     * For more information, see [Loyalty events](https://developer.squareup.com/docs/loyalty-
-     * api/overview/#loyalty-events).
+     * For more information, see [Search for Balance-Changing Loyalty Events](https://developer.squareup.
+     * com/docs/loyalty-api/loyalty-events).
      */
     public function getEvent(): ?LoyaltyEvent
     {
@@ -59,10 +58,9 @@ class RedeemLoyaltyRewardResponse implements \JsonSerializable
 
     /**
      * Sets Event.
-     *
      * Provides information about a loyalty event.
-     * For more information, see [Loyalty events](https://developer.squareup.com/docs/loyalty-
-     * api/overview/#loyalty-events).
+     * For more information, see [Search for Balance-Changing Loyalty Events](https://developer.squareup.
+     * com/docs/loyalty-api/loyalty-events).
      *
      * @maps event
      */
@@ -74,16 +72,25 @@ class RedeemLoyaltyRewardResponse implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['errors'] = $this->errors;
-        $json['event']  = $this->event;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->errors)) {
+            $json['errors'] = $this->errors;
+        }
+        if (isset($this->event)) {
+            $json['event']  = $this->event;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }

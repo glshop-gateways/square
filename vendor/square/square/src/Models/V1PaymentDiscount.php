@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Square\Models;
 
+use stdClass;
+
 /**
  * V1PaymentDiscount
  */
@@ -26,7 +28,6 @@ class V1PaymentDiscount implements \JsonSerializable
 
     /**
      * Returns Name.
-     *
      * The discount's name.
      */
     public function getName(): ?string
@@ -36,7 +37,6 @@ class V1PaymentDiscount implements \JsonSerializable
 
     /**
      * Sets Name.
-     *
      * The discount's name.
      *
      * @maps name
@@ -66,7 +66,6 @@ class V1PaymentDiscount implements \JsonSerializable
 
     /**
      * Returns Discount Id.
-     *
      * The ID of the applied discount, if available. Discounts applied in older versions of Square Register
      * might not have an ID.
      */
@@ -77,7 +76,6 @@ class V1PaymentDiscount implements \JsonSerializable
 
     /**
      * Sets Discount Id.
-     *
      * The ID of the applied discount, if available. Discounts applied in older versions of Square Register
      * might not have an ID.
      *
@@ -91,17 +89,28 @@ class V1PaymentDiscount implements \JsonSerializable
     /**
      * Encode this object to JSON
      *
-     * @return mixed
+     * @param bool $asArrayWhenEmpty Whether to serialize this model as an array whenever no fields
+     *        are set. (default: false)
+     *
+     * @return array|stdClass
      */
-    public function jsonSerialize()
+    #[\ReturnTypeWillChange] // @phan-suppress-current-line PhanUndeclaredClassAttribute for (php < 8.1)
+    public function jsonSerialize(bool $asArrayWhenEmpty = false)
     {
         $json = [];
-        $json['name']         = $this->name;
-        $json['applied_money'] = $this->appliedMoney;
-        $json['discount_id']  = $this->discountId;
-
-        return array_filter($json, function ($val) {
+        if (isset($this->name)) {
+            $json['name']          = $this->name;
+        }
+        if (isset($this->appliedMoney)) {
+            $json['applied_money'] = $this->appliedMoney;
+        }
+        if (isset($this->discountId)) {
+            $json['discount_id']   = $this->discountId;
+        }
+        $json = array_filter($json, function ($val) {
             return $val !== null;
         });
+
+        return (!$asArrayWhenEmpty && empty($json)) ? new stdClass() : $json;
     }
 }
