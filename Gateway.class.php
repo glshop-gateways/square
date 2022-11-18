@@ -329,7 +329,7 @@ class Gateway extends \Shop\Gateway
             return '';
         }
 
-        $cartID = $cart->CartID();
+        $cartID = $cart->getOrderID();
         $shipping = 0;
         $Cur = Currency::getInstance();
 
@@ -353,6 +353,11 @@ class Gateway extends \Shop\Gateway
             $this->pmtlink_url = $pmtLinkResult->getPaymentLink()->getUrl();
         } else {
             $this->_errors = $apiResponse->getErrors();
+            Log::write(
+                'shop_system',
+                Log::ERROR,
+                __METHOD__ . ': ' . print_r($this->_errors,true)
+            );
             return NULL;
         }
         $gatewayVars = array();
@@ -529,6 +534,11 @@ class Gateway extends \Shop\Gateway
             $retval = $resp->getResult();
         } else {
             $this->_errors = $resp->getErrors();
+            Log::write(
+                'shop_system',
+                Log::ERROR,
+                __METHOD__ . ': ' . print_r($this->_errors,true)
+            );
             $retval = false;
         }
         return $retval;
@@ -582,6 +592,11 @@ class Gateway extends \Shop\Gateway
             }
         } else {
             $this->_errors = $apiResponse->getErrors();
+            Log::write(
+                'shop_system',
+                Log::ERROR,
+                __METHOD__ . ': ' . print_r($this->_errors,true)
+            );
             return false;
         }
     }
@@ -629,6 +644,11 @@ class Gateway extends \Shop\Gateway
             return $createCustomerResponse->getCustomer();
         } else {
             $this->_errors = $apiResponse->getErrors();
+            Log::write(
+                'shop_system',
+                Log::ERROR,
+                __METHOD__ . ': ' . print_r($this->_errors,true)
+            );
             return false;
         }
     }
@@ -641,12 +661,13 @@ class Gateway extends \Shop\Gateway
      * @param   object  $terms_gw   Invoice terms gateway, for config values
      * @return  boolean     True on success, False on error
      */
-    public function createInvoice($Order, $terms_gw)
+    public function createInvoice(Order $Order, object $terms_gw) : bool
     {
         global $_CONF;
 
         $apiClient = $this->_getApiClient();
         $ordersApi = $apiClient->getOrdersApi();
+        $sqOrder = $this->_createOrder($Order);
         $order_req = $this->_createOrderRequest($Order);
         $apiResponse = $ordersApi->createOrder($order_req);
         if ($apiResponse->isSuccess()) {
@@ -661,12 +682,13 @@ class Gateway extends \Shop\Gateway
             return false;
         }
 
+        $due_dt = clone $_CONF['_now'];
         $net_days = (int)$terms_gw->getConfig('net_days');
         if ($net_days < 0) {
             $net_days = 0;
+        } elseif ($net_days > 0) {
+            $due_dt->add(new \DateInterval("P{$net_days}D"));
         }
-        $due_dt = clone $_CONF['_now'];
-        $due_dt->add(new \DateInterval("P{$net_days}D"));
 
         $order_id = $createOrderResponse->getOrder()->getId();
         $customer = $this->getCustomer($Order);
@@ -686,19 +708,24 @@ class Gateway extends \Shop\Gateway
         $inv_paymentRequests[0]->setRequestType(\Square\Models\InvoiceRequestType::BALANCE);
         $inv_paymentRequests[0]->setDueDate($due_dt->format('Y-m-d',true));
         $inv_paymentRequests[0]->setTippingEnabled(false);
-        $inv_paymentRequests_0_reminders = [];
 
+        $inv_paymentRequests_0_reminders = [];
         $inv_paymentRequests_0_reminders[0] = new \Square\Models\InvoicePaymentReminder;
         $inv_paymentRequests_0_reminders[0]->setRelativeScheduledDays(-1);
         $inv_paymentRequests_0_reminders[0]->setMessage('Your invoice is due tomorrow');
         $inv_paymentRequests[0]->setReminders($inv_paymentRequests_0_reminders);
-
         $inv->setPaymentRequests($inv_paymentRequests);
+
+        $invPmtMethods = new \Square\Models\InvoiceAcceptedPaymentMethods;
+        $invPmtMethods->setCard(true);
+        $invPmtMethods->setBankAccount(true);
+        $invPmtMethods->setSquareGiftCard(true);
+        $inv->setAcceptedPaymentMethods($invPmtMethods);
 
         $inv->setInvoiceNumber($Order->getOrderId());
         $inv->setTitle(Company::getInstance()->getCompany());
         $inv->setDescription('We appreciate your business!');
-        //$inv->setScheduledAt('2030-01-13T10:00:00Z');
+
         $body = new \Square\Models\CreateInvoiceRequest($inv);
         $body->setIdempotencyKey(uniqid());
 
@@ -709,23 +736,32 @@ class Gateway extends \Shop\Gateway
             $Invoice = $createInvoiceResponse->getInvoice();
         } else {
             $this->_errors = $apiResponse->getErrors();
+            Log::write(
+                'shop_system',
+                Log::ERROR,
+                __METHOD__ . ': ' . print_r($this->_errors,true)
+            );
             return false;
         }
         // If we got this far, the Invoice was created.
         // Now publish it to send it to the buyer.
+        $Order->createInvoice();
         $body = new \Square\Models\PublishInvoiceRequest(
             $Invoice->getVersion()
         );
         $body->setIdempotencyKey(uniqid());
         $apiResponse = $invoicesApi->publishInvoice($Invoice->getId(), $body);
         if ($apiResponse->isSuccess()) {
-            $Order->updateStatus($terms_gw->getConfig('after_inv_status'));
-            //$publishInvoiceResponse = $apiResponse->getResult();
+            return true;
         } else {
             $this->_errors = $apiResponse->getErrors();
+            Log::write(
+                'shop_system',
+                Log::ERROR,
+                __METHOD__ . ': ' . print_r($this->_errors,true)
+            );
             return false;
         }
-        return true;
     }
 
 
