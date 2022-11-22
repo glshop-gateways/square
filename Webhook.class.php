@@ -42,8 +42,6 @@ class Webhook extends \Shop\Webhook
             $this->blob = file_get_contents('php://input');
             $this->setHeaders(NULL);
         }
-        Log::write('shop_system', Log::DEBUG, 'Got Square Webhook: ' . $this->blob);
-        Log::write('shop_system', Log::DEBUG, 'Got Square Headers: ' . var_export($_SERVER,true));
         $this->setTimestamp();
         $this->setData(json_decode($this->blob));
     }
@@ -54,7 +52,7 @@ class Webhook extends \Shop\Webhook
      *
      * @return  boolean     True on success, False on error
      */
-    public function Dispatch()
+    public function Dispatch() : bool
     {
         global $LANG_SHOP;
 
@@ -67,40 +65,43 @@ class Webhook extends \Shop\Webhook
 
         // If not unique, return true since it's doesn't need to be resent
         if (!$this->isUniqueTxnId()) {
+            // Duplicate transaction, not an error.
             return true;
         }
 
         switch ($this->getEvent()) {
         case 'invoice.payment_made':
-            break;      // deprecated
-            $invoice = SHOP_getVar($object, 'invoice', 'array', NULL);
+            $invoice = $object->invoice;
             if ($invoice) {
-                $ord_id = SHOP_getVar($invoice, 'invoice_number', 'string', NULL);
-                $status = SHOP_getVar($invoice, 'status', 'string', NULL);
+                $ord_id = $invoice->invoice_number;
+                $status = $invoice->status;
                 if ($ord_id) {
                     $this->setOrderID($ord_id);
                     $Order = Order::getInstance($ord_id);
                     if (!$Order->isNew()) {
-                        $pmt_req = SHOP_getVar($invoice, 'payment_requests', 'array', NULL);
+                        $pmt_req = $invoice->payment_requests;
                         if ($pmt_req && isset($pmt_req[0])) {
+                            $this->setRefID($pmt_req[0]->uid);
+                            $this->logIPN();
                             $bal_due = $Order->getBalanceDue();
-                            $next_pmt = SHOP_getVar($invoice, 'next_payment_amount_money', 'array', NULL);
-                            $sq_bal_due = Currency::getInstance($next_pmt['currency'])
-                                ->fromInt($next_pmt['amount']);
-                            if ($status == 'PAID') {
+                            $completed = $pmt_req[0]->total_completed_amount_money;
+                            $computed = $pmt_req[0]->computed_amount_money;
+                            $sq_paid = Currency::getInstance($completed->currency)
+                                ->fromInt($completed->amount);
+                            if ($status == 'PAID' && $sq_paid - $bal_due >= 0) {
                                 // Invoice is paid in full by this payment
                                 $amt_paid = $bal_due;
                             } elseif ($status == 'PARTIALLY_PAID') {
                                 // Have to figure out the amount of this payment by deducting
                                 // the "next payment amount"
-                                $amt_paid = (float)($Order->getTotal() - $sq_bal_due);
+                                $amt_paid = $sq_paid;
                             } else {
                                 $amt_paid = 0;
                             }
                             if ($amt_paid > 0) {
-                                $Pmt = Payment::getByReference($this->getID());
+                                $Pmt = Payment::getByReference($this->getRefID());
                                 if ($Pmt->getPmtID() == 0) {
-                                    $Pmt->setRefID($this->getID())
+                                    $Pmt->setRefID($this->getRefID())
                                         ->setAmount($amt_paid)
                                         ->setGateway($this->getSource())
                                         ->setMethod($this->GW->getDscp())
@@ -120,7 +121,7 @@ class Webhook extends \Shop\Webhook
             if ($payment) {
                 $this->setRefID($payment->id);
                 $this->setTxnDate($payment->created_at);
-                $LogID = $this->logIPN();
+                $this->logIPN();
                 $amount_money = $payment->amount_money->amount;
                 if (
                     $amount_money > 0 &&
@@ -161,7 +162,13 @@ class Webhook extends \Shop\Webhook
             $payment = $object->payment;
             if ($payment->id) {
                 $this->setRefID($payment->id);
-                $this->setTxnDate($payment->updated_at);
+                if (isset($payment->updated_at)) {
+                    $this->setTxnDate($payment->updated_at);
+                } elseif (isset($payment->created_at)) {
+                    $this->setTxnDate($payment->created_at);
+                } else {
+                    $this->setTxnDate(NULL);    // fall back to current timestamp
+                }
                 if (
                     $payment->status == 'COMPLETED' ||
                     $payment->status == 'CAPTURED'
@@ -189,12 +196,27 @@ class Webhook extends \Shop\Webhook
             break;
 
         case 'invoice.created':
+        case 'invoice.updated':
+        case 'invoice.published':
             $invoice = $object->invoice;
             if ($invoice) {
                 $inv_num = $invoice->invoice_number;
                 if (!empty($inv_num)) {
                     $Order = Order::getInstance($inv_num);
                     if (!$Order->isNew()) {
+                        $this->setOrderID($inv_num);
+                        $this->logID = $this->logIPN();
+                        $Pmt = Payment::getByReference($this->getID());
+                        //if ($Pmt->getPmtID() == 0) {
+                            $Pmt->setRefID($this->getID())
+                                ->setGateway($this->getSource())
+                                ->setMethod($this->GW->getDscp() . ' ' . $LANG_SHOP['invoice'])
+                                ->setComment($invoice->id)
+                                ->setOrderID($Order->getOrderId())
+                                ->setComplete(0)
+                                ->setStatus($invoice->status)
+                                ->Save();
+                        //}
                         $this->setOrderID($inv_num);
                         Log::write('shop_system', Log::DEBUG, "Invoice created for {$this->getOrderID()}");
                         // Always OK to process for a Net-30 invoice
@@ -255,6 +277,7 @@ class Webhook extends \Shop\Webhook
             }
             break;
         }
+
         return $retval;
     }
 
@@ -264,14 +287,14 @@ class Webhook extends \Shop\Webhook
      *
      * @return  boolean     True if valid, False if not.
      */
-    public function Verify()
+    public function Verify() : bool
     {
         global $_CONF;
 
         // Check that the blob was decoded successfully.
         // If so, extract the key fields and set Webhook variables.
         $data = $this->getData();
-        if (!is_object($data) || !$data->event_id) {
+        if (!is_object($data) || !isset($data->event_id)) {
             return false;
         }
         $this->setID($data->event_id);
@@ -280,7 +303,8 @@ class Webhook extends \Shop\Webhook
         if (!$this->GW) {
             return false;
         }
-        if (Config::get('sys_test_ipn')) {
+        if (Config::get('sys_test_ipn') && isset($_GET['testhook'])) {
+            $this->setStatusMsg('Testing Webhook');
             return true;      // used during testing to bypass verification
         }
 
