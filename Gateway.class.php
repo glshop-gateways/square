@@ -13,7 +13,7 @@
  */
 namespace Shop\Gateways\square;
 use glFusion\Database\Database;
-use glFusion\Log\Log;
+use Shop\Log;
 use Shop\Config;
 use Shop\Currency;
 use Shop\Order;
@@ -83,7 +83,7 @@ class Gateway extends \Shop\Gateway
      *
      * @param   array   $A      Array of fields from the DB
      */
-    public function __construct($A=array())
+    public function __construct(array $A=array())
     {
         $supported_currency = array(
             'USD', 'AUD', 'CAD', 'EUR', 'GBP', 'JPY', 'NZD', 'CHF', 'HKD',
@@ -162,25 +162,13 @@ class Gateway extends \Shop\Gateway
 
 
     /**
-     * Make the API classes available. May be needed for reports.
-     *
-     * @return  object  $this
-     */
-    public function loadSDK()
-    {
-        require_once __DIR__ . '/vendor/autoload.php';
-        return $this;
-    }
-
-
-    /**
      * Get the main gateway url.
      * This is used to tell the buyer where they can log in to check their
      * purchase. For PayPal this is the same as the production action URL.
      *
      * @return  string      Gateway's home page
      */
-    public function getMainUrl()
+    public function getMainUrl() : string
     {
         return '';
     }
@@ -192,7 +180,7 @@ class Gateway extends \Shop\Gateway
      * @param   object  $Ord    Cart or order object
      * @return  object      Square OrderRequest object
      */
-    private function _createOrder($Ord) : sqOrder
+    private function _createOrder(Order $Ord) : sqOrder
     {
         global $LANG_SHOP;
 
@@ -303,7 +291,7 @@ class Gateway extends \Shop\Gateway
      * @param   object  $Ord    Order object
      * @return  object      CreateOrderRequest object
      */
-    private function _createOrderRequest($Ord) : CreateOrderRequest
+    private function _createOrderRequest(Order $Ord) : CreateOrderRequest
     {
         // Create the order, then submit the order request.
         $sqOrder = $this->_createOrder($Ord);
@@ -323,7 +311,7 @@ class Gateway extends \Shop\Gateway
      * @param   object  $cart   Shopping cart object
      * @return  string      HTML for purchase button
      */
-    public function gatewayVars($cart) : string
+    public function gatewayVars(Order $cart) : string
     {
         if (!$this->Supports('checkout')) {
             return '';
@@ -353,11 +341,7 @@ class Gateway extends \Shop\Gateway
             $this->pmtlink_url = $pmtLinkResult->getPaymentLink()->getUrl();
         } else {
             $this->_errors = $apiResponse->getErrors();
-            Log::write(
-                'shop_system',
-                Log::ERROR,
-                __METHOD__ . ': ' . print_r($this->_errors,true)
-            );
+            Log::error(__METHOD__ . ': ' . print_r($this->_errors,true));
             return NULL;
         }
         $gatewayVars = array();
@@ -372,7 +356,7 @@ class Gateway extends \Shop\Gateway
      * @param   string  $btn_type   Type of button being created
      * @return  array       Array ('cmd'=>command, 'tpl'=>template name
      */
-    private function gwButtonType($btn_type='')
+    private function gwButtonType(string $btn_type='') : array
     {
         switch ($btn_type) {
         case 'donation':
@@ -397,7 +381,7 @@ class Gateway extends \Shop\Gateway
      * @uses    Gateway::getDscp()
      * @return  array       Array of name=>value pairs
      */
-    public function thanksVars()
+    public function thanksVars() : array
     {
         $R = array(
             'gateway_url'   => self::getMainUrl(),
@@ -408,37 +392,13 @@ class Gateway extends \Shop\Gateway
 
 
     /**
-     * Verify that a given email address is one of our business addresses.
-     * Called during IPN validation.
-     *
-     * @param   string  $email  Email address to check (receiver_email)
-     * @return  boolean         True if valid, False if not.
-     */
-    public function isBusinessEmail($email)
-    {
-        switch ($email) {
-        case $this->getConfig('bus_prod_email'):
-        case $this->getConfig('micro_prod_email'):
-        case $this->getConfig('bus_test_email'):
-        case $this->getConfig('micro_test_email'):
-            $retval = true;
-            break;
-        default:
-            $retval = false;
-            break;
-        }
-        return $retval;
-    }
-
-
-    /**
      * Get the variables to display with the IPN log.
      * This gateway does not have any particular log values of interest.
      *
      * @param  array   $data       Array of original IPN data
      * @return array               Name=>Value array of data for display
      */
-    public function ipnlogVars($data)
+    public function ipnlogVars(array $data) : array
     {
         return array();
     }
@@ -450,7 +410,7 @@ class Gateway extends \Shop\Gateway
      *
      * @return  string  Form method
      */
-    public function getMethod()
+    public function getMethod() : string
     {
         return 'get';
     }
@@ -463,7 +423,7 @@ class Gateway extends \Shop\Gateway
      *
      *   @return string      URL to payment processor
      */
-    public function getActionUrl()
+    public function getActionUrl() : string
     {
         return $this->pmtlink_url;
     }
@@ -473,7 +433,7 @@ class Gateway extends \Shop\Gateway
      * Additional actions to take after saving the configuration.
      *  - Subscribe to webhooks
      */
-    protected function _postSaveConfig()
+    protected function _postSaveConfig() : void
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_POSTFIELDS, '[PAYMENT_UPDATED]');
@@ -488,8 +448,8 @@ class Gateway extends \Shop\Gateway
             ) );
             $result = curl_exec($ch);
             $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            Log::write('shop_system', Log::DEBUG, __METHOD__ . ': ' . $code);
-            Log::write('shop_system', Log::DEBUG, __METHOD__ . ': ' . $result);
+            Log::debug( __METHOD__ . ': ' . $code);
+            Log::debug(__METHOD__ . ': ' . $result);
         }
     }
 
@@ -499,7 +459,7 @@ class Gateway extends \Shop\Gateway
      *
      * @return  object      SquareClient object
      */
-    private function _getApiClient()
+    private function _getApiClient() : object
     {
         if ($this->_api_client === NULL) {
             $this->loadSDK();
@@ -520,10 +480,10 @@ class Gateway extends \Shop\Gateway
      * @param   string  $trans_id   Transaction ID from IPN
      * @return  array   Array of transaction data.
      */
-    public function getTransaction($trans_id)
+    public function getTransaction(string $trans_id) : ?array
     {
         if (empty($trans_id)) {
-            return false;
+            return NULL;
         }
 
         $apiClient = $this->_getApiClient()->getOrdersApi();
@@ -534,12 +494,8 @@ class Gateway extends \Shop\Gateway
             $retval = $resp->getResult();
         } else {
             $this->_errors = $resp->getErrors();
-            Log::write(
-                'shop_system',
-                Log::ERROR,
-                __METHOD__ . ': ' . print_r($this->_errors,true)
-            );
-            $retval = false;
+            Log::error(__METHOD__ . ': ' . print_r($this->_errors,true));
+            $retval = NULL;
         }
         return $retval;
     }
@@ -552,7 +508,7 @@ class Gateway extends \Shop\Gateway
      * @param   object  $cart   Shopping cart object
      * @return  string  Javascript commands.
      */
-    public function getCheckoutJS($cart)
+    public function getCheckoutJS(Order $cart) : string
     {
         return '';
     }
@@ -565,7 +521,7 @@ class Gateway extends \Shop\Gateway
      * @param   object  $Order      Order object
      * @return  object|false    Customer object, or false on error.
      */
-    private function getCustomer($Order)
+    private function getCustomer(Order $Order) : ?object
     {
         $cust_id = $this->getConfig('cust_ref_prefix') . $Order->getUid();
         $body = new \Square\Models\SearchCustomersRequest;
@@ -592,12 +548,8 @@ class Gateway extends \Shop\Gateway
             }
         } else {
             $this->_errors = $apiResponse->getErrors();
-            Log::write(
-                'shop_system',
-                Log::ERROR,
-                __METHOD__ . ': ' . print_r($this->_errors,true)
-            );
-            return false;
+            Log::error(__METHOD__ . ': ' . print_r($this->_errors,true));
+            return NULL;
         }
     }
 
@@ -609,7 +561,7 @@ class Gateway extends \Shop\Gateway
      * @param   object  $Order      Order object, to get customer info
      * @return  object|false    Customer object, or false if an error occurs
      */
-    private function createCustomer($Order)
+    private function createCustomer(Order $Order) : ?object
     {
         $Customer = $Order->getBillto();
 
@@ -619,7 +571,7 @@ class Gateway extends \Shop\Gateway
                 $email = $db->getItem($_TABLES['users'], 'email', array('uid' => $Order->getUid()));
                 $Order->setBuyerEmail($email);
             } catch (\Exception $e) {
-                Log::write('system', Log::ERROR, __METHOD__ . ': ' . $e->getMessage());
+                Log::system(Log::ERROR, __METHOD__ . ': ' . $e->getMessage());
             }
         }
         $customersApi = $this->_getApiClient()->getCustomersApi();
@@ -644,12 +596,8 @@ class Gateway extends \Shop\Gateway
             return $createCustomerResponse->getCustomer();
         } else {
             $this->_errors = $apiResponse->getErrors();
-            Log::write(
-                'shop_system',
-                Log::ERROR,
-                __METHOD__ . ': ' . print_r($this->_errors,true)
-            );
-            return false;
+            Log::error(__METHOD__ . ': ' . print_r($this->_errors,true));
+            return NULL;
         }
     }
 
@@ -674,11 +622,7 @@ class Gateway extends \Shop\Gateway
             $createOrderResponse = $apiResponse->getResult();
         } else {
             $this->_errors = $apiResponse->getErrors();
-            Log::write(
-                'shop_system',
-                Log::ERROR,
-                __METHOD__ . ': ' . print_r($this->_errors,true)
-            );
+            Log::error(__METHOD__ . ': ' . print_r($this->_errors,true));
             return false;
         }
 
@@ -736,11 +680,7 @@ class Gateway extends \Shop\Gateway
             $Invoice = $createInvoiceResponse->getInvoice();
         } else {
             $this->_errors = $apiResponse->getErrors();
-            Log::write(
-                'shop_system',
-                Log::ERROR,
-                __METHOD__ . ': ' . print_r($this->_errors,true)
-            );
+            Log::error(__METHOD__ . ': ' . print_r($this->_errors,true));
             return false;
         }
         // If we got this far, the Invoice was created.
@@ -755,11 +695,7 @@ class Gateway extends \Shop\Gateway
             return true;
         } else {
             $this->_errors = $apiResponse->getErrors();
-            Log::write(
-                'shop_system',
-                Log::ERROR,
-                __METHOD__ . ': ' . print_r($this->_errors,true)
-            );
+            Log::error(__METHOD__ . ': ' . print_r($this->_errors,true));
             return false;
         }
     }
@@ -772,7 +708,7 @@ class Gateway extends \Shop\Gateway
      * @param   string  $pmt_id     Payment Intent ID
      * @return  object      Square Payment object
      */
-    public function getPayment($pmt_id)
+    public function getPayment(string $pmt_id) : object
     {
         $apiClient = $this->_getApiClient();
         $pmtApi = $apiClient->getPaymentsApi();
@@ -786,38 +722,12 @@ class Gateway extends \Shop\Gateway
      * @param   string  $order_id   Square order ID
      * @return  object      Square order
      */
-    public function getOrder($order_id)
+    public function getOrder(string $order_id) : object
     {
         $apiClient = $this->_getApiClient();
         $api = $apiClient->getOrdersApi();
         return $api->retrieveOrder($order_id);
     }
-
-    /*public function getInvoice($inv_id)
-    {
-        $apiClient = $this->_getApiClient();
-        $api = $apiClient->getInvoicesApi();
-        var_dump($api->getInvoice($inv_id));die;
-    }
-
-    public function getOrders($ord_ids)
-    {
-        $apiClient = $this->_getApiClient();
-        $api = $apiClient->getOrdersApi();
-        if (!is_array($ord_ids)) {
-            $ord_ids = array($ord_ids);
-        }
-        $req = new \Square\Models\BatchRetrieveOrdersRequest($ord_ids);
-        return $api->batchRetrieveOrders($this->loc_id, $req);
-    }
-
-    public function listPayments()
-    {
-        $apiClient = $this->_getApiClient();
-        $api = $apiClient->getPaymentsApi();
-        $res = $api->listPayments();
-        var_dump($res);die;
-    }*/
 
 
     /**
@@ -825,7 +735,7 @@ class Gateway extends \Shop\Gateway
      *
      * @return  array   Array of Square error objects
      */
-    public function getErrors()
+    public function getErrors() : array
     {
         return $this->_errors;
     }
@@ -836,7 +746,7 @@ class Gateway extends \Shop\Gateway
      *
      * @return  boolean     True if valid, False if not
      */
-    public function hasValidConfig()
+    public function hasValidConfig() : bool
     {
         return !empty($this->getConfig('loc_id')) &&
             !empty($this->getConfig('appid')) &&
