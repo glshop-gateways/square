@@ -178,7 +178,7 @@ class Webhook extends \Shop\Webhook
                         // Process if not already complete
                         $Cur = Currency::getInstance($payment->total_money->currency);
                         if ($Pmt->getPmtID() == 0) {
-                            Log::write('shop_system', Log::DEBUG, "Payment not found: " . var_export($data,true));
+                            Log::debug("Payment not found: " . var_export($data,true));
                         } elseif (
                             $payment->total_money->amount == $Cur->toInt($Pmt->getAmount())
                         ) {
@@ -218,14 +218,14 @@ class Webhook extends \Shop\Webhook
                                 ->Save();
                         //}
                         $this->setOrderID($inv_num);
-                        Log::write('shop_system', Log::DEBUG, "Invoice created for {$this->getOrderID()}");
+                        Log::debug("Invoice created for {$this->getOrderID()}");
                         // Always OK to process for a Net-30 invoice
                         $this->handlePurchase();
                         //$terms_gw = \Shop\Gateway::create($Order->getPmtMethod());
                         //$Order->updateStatus($terms_gw->getConfig('after_inv_status'));
                         $retval = true;
                     } else {
-                        Log::write('shop_system', Log::DEBUG, "Order number '$inv_num' not found for Square invoice");
+                        Log::debug("Order number '$inv_num' not found for Square invoice");
                     }
                 }
             }
@@ -318,8 +318,8 @@ class Webhook extends \Shop\Webhook
         // signed with your webhook signature key
         $hash = hash_hmac('sha1', $stringToSign, $webhookSignatureKey, true);
         $generatedSignature = base64_encode($hash);
-        Log::write('shop_system', Log::DEBUG, "Generated Signature: " . $generatedSignature);
-        Log::write('shop_system', Log::DEBUG, "Received Signature: " . $notificationSignature);
+        Log::debug("Generated Signature: " . $generatedSignature);
+        Log::debug("Received Signature: " . $notificationSignature);
         // Compare HMAC-SHA1 signatures.
         return hash_equals($generatedSignature, $notificationSignature);
     }
